@@ -1,0 +1,7 @@
+NULL =
+
+EXTRA_DIST = \
+	$(NULL)
+
+CLEANFILES = \
+	$(NULL)
