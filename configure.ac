@@ -25,6 +25,7 @@ PKG_CHECK_MODULES(NOFLO_GNOME, [
     gio-2.0                      >= $GIO_MIN_VERSION
     gjs-1.0                      >= $GJS_MIN_VERSION
     gobject-introspection-1.0    >= $GOBJECT_INTROSPECTION_MIN_VERSION
+    libsoup-2.4
 ])
 
 GLIB_GSETTINGS
