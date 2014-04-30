@@ -30,6 +30,9 @@ PKG_CHECK_MODULES(NOFLO_GNOME, [
 
 GLIB_GSETTINGS
 
+GJS_CONSOLE=`$PKG_CONFIG --variable=gjs_console gjs-1.0`
+AC_SUBST(GJS_CONSOLE)
+
 AC_CONFIG_FILES([
     Makefile
     src/Makefile
