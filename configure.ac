@@ -36,7 +36,6 @@ AC_SUBST(GJS_CONSOLE)
 AC_CONFIG_FILES([
     Makefile
     components/Makefile
-    data/Makefile
     src/Makefile
 ])
 AC_OUTPUT
