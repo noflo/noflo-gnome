@@ -32,7 +32,7 @@ NoFloContext.clearInterval = NoFloContext.clearTimeout;
 const NoFlo = NoFloContext.require('noflo');
 const NoFloRuntimeBase = NoFloContext.require('noflo-runtime-base/src/Base.js');
 
-/**/
+/* Require() "emulation" */
 
 let loadJavascriptFile = function(path) {
     return imports[path];
@@ -91,8 +91,14 @@ let require = function(arg) {
     if (parentPath == '' || parentPath == '.')
         parentPath = null;
     if (parentPath) pushPath(parentPath);
-    let module = loadFile(path);
-    if (parentPath) popPath();
+    let module;
+    try {
+        module = loadFile(path);
+    } catch (e) {
+        throw e;
+    } finally {
+        if (parentPath) popPath();
+    }
 
     return module;
 };
@@ -134,7 +140,7 @@ const WebProtoServer = new Lang.Class({
         this.runtime.component.loaders = {
             '/noflo-runtime-base': new ComponentLoader({
                 baseDir: '/noflo-runtime-base',
-                path: [ '.' ],
+                paths: [ '.', 'component-libs' ],
             })
         };
 
@@ -170,7 +176,7 @@ const WebProtoServer = new Lang.Class({
         if (opcode != 1)
             return;
 
-        //log('got client message: ' + message.get_data());
+        log('got client message: ' + message.get_data());
         let contents = JSON.parse('' + message.get_data());
 
         this.runtime.receive(contents.protocol,
