@@ -16,7 +16,7 @@ class Init extends noflo.Component
         required: false
 
     @inPorts.in.on 'data', (data) =>
-      Gtk.init
+      Gtk.init null, null
       @outPorts.out.send true
       @outPorts.out.disconnect()
 
