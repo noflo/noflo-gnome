@@ -75,6 +75,7 @@ let ComponentLoader = function(options) {
         self.options.path = ['.'];
 
     self.components = {};
+    self.listCallbacks = [];
 
     let logFunc = function(name) {
         log('calling : ' +  name);
@@ -89,7 +90,35 @@ let ComponentLoader = function(options) {
         return ret.replace(/\.js$/, '');
     };
 
+    let generateComponentInstance = function(path) {
+        return function(metadata) {
+            let implementation = require(path);
+            let instance = implementation.getComponent(metadata);
+            return instance;
+        };
+    };
+
+    let getComponentRequirePath = function(module, component) {
+        let path = module.path + '/' + module.noflo.components[component];
+        path = removeExtension(path);
+        return path;
+    };
+
     self.listComponents = function(callback) {
+        // List is built already
+        if (self.builtList) {
+            callback(self.components);
+            return;
+        }
+
+        self.listCallbacks.push(callback);
+
+        // Building list
+        if (self.buildingList)
+            return;
+
+        self.buildingList = true;
+
         Mainloop.timeout_add(0, Lang.bind(this, function() {
             let modules = getModules(self.options.paths);
             self.components = {};
@@ -98,12 +127,28 @@ let ComponentLoader = function(options) {
                 for (let j in module.noflo.components) {
                     let path = normalizeName(module.name + '/' + j);
                     self.components[path] = {
-                        module: module,
-                        component: j,
+                        //module: module,
+                        //component: j,
+                        create: generateComponentInstance(getComponentRequirePath(module, j))
                     };
                 }
+
+                if (module.noflo.loader) {
+                    let path = module.path + '/' + module.noflo.loader;
+                    path = removeExtension(path);
+                    log('start loader!');
+                    let loader = require(path);
+                    loader(self);
+                }
             }
-            callback(self.components);
+
+            let callbacks = self.listCallbacks;
+            self.listCallbacks = [];
+            self.buildingList = false;
+            self.builtList = true;
+            for (let i in callbacks)
+                callbacks[i](self.components);
+
             return false;
         }));
     };
@@ -113,15 +158,7 @@ let ComponentLoader = function(options) {
             throw new Error('Component ' + name + ' not available');
 
         Mainloop.timeout_add(0, Lang.bind(this, function() {
-            let compDescr = self.components[name];
-            let path = compDescr.module.path + '/' +
-                compDescr.module.noflo.components[compDescr.component];
-            path = removeExtension(path);
-            //log('loading ' + name + ' from ' + path);
-            let implementation = require(path);
-            let instance = implementation.getComponent(metadata);
-            callback(instance);
-
+            callback(self.components[name].create(metadata));
             return false;
         }));
     };
@@ -130,15 +167,10 @@ let ComponentLoader = function(options) {
         log('loadGraph ' + name);
     };
 
-    self.setIcon = function(name, instance) {
-        log('setIcon ' + name);
-    };
-
-    self.getLibraryIcon = function(prefix) {
-        log('getLibraryIcon ' + prefix);
-    };
-
     self.registerComponent = function(packageId, name, cPath, callback) {
+        self.components[packageId + '/' + name] = {
+            create: cPath,
+        };
         log('registerComponent ' + packageId + ' / ' + name);
     };
 
