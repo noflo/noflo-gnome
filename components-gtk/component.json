@@ -10,7 +10,9 @@
   ],
   "noflo": {
     "components": {
-      "Init": "Init.coffee"
+      "Hide": "Hide.coffee",
+      "Init": "Init.coffee",
+      "Show": "Show.coffee"
     }
   }
 }
