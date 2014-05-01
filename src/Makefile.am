@@ -25,7 +25,7 @@ js_files_DATA = \
 	websocketServer.js \
 	$(NULL)
 
-path.js: $(srcdir)/Makefile path.js.in
+path.js: path.js.in
 	$(AM_V_GEN) $(do_subst) $< > $@
 
 noflo-gnome: noflo-gnome.in
