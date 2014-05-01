@@ -18,11 +18,13 @@ do_subst = sed  -e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g'		\
 
 js_filesdir = $(pkgdatadir)
 js_files_DATA = \
+	componentLoader.js \
 	main.js \
 	noflo-runtime-base.js \
 	path.js \
 	util.js \
 	websocketServer.js \
+	libs/coffeescript.js \
 	$(NULL)
 
 path.js: path.js.in

@@ -5,7 +5,12 @@ const Gio = imports.gi.Gio;
 const Soup = imports.gi.Soup;
 const Util = imports.util;
 
-/* NoFlo glue */
+/* CoffeeScript compiler */
+
+const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
+
+/* NoFlo Runtime */
+
 let NoFloContext = imports['noflo-runtime-base'];
 NoFloContext.setTimeout = function(cb, time) {
     return GLib.timeout_add(GLib.PRIORITY_DEFAULT, time, function() {
@@ -29,6 +34,72 @@ const NoFloRuntimeBase = NoFloContext.require('noflo-runtime-base/src/Base.js');
 
 /**/
 
+let loadJavascriptFile = function(path) {
+    return imports[path];
+};
+
+let loadCoffeescriptFile = function(path) {
+    let file = Gio.File.new_for_path(path + '.coffee');
+    let [, coffeeSource] = file.load_contents(null);
+    let javascriptSource = CoffeeScript.compile('' + coffeeSource,
+                                                { bare: true });
+    let module = eval('(function () { var exports = {};' +
+                      javascriptSource + '; return exports; })()');
+
+    return module;
+};
+
+let loadFile = function(path) {
+    if (GLib.file_test(path + '.js', GLib.FileTest.IS_REGULAR))
+        return loadJavascriptFile(path);
+    if (GLib.file_test(path + '.coffee', GLib.FileTest.IS_REGULAR))
+        return loadCoffeescriptFile(path);
+    //
+    throw new Error("Can't load " + path);
+};
+
+let require = function(arg) {
+    //log('require -> ' + arg);
+
+    if ('noflo' == arg)
+        return NoFlo;
+
+    let getPaths = function() {
+        if (!window._requirePaths)
+            window._requirePaths = [];
+        return window._requirePaths;
+    };
+
+    let pushPath = function(path) {
+        getPaths().push(path);
+    };
+
+    let popPath = function() {
+        getPaths().pop();
+    };
+
+    let getGlobalPath = function() {
+        let r = '';
+        let paths = getPaths();
+        for (let i in paths)
+            r += paths[i] + '/';
+        return r;
+    };
+
+    let path = getGlobalPath() + arg;
+    let parentPath = GLib.path_get_dirname(arg);
+    if (parentPath == '' || parentPath == '.')
+        parentPath = null;
+    if (parentPath) pushPath(parentPath);
+    let module = loadFile(path);
+    if (parentPath) popPath();
+
+    return module;
+};
+window.require = require;
+
+/**/
+
 let WebProtoRuntime = function(args) {
     this.connection = args.connection;
     this.prototype = NoFloRuntimeBase.prototype;
@@ -48,6 +119,10 @@ let WebProtoRuntime = function(args) {
 
 /**/
 
+const ComponentLoader = imports.componentLoader.ComponentLoader;
+
+/**/
+
 const WebProtoServer = new Lang.Class({
     Name: 'WebProtoServer',
 
@@ -55,6 +130,13 @@ const WebProtoServer = new Lang.Class({
         this.connection = null;
         this.runtime = new WebProtoRuntime({ connection: this,
                                              baseDir: '/noflo-runtime-base', });
+
+        this.runtime.component.loaders = {
+            '/noflo-runtime-base': new ComponentLoader({
+                baseDir: '/noflo-runtime-base',
+                path: [ '.' ],
+            })
+        };
 
         this.signals = [];
 
