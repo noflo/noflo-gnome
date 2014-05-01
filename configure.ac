@@ -36,6 +36,7 @@ AC_SUBST(GJS_CONSOLE)
 AC_CONFIG_FILES([
     Makefile
     components/Makefile
+    components-gir/Makefile
     components-gtk/Makefile
     src/Makefile
 ])
