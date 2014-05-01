@@ -9,21 +9,21 @@ class ListenSignal extends noflo.Component
       in:
         datatype: 'object'
         description: 'Object instance to listen at'
-        required: true
       signal:
-        datatype: 'object'
+        datatype: 'string'
         description: 'Signal to listen to'
-        required: true
     @outPorts = new noflo.OutPorts
       out:
         datatype: 'bang'
         description: 'Signal output'
-        required: false
+        required: no
 
     @inPorts.in.on 'data', (object) =>
       @object = object
+      @updateListener()
     @inPorts.signal.on 'data', (signal) =>
       @signal = signal
+      @updateListener()
 
   updateListener: () ->
     return unless @object? and @signal?
