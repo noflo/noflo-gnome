@@ -1,3 +1,4 @@
+NULL =
 CLEANFILES =
 EXTRA_DIST =
 

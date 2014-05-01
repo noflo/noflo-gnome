@@ -59,7 +59,6 @@ let loadFile = function(path) {
 };
 
 let require = function(arg) {
-    log('require ' + arg);
     if (arg[0] != '/') {
         try {
             let module = NoFloContext.require(arg);

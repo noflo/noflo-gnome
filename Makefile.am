@@ -1,3 +1,3 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 
-SUBDIRS = src data
+SUBDIRS = components data src
