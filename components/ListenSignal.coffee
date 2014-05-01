@@ -3,6 +3,7 @@ Lang = imports.lang
 
 class ListenSignal extends noflo.Component
   description: 'Listen to a signal on a given object'
+  icon: 'bolt'
   constructor: ->
     @inPorts = new noflo.InPorts
       in:

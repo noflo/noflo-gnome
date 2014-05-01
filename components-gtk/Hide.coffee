@@ -3,6 +3,7 @@ Gtk = imports.gi.Gtk
 
 class Hide extends noflo.Component
   description: 'Hide a GtkWidget'
+  icon: 'eye-slash'
   constructor: ->
     @inPorts = new noflo.InPorts
       in:

@@ -3,6 +3,7 @@ Gtk = imports.gi.Gtk
 
 class Show extends noflo.Component
   description: 'Show a GtkWidget'
+  icon: 'eye'
   constructor: ->
     @inPorts = new noflo.InPorts
       in:
