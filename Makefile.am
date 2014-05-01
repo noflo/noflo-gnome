@@ -1,3 +1,3 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 
-SUBDIRS = components src
+SUBDIRS = components components-gtk src
