@@ -1,4 +1,5 @@
 noflo = require 'noflo'
+Lang = imports.lang
 
 class ListenSignal extends noflo.Component
   description: 'Listen to a signal on a given object'
