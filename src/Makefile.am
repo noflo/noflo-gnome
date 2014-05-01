@@ -16,15 +16,19 @@ do_subst = sed  -e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g'		\
 		-e 's|@PACKAGE_VERSION[@]|$(PACKAGE_VERSION)|g'		\
 		-e 's|@GETTEXT_PACKAGE[@]|$(GETTEXT_PACKAGE)|g'
 
-js_filesdir = $(pkgdatadir)
+js_filesdir = $(pkgdatadir)/js
 js_files_DATA = \
 	componentLoader.js \
 	main.js \
-	noflo-runtime-base.js \
 	path.js \
 	utils.js \
 	websocketServer.js \
+	$(NULL)
+
+js_libsdir = $(pkgdatadir)/js/libs
+js_libs_DATA = \
 	libs/coffeescript.js \
+	libs/noflo-runtime-base.js \
 	$(NULL)
 
 path.js: path.js.in

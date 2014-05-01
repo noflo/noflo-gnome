@@ -3,6 +3,7 @@ const Lang = imports.lang;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Soup = imports.gi.Soup;
+const Path = imports.path;
 const Utils = imports.utils;
 
 /* CoffeeScript compiler */
@@ -11,7 +12,7 @@ const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
 
 /* NoFlo Runtime */
 
-let NoFloContext = imports['noflo-runtime-base'];
+let NoFloContext = imports.libs['noflo-runtime-base'];
 NoFloContext.setTimeout = function(cb, time) {
     return GLib.timeout_add(GLib.PRIORITY_DEFAULT, time, function() {
         cb();
@@ -30,7 +31,7 @@ NoFloContext.clearTimeout = function(id) {
 };
 NoFloContext.clearInterval = NoFloContext.clearTimeout;
 const NoFlo = NoFloContext.require('noflo');
-const NoFloRuntimeBase = NoFloContext.require('noflo-runtime-base/src/Base.js');
+const NoFloRuntimeBase = NoFloContext.require('noflo-runtime-base');
 
 /* Require() "emulation" */
 
@@ -106,10 +107,11 @@ window.require = require;
 
 /**/
 
-let WebProtoRuntime = function(args) {
-    this.connection = args.connection;
+let WebProtoRuntime = function(options) {
+    this.connection = options.connection;
+    delete options.connection;
     this.prototype = NoFloRuntimeBase.prototype;
-    this.prototype.constructor.apply(this, arguments);
+    this.prototype.constructor.apply(this, [options]);
     this.receive = this.prototype.receive;
 
     this.send = function(protocol, topic, payload, context) {
@@ -135,12 +137,13 @@ const WebProtoServer = new Lang.Class({
     _init: function(args) {
         this.connection = null;
         this.runtime = new WebProtoRuntime({ connection: this,
-                                             baseDir: '/noflo-runtime-base', });
+                                             baseDir: '/noflo-runtime-base',
+                                             type: 'noflo-gnome', });
 
         this.runtime.component.loaders = {
             '/noflo-runtime-base': new ComponentLoader({
                 baseDir: '/noflo-runtime-base',
-                paths: [ '.', 'component-libs' ],
+                paths: [ Path.RESOURCE_DIR + '/components' ],
             })
         };
 
@@ -176,7 +179,7 @@ const WebProtoServer = new Lang.Class({
         if (opcode != 1)
             return;
 
-        log('got client message: ' + message.get_data());
+        //log('got client message: ' + message.get_data());
         let contents = JSON.parse('' + message.get_data());
 
         this.runtime.receive(contents.protocol,
