@@ -55,15 +55,25 @@ let loadFile = function(path) {
         return loadJavascriptFile(path);
     if (GLib.file_test(path + '.coffee', GLib.FileTest.IS_REGULAR))
         return loadCoffeescriptFile(path);
-    //
     throw new Error("Can't load " + path);
 };
 
 let require = function(arg) {
-    //log('require -> ' + arg);
+    log('require ' + arg);
+    if (arg[0] != '/') {
+        try {
+            let module = NoFloContext.require(arg);
+            if (module)
+                return module;
+        } catch (e) {
+        }
 
-    if ('noflo' == arg)
-        return NoFlo;
+        let libPath = Path.RESOURCE_DIR + '/js/libs/' + arg + '.js';
+        if (GLib.file_test(libPath, GLib.FileTest.IS_REGULAR)) {
+            let lib = imports.libs[arg];
+            return lib;
+        }
+    }
 
     let getPaths = function() {
         if (!window._requirePaths)

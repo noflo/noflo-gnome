@@ -29,6 +29,7 @@ js_libsdir = $(pkgdatadir)/js/libs
 js_libs_DATA = \
 	libs/coffeescript.js \
 	libs/noflo-runtime-base.js \
+	libs/underscore.js \
 	$(NULL)
 
 path.js: path.js.in
