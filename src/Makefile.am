@@ -22,7 +22,7 @@ js_files_DATA = \
 	main.js \
 	noflo-runtime-base.js \
 	path.js \
-	util.js \
+	utils.js \
 	websocketServer.js \
 	libs/coffeescript.js \
 	$(NULL)

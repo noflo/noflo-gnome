@@ -3,7 +3,7 @@ const Lang = imports.lang;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Soup = imports.gi.Soup;
-const Util = imports.util;
+const Utils = imports.utils;
 
 /* CoffeeScript compiler */
 

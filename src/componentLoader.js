@@ -1,5 +1,6 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
+const Utils = imports.utils;
 
 let ComponentLoader = function(options) {
     let self = this;
