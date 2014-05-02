@@ -136,7 +136,6 @@ let ComponentLoader = function(options) {
                 if (module.noflo.loader) {
                     let path = module.path + '/' + module.noflo.loader;
                     path = removeExtension(path);
-                    log('start loader!');
                     let loader = require(path);
                     loader(self);
                 }
