@@ -8,5 +8,6 @@ components_DATA = \
 	Add.coffee \
 	Hide.coffee \
 	Init.coffee \
+	Pack.coffee \
 	Show.coffee \
 	$(NULL)

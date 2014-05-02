@@ -13,6 +13,7 @@
       "Add": "Add.coffee",
       "Hide": "Hide.coffee",
       "Init": "Init.coffee",
+      "Pack": "Pack.coffee",
       "Show": "Show.coffee"
     }
   }
