@@ -10,7 +10,18 @@
   ],
   "noflo": {
     "components": {
-      "ListenSignal": "ListenSignal.coffee"
+      "ListenSignal": "ListenSignal.coffee",
+      "GioFileMonitor": "GioFileMonitor.coffee",
+      "GioFileLoadContent": "GioFileLoadContent.coffee",
+      "GioFileWrite": "GioFileWrite.coffee",
+      "GioInputStreamFromFd": "GioInputStreamFromFd.coffee",
+      "GioOutputStreamFromFd": "GioOutputStreamFromFd.coffee",
+      "GioStreamClose": "GioStreamClose.coffee",
+      "GioStreamReadAll": "GioStreamReadAll.coffee",
+      "GLibSpawn": "GLibSpawn.coffee",
+      "Log": "Log.coffee",
+      "MonitorProperty": "MonitorProperty.coffee",
+      "RunGC": "RunGC.coffee"
     }
   }
 }
