@@ -11,6 +11,7 @@
   "noflo": {
     "components": {
       "Add": "Add.coffee",
+      "ClutterInit": "ClutterInit.coffee",
       "Hide": "Hide.coffee",
       "Init": "Init.coffee",
       "Main": "Main.coffee",
