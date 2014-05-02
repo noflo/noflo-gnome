@@ -1,6 +1,6 @@
 noflo = require 'noflo'
 
-class GetEmbeddedStage extends noflo.Component
+class GetStage extends noflo.Component
   description: 'Gets the ClutterStage associated to a GtkClutterEmbedded'
   constructor: ->
     @inPorts = new noflo.InPorts
@@ -18,4 +18,4 @@ class GetEmbeddedStage extends noflo.Component
       @outPorts.stage.send embedded.get_stage()
       @outPorts.stage.disconnect()
 
-exports.getComponent = -> new GetEmbeddedStage
+exports.getComponent = -> new GetStage

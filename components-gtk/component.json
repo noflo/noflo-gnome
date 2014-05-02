@@ -13,7 +13,7 @@
       "Add": "Add.coffee",
       "ClutterInit": "ClutterInit.coffee",
       "Hide": "Hide.coffee",
-      "GetEmbeddedStage": "GetEmbeddedStage.coffee",
+      "GetStage": "GetStage.coffee",
       "Init": "Init.coffee",
       "Main": "Main.coffee",
       "Pack": "Pack.coffee",
