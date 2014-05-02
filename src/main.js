@@ -1,6 +1,6 @@
 const WebProtoServer = imports.websocketServer;
-const Mainloop = imports.mainloop;
+const Runtime = imports.runtime;
 
 WebProtoServer.getDefault().start();
 
-Mainloop.run();
+Runtime.start();

@@ -1,6 +1,7 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Path = imports.path;
+const Runtime = imports.runtime;
 
 /* CoffeeScript compiler */
 
@@ -120,3 +121,9 @@ NoFloContext.require.alias("noflo-fbp/lib/fbp.js", "fbp");
 
 const RuntimeBase = NoFloContext.require('noflo-runtime-base');
 const Fbp = NoFloContext.require('fbp');
+
+/**/
+
+NoFloContext.require.register('noflo-gnome', function(exports, require, module) {
+    exports.replaceMainloop = Runtime.replaceMainloop;
+});

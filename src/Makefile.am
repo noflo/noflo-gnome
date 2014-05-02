@@ -23,6 +23,7 @@ js_files_DATA = \
 	main.js \
 	noflo.js \
 	path.js \
+	runtime.js \
 	utils.js \
 	websocketServer.js \
 	$(NULL)
