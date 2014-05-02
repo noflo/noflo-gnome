@@ -21,6 +21,7 @@ js_filesdir = $(pkgdatadir)/js
 js_files_DATA = \
 	componentLoader.js \
 	main.js \
+	noflo.js \
 	path.js \
 	utils.js \
 	websocketServer.js \
@@ -30,7 +31,6 @@ js_libsdir = $(pkgdatadir)/js/libs
 js_libs_DATA = \
 	libs/coffeescript.js \
 	libs/noflo-runtime-base.js \
-	libs/underscore.js \
 	$(NULL)
 
 path.js: path.js.in

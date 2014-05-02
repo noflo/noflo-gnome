@@ -6,120 +6,14 @@ const Soup = imports.gi.Soup;
 const Path = imports.path;
 const Utils = imports.utils;
 
-/* CoffeeScript compiler */
-
-const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
-
-/* NoFlo Runtime */
-
-let NoFloContext = imports.libs['noflo-runtime-base'];
-NoFloContext.setTimeout = function(cb, time) {
-    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, time, function() {
-        cb();
-        return false;
-    }, null, null);
-};
-NoFloContext.setInterval = function(cb, time) {
-    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, time, function() {
-        cb();
-        return true;
-    }, null, null);
-};
-NoFloContext.clearTimeout = function(id) {
-    if (id > 0)
-        GLib.source_remove(id);
-};
-NoFloContext.clearInterval = NoFloContext.clearTimeout;
-const NoFlo = NoFloContext.require('noflo');
-const NoFloRuntimeBase = NoFloContext.require('noflo-runtime-base');
-
-/* Require() "emulation" */
-
-let loadJavascriptFile = function(path) {
-    return imports[path];
-};
-
-let loadCoffeescriptFile = function(path) {
-    let file = Gio.File.new_for_path(path + '.coffee');
-    let [, coffeeSource] = file.load_contents(null);
-    let javascriptSource = CoffeeScript.compile('' + coffeeSource,
-                                                { bare: true });
-    let module = eval('(function () { var exports = {};' +
-                      javascriptSource + '; return exports; })()');
-
-    return module;
-};
-
-let loadFile = function(path) {
-    if (GLib.file_test(path + '.js', GLib.FileTest.IS_REGULAR))
-        return loadJavascriptFile(path);
-    if (GLib.file_test(path + '.coffee', GLib.FileTest.IS_REGULAR))
-        return loadCoffeescriptFile(path);
-    throw new Error("Can't load " + path);
-};
-
-let require = function(arg) {
-    if (arg[0] != '/') {
-        try {
-            let module = NoFloContext.require(arg);
-            if (module)
-                return module;
-        } catch (e) {
-        }
-
-        let libPath = Path.RESOURCE_DIR + '/js/libs/' + arg + '.js';
-        if (GLib.file_test(libPath, GLib.FileTest.IS_REGULAR)) {
-            let lib = imports.libs[arg];
-            return lib;
-        }
-    }
-
-    let getPaths = function() {
-        if (!window._requirePaths)
-            window._requirePaths = [];
-        return window._requirePaths;
-    };
-
-    let pushPath = function(path) {
-        getPaths().push(path);
-    };
-
-    let popPath = function() {
-        getPaths().pop();
-    };
-
-    let getGlobalPath = function() {
-        let r = '';
-        let paths = getPaths();
-        for (let i in paths)
-            r += paths[i] + '/';
-        return r;
-    };
-
-    let path = getGlobalPath() + arg;
-    let parentPath = GLib.path_get_dirname(arg);
-    if (parentPath == '' || parentPath == '.')
-        parentPath = null;
-    if (parentPath) pushPath(parentPath);
-    let module;
-    try {
-        module = loadFile(path);
-    } catch (e) {
-        throw e;
-    } finally {
-        if (parentPath) popPath();
-    }
-
-    return module;
-};
-window.require = require;
+const NoFlo = imports.noflo;
 
 /**/
 
 let WebProtoRuntime = function(options) {
     this.connection = options.connection;
     delete options.connection;
-    this.prototype = NoFloRuntimeBase.prototype;
+    this.prototype = NoFlo.RuntimeBase.prototype;
     this.prototype.constructor.apply(this, [options]);
     this.receive = this.prototype.receive;
 
