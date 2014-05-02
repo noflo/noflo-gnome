@@ -9,15 +9,24 @@ class Show extends noflo.Component
       in:
         datatype: 'object'
         description: ''
-        required: true
+        required: yes
+      all:
+        datatype: 'boolean'
+        description: ''
+        required: no
     @outPorts = new noflo.OutPorts
       out:
         datatype: 'object'
         description: ''
-        required: false
+        required: no
 
+    @all = false
+    @inPorts.all.on 'data', (@all) ->
     @inPorts.in.on 'data', (widget) =>
-      widget.show()
+      if @all
+        widget.show()
+      else
+        widget.show_all()
       @outPorts.out.send widget
       @outPorts.out.disconnect()
 
