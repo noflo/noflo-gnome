@@ -7,6 +7,7 @@ components_DATA = \
 	component.json \
 	Add.coffee \
 	ClutterInit.coffee \
+	GetEmbeddedStage.coffee \
 	Hide.coffee \
 	Init.coffee \
 	Main.coffee \
