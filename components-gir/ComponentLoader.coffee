@@ -3,7 +3,8 @@ GI = imports.gi.GIRepository
 
 # TODO: Read from component.json
 libs = [
-  'Gtk'
+  'Gtk',
+  'GtkClutter'
 ]
 
 exports = (loader, done) ->
@@ -11,6 +12,7 @@ exports = (loader, done) ->
 
   # List the constructors
   libs.forEach (lib) ->
+    imports.gi[lib]
     infos = repo.get_n_infos lib
     for item in [0..infos]
       info = repo.get_info lib, item
