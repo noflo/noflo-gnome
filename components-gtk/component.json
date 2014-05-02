@@ -14,6 +14,7 @@
       "ClutterInit": "ClutterInit.coffee",
       "Hide": "Hide.coffee",
       "GetStage": "GetStage.coffee",
+      "GetWidget": "GetWidget.coffee",
       "Init": "Init.coffee",
       "Main": "Main.coffee",
       "Pack": "Pack.coffee",

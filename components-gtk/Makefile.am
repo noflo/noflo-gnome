@@ -8,6 +8,7 @@ components_DATA = \
 	Add.coffee \
 	ClutterInit.coffee \
 	GetStage.coffee \
+	GetWidget.coffee \
 	Hide.coffee \
 	Init.coffee \
 	Main.coffee \
