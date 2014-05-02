@@ -1,0 +1,3 @@
+- Imports graphs from libraries
+- More robust libraries loading
+- Caching coffeescript
