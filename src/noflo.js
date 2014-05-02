@@ -1,5 +1,6 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
+const Emulation = imports.emulation;
 const Path = imports.path;
 const Runtime = imports.runtime;
 
@@ -14,7 +15,8 @@ let NoFloContext = null;
 /* Require() "emulation" */
 
 let loadJavascriptFile = function(path) {
-    return imports[path];
+    let module = imports[path];
+    return module;
 };
 
 let loadCoffeescriptFile = function(path) {
@@ -95,25 +97,8 @@ window.require = require;
 /* NoFlo Runtime */
 
 NoFloContext = imports.libs['noflo-runtime-base'];
+Emulation.inject();
 
-
-NoFloContext.setTimeout = function(cb, time) {
-    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, time, function() {
-        cb();
-        return false;
-    }, null, null);
-};
-NoFloContext.setInterval = function(cb, time) {
-    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, time, function() {
-        cb();
-        return true;
-    }, null, null);
-};
-NoFloContext.clearTimeout = function(id) {
-    if (id > 0)
-        GLib.source_remove(id);
-};
-NoFloContext.clearInterval = NoFloContext.clearTimeout;
 const NoFlo = NoFloContext.require('noflo');
 
 NoFloContext.require.alias("component-underscore/index.js", "underscore");
