@@ -6,6 +6,7 @@ componentsdir = $(pkgdatadir)/components/noflo-gtk
 components_DATA = \
 	component.json \
 	Add.coffee \
+	BuilderAddFile.coffee \
 	ClutterInit.coffee \
 	GetStage.coffee \
 	GetWidget.coffee \
