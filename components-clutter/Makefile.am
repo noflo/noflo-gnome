@@ -11,6 +11,7 @@ components_DATA = \
 	ActorRaise.coffee \
 	ActorResize.coffee \
 	ActorShow.coffee \
+	AddChild.coffee \
 	ClutterActor.coffee \
 	ClutterAnimation.coffee \
 	ClutterClick.coffee \

@@ -21,6 +21,7 @@
       "ActorResize": "ActorResize.coffee",
       "ActorSetProperties": "ActorSetProperties.coffee",
       "ActorShow": "ActorShow.coffee",
+      "AddChild": "AddChild.coffee",
       "ClutterActor": "ClutterActor.coffee",
       "ClutterAnimation": "ClutterAnimation.coffee",
       "ClutterClick": "ClutterClick.coffee",
