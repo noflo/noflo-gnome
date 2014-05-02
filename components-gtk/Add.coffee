@@ -14,6 +14,10 @@ class Add extends noflo.Component
         description: ''
         required: true
     @outPorts = new noflo.OutPorts
+      parent:
+        datatype: 'object'
+        description: ''
+        required: false
       child:
         datatype: 'object'
         description: ''
@@ -30,6 +34,8 @@ class Add extends noflo.Component
   addWidget: () ->
     return unless @parent? and @child?
     @parent.add(@child)
+    @outPorts.parent.send @parent
+    @outPorts.parent.disconnect()
     @outPorts.child.send @child
     @outPorts.child.disconnect()
 
