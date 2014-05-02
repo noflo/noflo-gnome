@@ -18,6 +18,7 @@
       "Init": "Init.coffee",
       "Main": "Main.coffee",
       "Pack": "Pack.coffee",
+      "Resize": "Resize.coffee",
       "Show": "Show.coffee"
     }
   }

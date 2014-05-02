@@ -13,5 +13,6 @@ components_DATA = \
 	Init.coffee \
 	Main.coffee \
 	Pack.coffee \
+	Resize.coffee \
 	Show.coffee \
 	$(NULL)
