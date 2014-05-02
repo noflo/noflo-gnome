@@ -1,0 +1,45 @@
+{
+  "name": "noflo-clutter",
+  "description": "User interaction components for NoFlo and Clutter/gjs",
+  "author": "Lionel Landwerlin <llandwerlin@gmail.com>",
+  "repo": "noflo/noflo-gnome",
+  "version": "0.0.1",
+  "keywords": [
+  ],
+  "dependencies": {
+    "noflo/noflo": "*"
+  },
+  "json": [
+    "component.json"
+  ],
+  "noflo": {
+    "components": {
+      "Actor": "Actor.coffee",
+      "ActorHide": "ActorHide.coffee",
+      "ActorMove": "ActorMove.coffee",
+      "ActorRaise": "ActorRaise.coffee",
+      "ActorResize": "ActorResize.coffee",
+      "ActorSetProperties": "ActorSetProperties.coffee",
+      "ActorShow": "ActorShow.coffee",
+      "ClutterActor": "ClutterActor.coffee",
+      "ClutterAnimation": "ClutterAnimation.coffee",
+      "ClutterClick": "ClutterClick.coffee",
+      "ClutterCoglContext": "ClutterCoglContext.coffee",
+      "ClutterDefaultStage": "ClutterDefaultStage.coffee",
+      "ClutterDrag": "ClutterDrag.coffee",
+      "ClutterEventConsume": "ClutterEventConsume.coffee",
+      "ClutterGstCamera": "ClutterGstCamera.coffee",
+      "ClutterGstPlayback": "ClutterGstPlayback.coffee",
+      "ClutterPipelineContent": "ClutterPipelineContent.coffee",
+      "CoglPipeline": "CoglPipeline.coffee",
+      "CoglPipelineAddSnippet": "CoglPipelineAddSnippet.coffee",
+      "CoglPipelineCopy": "CoglPipelineCopy.coffee",
+      "CoglPipelineSetTexture": "CoglPipelineSetTexture.coffee",
+      "CoglSnippet": "CoglSnippet.coffee",
+      "CoglTexture": "CoglTexture.coffee",
+      "CoordsToVector": "CoordsToVector.coffee",
+      "Init": "Init.coffee",
+      "Main": "Main.coffee"
+    }
+  }
+}
