@@ -14,6 +14,7 @@
       "BuilderAddFile": "BuilderAddFile.coffee",
       "ClutterInit": "ClutterInit.coffee",
       "Hide": "Hide.coffee",
+      "GetObject": "GetObject.coffee",
       "GetStage": "GetStage.coffee",
       "GetWidget": "GetWidget.coffee",
       "Init": "Init.coffee",

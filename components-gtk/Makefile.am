@@ -8,6 +8,7 @@ components_DATA = \
 	Add.coffee \
 	BuilderAddFile.coffee \
 	ClutterInit.coffee \
+	GetObject.coffee \
 	GetStage.coffee \
 	GetWidget.coffee \
 	Hide.coffee \
