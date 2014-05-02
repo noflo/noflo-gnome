@@ -16,7 +16,7 @@ class ClutterInit extends noflo.Component
         required: false
 
     @inPorts.in.on 'data', (data) =>
-      CluttterGtk.init null, null
+      GtkClutter.init null, null
       @outPorts.out.send true
       @outPorts.out.disconnect()
 
