@@ -31,9 +31,6 @@ class BuilderAddFile extends noflo.Component
   loadFile: () ->
     return unless @builder? and @f?
     try
-      log typeof(@f)
-      log @builder
-      log @f
       @builder.add_from_file @f
     catch e
       @outPorts.error.send e
