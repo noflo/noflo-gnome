@@ -1,3 +1,5 @@
+const Gio = imports.gi.Gio;
+
 let copy = function(obj2) {
     let ret = {}
     for (let i in obj2) {
@@ -48,4 +50,16 @@ let levelToSpaces = function(level) {
     for (let i = 0; i < level; i++)
         ret += '   ';
     return ret;
+};
+
+let forEachInDirectory = function(directory, callback) {
+    let enumerator = directory.enumerate_children('*',
+                                                  Gio.FileQueryInfoFlags.NONE,
+                                                  null);
+    let fileInfo;
+    while ((fileInfo = enumerator.next_file(null)) != null) {
+        let child = enumerator.get_child(fileInfo);
+        callback(child);
+    }
+    enumerator.close(null);
 };

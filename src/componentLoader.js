@@ -39,17 +39,12 @@ let getModulesInPath = function(path) {
     if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
         return modules;
 
-    let dir = Gio.File.new_for_path(path);
-    let enumerator = dir.enumerate_children('*', Gio.FileQueryInfoFlags.NONE, null);
-    let fileInfo;
-    while ((fileInfo = enumerator.next_file(null)) != null) {
-        let child = enumerator.get_child(fileInfo);
+    Utils.forEachInDirectory(Gio.File.new_for_path(path), function(child) {
         let module = getModuleAtPath(child.get_path());
 
         if (module)
             modules[module.name] = module;
-    }
-    enumerator.close(null);
+    });
 
     return modules;
 };
