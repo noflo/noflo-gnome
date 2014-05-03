@@ -9,6 +9,7 @@
     "component.json"
   ],
   "noflo": {
+    "loader": "ComponentLoader.coffee",
     "components": {
       "Add": "Add.coffee",
       "BuilderAddFile": "BuilderAddFile.coffee",

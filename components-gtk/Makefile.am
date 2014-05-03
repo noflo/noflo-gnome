@@ -8,9 +8,11 @@ components_DATA = \
 	Add.coffee \
 	BuilderAddFile.coffee \
 	ClutterInit.coffee \
+	ComponentLoader.coffee \
 	GetObject.coffee \
 	GetStage.coffee \
 	GetWidget.coffee \
+	GladeConstructorComponent.coffee \
 	Hide.coffee \
 	Init.coffee \
 	Main.coffee \
