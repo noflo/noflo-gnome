@@ -13,6 +13,7 @@ components_DATA = \
 	GioStreamClose.coffee \
 	GioStreamReadAll.coffee \
 	GLibSpawn.coffee \
+	ListenProperty.coffee \
 	ListenSignal.coffee \
 	Log.coffee \
 	MonitorProperty.coffee \

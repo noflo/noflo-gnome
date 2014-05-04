@@ -10,7 +10,6 @@
   ],
   "noflo": {
     "components": {
-      "ListenSignal": "ListenSignal.coffee",
       "GioFileMonitor": "GioFileMonitor.coffee",
       "GioFileLoadContent": "GioFileLoadContent.coffee",
       "GioFileWrite": "GioFileWrite.coffee",
@@ -19,6 +18,8 @@
       "GioStreamClose": "GioStreamClose.coffee",
       "GioStreamReadAll": "GioStreamReadAll.coffee",
       "GLibSpawn": "GLibSpawn.coffee",
+      "ListenProperty": "ListenProperty.coffee",
+      "ListenSignal": "ListenSignal.coffee",
       "Log": "Log.coffee",
       "MonitorProperty": "MonitorProperty.coffee",
       "RunGC": "RunGC.coffee"
