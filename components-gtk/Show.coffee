@@ -21,7 +21,7 @@ class Show extends noflo.Component
         required: no
 
     @all = false
-    @inPorts.all.on 'data', (@all) ->
+    @inPorts.all.on 'data', (@all) =>
     @inPorts.in.on 'data', (widget) =>
       if @all
         widget.show()
