@@ -38,7 +38,6 @@
       "CoglPipelineSetTexture": "CoglPipelineSetTexture.coffee",
       "CoglSnippet": "CoglSnippet.coffee",
       "CoglTexture": "CoglTexture.coffee",
-      "CoordsToVector": "CoordsToVector.coffee",
       "Init": "Init.coffee",
       "Main": "Main.coffee"
     }
