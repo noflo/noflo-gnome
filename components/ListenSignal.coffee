@@ -6,19 +6,21 @@ class ListenSignal extends noflo.Component
   icon: 'bolt'
   constructor: ->
     @inPorts = new noflo.InPorts
-      in:
+      object:
         datatype: 'object'
         description: 'Object instance to listen at'
+        required: yes
       signal:
         datatype: 'string'
         description: 'Signal to listen to'
+        required: yes
     @outPorts = new noflo.OutPorts
-      out:
-        datatype: 'bang'
-        description: 'Signal output'
+      object:
+        datatype: 'object'
+        description: 'Object instance to listen at'
         required: no
 
-    @inPorts.in.on 'data', (object) =>
+    @inPorts.object.on 'data', (object) =>
       @object = object
       @updateListener()
     @inPorts.signal.on 'data', (signal) =>
@@ -29,8 +31,8 @@ class ListenSignal extends noflo.Component
     return unless @object? and @signal?
     @disconnectListener()
     @listener = @object.connect @signal, Lang.bind @, () =>
-      @outPorts.out.send true
-      @outPorts.out.disconnect()
+      @outPorts.object.send true
+      @outPorts.object.disconnect()
 
   disconnectListener: () ->
     if @listener
