@@ -21,6 +21,7 @@
       "Init": "Init.coffee",
       "Main": "Main.coffee",
       "Pack": "Pack.coffee",
+      "Quit": "Quit.coffee",
       "Resize": "Resize.coffee",
       "Show": "Show.coffee"
     }
