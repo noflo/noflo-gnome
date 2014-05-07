@@ -6,8 +6,11 @@ let nextMainFunc = null;
 
 let start = function() {
     Mainloop.run('noflo-gnome');
-    if (nextMainFunc)
-        nextMainFunc();
+    while (nextMainFunc != null) {
+        let mainFunc = nextMainFunc;
+        nextMainFunc = null;
+        mainFunc();
+    }
 };
 
 let replaceMainloop = function(func) {
