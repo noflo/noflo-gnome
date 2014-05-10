@@ -20,11 +20,18 @@ let WebProtoRuntime = function(options) {
     this.send = function(protocol, topic, payload, context) {
         if (!this.connection)
             return;
-        this.connection.sendMessage(JSON.stringify({
-            protocol: protocol,
-            command: topic,
-            payload: payload,
-        }));
+        if (topic == 'error')
+            this.connection.sendMessage(JSON.stringify({
+                protocol: protocol,
+                command: topic,
+                payload: { message: payload.message },
+            }));
+        else
+            this.connection.sendMessage(JSON.stringify({
+                protocol: protocol,
+                command: topic,
+                payload: payload,
+            }));
     };
 };
 
