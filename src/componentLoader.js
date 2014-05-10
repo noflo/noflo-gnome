@@ -127,16 +127,16 @@ let ComponentLoader = function(options) {
         Mainloop.timeout_add(0, Lang.bind(this, function() {
             let modules = getModules(self.options.paths);
             self.components = {};
-            for (let i in modules) {
-                let module = modules[i];
-                for (let j in module.noflo.components) {
-                    let path = normalizeName(module.name + '/' + j);
-                    let requirePath = getComponentRequirePath(module, j);
-                    let fullPath = getComponentFullPath(module, j);
+            for (let moduleName in modules) {
+                let module = modules[moduleName];
+                for (let componentName in module.noflo.components) {
+                    let path = normalizeName(moduleName + '/' + componentName);
+                    let requirePath = getComponentRequirePath(module, componentName);
+                    let fullPath = getComponentFullPath(module, componentName);
                     self.components[path] = {
                         module: module,
-                        moduleName: normalizeName(module.name),
-                        name: j,
+                        moduleName: normalizeName(moduleName),
+                        name: componentName,
                         create: generateComponentInstance(requirePath),
                         getCode: generateComponentCodeLoader(fullPath),
                         language: Utils.guessLanguageFromFilename(fullPath),
