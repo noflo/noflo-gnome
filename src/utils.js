@@ -63,3 +63,9 @@ let forEachInDirectory = function(directory, callback) {
     }
     enumerator.close(null);
 };
+
+let guessLanguageFromFilename = function(filename) {
+    if (/.*\.coffee$/.test(filename))
+        return 'coffeescript';
+    return 'javascript';
+};

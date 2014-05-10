@@ -93,10 +93,20 @@ let ComponentLoader = function(options) {
         };
     };
 
+    let generateComponentCodeLoader = function(path) {
+        return function() {
+            let file = Gio.File.new_for_path(path);
+            let [, code] = file.load_contents(null);
+            return '' + code;
+        };
+    };
+
+    let getComponentFullPath = function(module, component) {
+        return module.path + '/' + module.noflo.components[component];
+    };
+
     let getComponentRequirePath = function(module, component) {
-        let path = module.path + '/' + module.noflo.components[component];
-        path = removeExtension(path);
-        return path;
+        return removeExtension(getComponentFullPath(module, component));
     };
 
     self.listComponents = function(callback) {
@@ -121,10 +131,16 @@ let ComponentLoader = function(options) {
                 let module = modules[i];
                 for (let j in module.noflo.components) {
                     let path = normalizeName(module.name + '/' + j);
+                    let requirePath = getComponentRequirePath(module, j);
+                    let fullPath = getComponentFullPath(module, j);
                     self.components[path] = {
-                        //module: module,
-                        //component: j,
-                        create: generateComponentInstance(getComponentRequirePath(module, j))
+                        module: module,
+                        moduleName: normalizeName(module.name),
+                        name: j,
+                        create: generateComponentInstance(requirePath),
+                        getCode: generateComponentCodeLoader(fullPath),
+                        language: Utils.guessLanguageFromFilename(fullPath),
+                        path: fullPath
                     };
                 }
 
@@ -163,7 +179,10 @@ let ComponentLoader = function(options) {
 
     self.registerComponent = function(packageId, name, cPath, callback) {
         self.components[packageId + '/' + name] = {
+            module: packageId,
+            name: name,
             create: cPath,
+            language: 'javascript'
         };
         log('registerComponent ' + packageId + ' / ' + name);
     };
@@ -177,6 +196,22 @@ let ComponentLoader = function(options) {
     };
 
     self.getSource = function(name, callback) {
-        log('getSource ' + name);
+        if (self.components[name].getCode) {
+            try {
+                callback(null,
+                         { name: self.components[name].name,
+                           library: self.components[name].moduleName,
+                           code: self.components[name].getCode(),
+                           language: self.components[name].language
+                         });
+            } catch (e) {
+                log('error loading ' + name + ' : ' + e.message);
+                callback(new Error("Cannot load source code for " +
+                                   name + " : " + e.message));
+            }
+        } else {
+            log('no source code for ' + name);
+            callback(new Error("No source code available for " + name));
+        }
     };
 };
