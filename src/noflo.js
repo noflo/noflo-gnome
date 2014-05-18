@@ -15,7 +15,12 @@ let NoFloContext = null;
 /* Require() "emulation" */
 
 let loadJavascriptFile = function(path) {
-    let module = imports[path];
+    let file = Gio.File.new_for_path(path + '.js');
+    let [, javascriptSource] = file.load_contents(null);
+
+    let module = eval('(function () { var exports = {};' +
+                      javascriptSource + '; return exports; })()');
+
     return module;
 };
 
