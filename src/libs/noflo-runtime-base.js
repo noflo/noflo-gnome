@@ -1478,7 +1478,7 @@ module.exports = (function(){
    *
    * http://pegjs.majda.cz/
    */
-
+  
   function quote(s) {
     /*
      * ECMA-262, 5th ed., 7.8.4: All characters may appear literally in a
@@ -1501,7 +1501,7 @@ module.exports = (function(){
       .replace(/[\x00-\x07\x0B\x0E-\x1F\x80-\uFFFF]/g, escape)
       + '"';
   }
-
+  
   var result = {
     /*
      * Parses the input with a generated parser. If the parsing is successfull,
@@ -1530,7 +1530,7 @@ module.exports = (function(){
         "_": parse__,
         "__": parse___
       };
-
+      
       if (startRule !== undefined) {
         if (parseFunctions[startRule] === undefined) {
           throw new Error("Invalid rule name: " + quote(startRule) + ".");
@@ -1538,28 +1538,28 @@ module.exports = (function(){
       } else {
         startRule = "start";
       }
-
+      
       var pos = 0;
       var reportFailures = 0;
       var rightmostFailuresPos = 0;
       var rightmostFailuresExpected = [];
-
+      
       function padLeft(input, padding, length) {
         var result = input;
-
+        
         var padLength = length - input.length;
         for (var i = 0; i < padLength; i++) {
           result = padding + result;
         }
-
+        
         return result;
       }
-
+      
       function escape(ch) {
         var charCode = ch.charCodeAt(0);
         var escapeChar;
         var length;
-
+        
         if (charCode <= 0xFF) {
           escapeChar = 'x';
           length = 2;
@@ -1567,27 +1567,27 @@ module.exports = (function(){
           escapeChar = 'u';
           length = 4;
         }
-
+        
         return '\\' + escapeChar + padLeft(charCode.toString(16).toUpperCase(), '0', length);
       }
-
+      
       function matchFailed(failure) {
         if (pos < rightmostFailuresPos) {
           return;
         }
-
+        
         if (pos > rightmostFailuresPos) {
           rightmostFailuresPos = pos;
           rightmostFailuresExpected = [];
         }
-
+        
         rightmostFailuresExpected.push(failure);
       }
-
+      
       function parse_start() {
         var result0, result1;
         var pos0;
-
+        
         pos0 = pos;
         result0 = [];
         result1 = parse_line();
@@ -1603,11 +1603,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_line() {
         var result0, result1, result2, result3, result4, result5, result6, result7, result8;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         result0 = parse__();
@@ -2143,11 +2143,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_LineTerminator() {
         var result0, result1, result2, result3;
         var pos0;
-
+        
         pos0 = pos;
         result0 = parse__();
         if (result0 !== null) {
@@ -2195,11 +2195,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_comment() {
         var result0, result1, result2, result3;
         var pos0;
-
+        
         pos0 = pos;
         result0 = parse__();
         if (result0 !== null) {
@@ -2235,11 +2235,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_connection() {
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         result0 = parse_bridge();
@@ -2292,11 +2292,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_bridge() {
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         result0 = parse_port();
@@ -2347,11 +2347,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_leftlet() {
         var result0, result1, result2;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         result0 = parse_node();
@@ -2410,11 +2410,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_iip() {
         var result0, result1, result2;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 39) {
@@ -2465,11 +2465,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_rightlet() {
         var result0, result1, result2;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         result0 = parse_port();
@@ -2528,11 +2528,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_node() {
         var result0, result1;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         if (/^[a-zA-Z0-9_]/.test(input.charAt(pos))) {
@@ -2582,11 +2582,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_component() {
         var result0, result1, result2, result3;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 40) {
@@ -2665,11 +2665,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_compMeta() {
         var result0, result1, result2;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 58) {
@@ -2726,11 +2726,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_port() {
         var result0, result1;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         if (/^[A-Z.0-9_]/.test(input.charAt(pos))) {
@@ -2779,11 +2779,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_portWithIndex() {
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         if (/^[A-Z.0-9_]/.test(input.charAt(pos))) {
@@ -2891,10 +2891,10 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_anychar() {
         var result0;
-
+        
         if (/^[^\n\r\u2028\u2029]/.test(input.charAt(pos))) {
           result0 = input.charAt(pos);
           pos++;
@@ -2906,11 +2906,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse_iipchar() {
         var result0, result1;
         var pos0, pos1;
-
+        
         pos0 = pos;
         pos1 = pos;
         if (/^[\\]/.test(input.charAt(pos))) {
@@ -2961,10 +2961,10 @@ module.exports = (function(){
         }
         return result0;
       }
-
+      
       function parse__() {
         var result0, result1;
-
+        
         result0 = [];
         if (input.charCodeAt(pos) === 32) {
           result1 = " ";
@@ -2990,10 +2990,10 @@ module.exports = (function(){
         result0 = result0 !== null ? result0 : "";
         return result0;
       }
-
+      
       function parse___() {
         var result0, result1;
-
+        
         if (input.charCodeAt(pos) === 32) {
           result1 = " ";
           pos++;
@@ -3022,11 +3022,11 @@ module.exports = (function(){
         }
         return result0;
       }
-
-
+      
+      
       function cleanupExpected(expected) {
         expected.sort();
-
+        
         var lastExpected = null;
         var cleanExpected = [];
         for (var i = 0; i < expected.length; i++) {
@@ -3037,7 +3037,7 @@ module.exports = (function(){
         }
         return cleanExpected;
       }
-
+      
       function computeErrorPosition() {
         /*
          * The first idea was to use |String.split| to break the input up to the
@@ -3045,11 +3045,11 @@ module.exports = (function(){
          * there. However IE's |split| implementation is so broken that it was
          * enough to prevent it.
          */
-
+        
         var line = 1;
         var column = 1;
         var seenCR = false;
-
+        
         for (var i = 0; i < Math.max(pos, rightmostFailuresPos); i++) {
           var ch = input.charAt(i);
           if (ch === "\n") {
@@ -3065,22 +3065,22 @@ module.exports = (function(){
             seenCR = false;
           }
         }
-
+        
         return { line: line, column: column };
       }
-
-
-        var parser, edges, nodes;
-
+      
+      
+        var parser, edges, nodes; 
+      
         parser = this;
         delete parser.exports;
         delete parser.inports;
         delete parser.outports;
-
+      
         edges = parser.edges = [];
-
+      
         nodes = {};
-
+      
         parser.addNode = function (nodeName, comp) {
           if (!nodes[nodeName]) {
             nodes[nodeName] = {}
@@ -3099,21 +3099,21 @@ module.exports = (function(){
             }
             nodes[nodeName].metadata=metadata;
           }
-
+         
         }
-
+      
         parser.getResult = function () {
           return {processes:nodes, connections:parser.processEdges(), exports:parser.exports, inports: parser.inports, outports: parser.outports};
-        }
-
+        }  
+      
         var flatten = function (array, isShallow) {
           var index = -1,
             length = array ? array.length : 0,
             result = [];
-
+      
           while (++index < length) {
             var value = array[index];
-
+      
             if (value instanceof Array) {
               Array.prototype.push.apply(result, isShallow ? value : flatten(value));
             }
@@ -3123,7 +3123,7 @@ module.exports = (function(){
           }
           return result;
         }
-
+        
         parser.registerExports = function (priv, pub) {
           if (!parser.exports) {
             parser.exports = [];
@@ -3142,21 +3142,21 @@ module.exports = (function(){
           }
           parser.outports[pub.toLowerCase()] = {process:node, port:port.toLowerCase()}
         }
-
+      
         parser.registerEdges = function (edges) {
-
+      
           edges.forEach(function (o, i) {
             parser.edges.push(o);
           });
-        }
-
-        parser.processEdges = function () {
+        }  
+      
+        parser.processEdges = function () {   
           var flats, grouped;
           flats = flatten(parser.edges);
           grouped = [];
           var current = {};
           flats.forEach(function (o, i) {
-            if (i % 2 !== 0) {
+            if (i % 2 !== 0) { 
               var pair = grouped[grouped.length - 1];
               pair.tgt = o.tgt;
               return;
@@ -3165,10 +3165,10 @@ module.exports = (function(){
           });
           return grouped;
         }
-
-
+      
+      
       var result = parseFunctions[startRule]();
-
+      
       /*
        * The parser is now in one of the following three states:
        *
@@ -3197,7 +3197,7 @@ module.exports = (function(){
         var offset = Math.max(pos, rightmostFailuresPos);
         var found = offset < input.length ? input.charAt(offset) : null;
         var errorPosition = computeErrorPosition();
-
+        
         throw new this.SyntaxError(
           cleanupExpected(rightmostFailuresExpected),
           found,
@@ -3206,20 +3206,20 @@ module.exports = (function(){
           errorPosition.column
         );
       }
-
+      
       return result;
     },
-
+    
     /* Returns the parser source code. */
     toSource: function() { return this._source; }
   };
-
+  
   /* Thrown when a parser encounters a syntax error. */
-
+  
   result.SyntaxError = function(expected, found, offset, line, column) {
     function buildMessage(expected, found) {
       var expectedHumanized, foundHumanized;
-
+      
       switch (expected.length) {
         case 0:
           expectedHumanized = "end of input";
@@ -3232,12 +3232,12 @@ module.exports = (function(){
             + " or "
             + expected[expected.length - 1];
       }
-
+      
       foundHumanized = found ? quote(found) : "end of input";
-
+      
       return "Expected " + expectedHumanized + " but " + foundHumanized + " found.";
     }
-
+    
     this.name = "SyntaxError";
     this.expected = expected;
     this.found = found;
@@ -3246,14 +3246,14 @@ module.exports = (function(){
     this.line = line;
     this.column = column;
   };
-
+  
   result.SyntaxError.prototype = Error.prototype;
-
+  
   return result;
 })();
 });
 require.register("noflo-noflo/component.json", function(exports, require, module){
-module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.5.0","dependencies":{"component/emitter":"*","component/underscore":"*","noflo/fbp":"*"},"remotes":["https://raw.githubusercontent.com"],"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/BasePort.coffee","src/lib/InPort.coffee","src/lib/OutPort.coffee","src/lib/Ports.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/lib/Platform.coffee","src/lib/Journal.coffee","src/lib/Utils.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.js"}}}');
+module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.5.2","dependencies":{"component/emitter":"*","component/underscore":"*","noflo/fbp":"*"},"remotes":["https://raw.githubusercontent.com"],"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/BasePort.coffee","src/lib/InPort.coffee","src/lib/OutPort.coffee","src/lib/Ports.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/lib/Platform.coffee","src/lib/Journal.coffee","src/lib/Utils.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.js"}}}');
 });
 require.register("noflo-noflo/src/lib/Graph.js", function(exports, require, module){
 var EventEmitter, Graph, clone, platform,
@@ -4451,7 +4451,7 @@ if (!require('./Platform').isBrowser()) {
   EventEmitter = require('emitter');
 }
 
-validTypes = ['all', 'string', 'number', 'int', 'object', 'array', 'boolean', 'color', 'date', 'bang'];
+validTypes = ['all', 'string', 'number', 'int', 'object', 'array', 'boolean', 'color', 'date', 'bang', 'function'];
 
 BasePort = (function(_super) {
   __extends(BasePort, _super);
@@ -4473,8 +4473,11 @@ BasePort = (function(_super) {
     if (options.required === void 0) {
       options.required = true;
     }
+    if (options.datatype === 'integer') {
+      options.datatype = 'int';
+    }
     if (validTypes.indexOf(options.datatype) === -1) {
-      throw new Error("Invalid port datatype '" + options.datatype + "' specified, valid are " + (validTypes.join(' ,')));
+      throw new Error("Invalid port datatype '" + options.datatype + "' specified, valid are " + (validTypes.join(', ')));
     }
     if (options.type && options.type.indexOf('/') === -1) {
       throw new Error("Invalid port type '" + options.type + "' specified. Should be URL or MIME type");
@@ -5067,6 +5070,9 @@ Port = (function(_super) {
     this.type = type;
     if (!this.type) {
       this.type = 'all';
+    }
+    if (this.type === 'integer') {
+      this.type = 'int';
     }
     this.sockets = [];
     this.from = null;
@@ -5995,6 +6001,9 @@ ComponentLoader = (function(_super) {
       if (implementation.getComponent && typeof implementation.getComponent === 'function') {
         instance = implementation.getComponent(metadata);
       } else {
+        if (typeof implementation !== 'function') {
+          throw new Error("Component " + name + " is npt loadable");
+        }
         instance = implementation(metadata);
       }
     }
@@ -6130,7 +6139,7 @@ ComponentLoader = (function(_super) {
     if (!this.ready) {
       this.listComponents((function(_this) {
         return function() {
-          return _this.getSource(packageId, name, callback);
+          return _this.getSource(name, callback);
         };
       })(this));
       return;
