@@ -48,7 +48,7 @@ const WebProtoServer = new Lang.Class({
         this.connection = null;
         this.runtime = new WebProtoRuntime({ connection: this,
                                              baseDir: '/noflo-runtime-base',
-                                             type: 'noflo-gnome', });
+                                             type: 'noflo-nodejs', });
 
         this.runtime.component.loaders = {
             '/noflo-runtime-base': new ComponentLoader({
