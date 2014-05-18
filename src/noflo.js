@@ -32,6 +32,16 @@ let loadCoffeescriptFile = function(path) {
     let module = eval('(function () { var exports = {};' +
                       javascriptSource + '; return exports; })()');
 
+
+    // Compilation cache
+    file = Gio.File.new_for_path(path + '.js');
+    log('writing ' + file.get_path());
+    file.replace_contents(javascriptSource,
+                          null,
+                          false,
+                          Gio.FileCreateFlags.NONE, null,
+                          null);
+
     return module;
 };
 
