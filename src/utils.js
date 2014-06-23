@@ -1,4 +1,5 @@
 const Gio = imports.gi.Gio;
+const Path = imports.path;
 
 let copy = function(obj2) {
     let ret = {}
@@ -64,8 +65,40 @@ let forEachInDirectory = function(directory, callback) {
     enumerator.close(null);
 };
 
+let buildPath = function(parent, child) {
+    return parent + '/' + child;
+};
+
+let resolvePath = function(virtualPath) {
+    let ret;
+    if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = Path.RESOURCE_DIR + '/' + ret[1];
+    else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = ret[1];
+    else
+        ret = virtualPath
+
+    //log('path : ' + virtualPath + ' ->  ' + ret);
+
+    return ret;
+};
+
+let resolveCachedPath = function(virtualPath) {
+    let ret;
+    if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = Path.CACHE_DIR + '/library/' + ret[1];
+    else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = Path.CACHE_DIR + '/local/' + ret[1]; // TODO: should be local
+    else
+        ret = virtualPath
+
+    //log('cached path : ' + virtualPath + ' ->  ' + ret);
+
+    return ret;
+};
+
 let guessLanguageFromFilename = function(filename) {
     if (/.*\.coffee$/.test(filename))
         return 'coffeescript';
     return 'javascript';
-};
+}

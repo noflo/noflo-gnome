@@ -1,12 +1,14 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
+const CodeLoader = imports.codeLoader;
 const Emulation = imports.emulation;
 const Path = imports.path;
 const Runtime = imports.runtime;
+const Utils = imports.utils;
 
 /* CoffeeScript compiler */
 
-const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
+//const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
 
 /**/
 
@@ -14,43 +16,12 @@ let NoFloContext = null;
 
 /* Require() "emulation" */
 
-let loadJavascriptFile = function(path) {
-    let file = Gio.File.new_for_path(path + '.js');
-    let [, javascriptSource] = file.load_contents(null);
-
-    let module = eval('(function () { var exports = {};' +
-                      javascriptSource + '; return exports; })()');
-
-    return module;
-};
-
-let loadCoffeescriptFile = function(path) {
-    let file = Gio.File.new_for_path(path + '.coffee');
-    let [, coffeeSource] = file.load_contents(null);
-    let javascriptSource = CoffeeScript.compile('' + coffeeSource,
-                                                { bare: true });
-    let module = eval('(function () { var exports = {};' +
-                      javascriptSource + '; return exports; })()');
-
-
-    // Compilation cache
-    file = Gio.File.new_for_path(path + '.js');
-    log('writing ' + file.get_path());
-    file.replace_contents(javascriptSource,
-                          null,
-                          false,
-                          Gio.FileCreateFlags.NONE, null,
-                          null);
-
-    return module;
-};
-
-let loadFile = function(path) {
-    if (GLib.file_test(path + '.js', GLib.FileTest.IS_REGULAR))
-        return loadJavascriptFile(path);
-    if (GLib.file_test(path + '.coffee', GLib.FileTest.IS_REGULAR))
-        return loadCoffeescriptFile(path);
-    throw new Error("Can't load " + path);
+let loadFile = function(vpath) {
+    if (GLib.file_test(Utils.resolvePath(vpath + '.js'), GLib.FileTest.IS_REGULAR))
+        return CodeLoader.loadJavascript(vpath);
+    if (GLib.file_test(Utils.resolvePath(vpath + '.coffee'), GLib.FileTest.IS_REGULAR))
+        return CodeLoader.loadCoffeescript(vpath);
+    throw new Error("Can't load " + vpath);
 };
 
 let require = function(arg) {

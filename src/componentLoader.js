@@ -6,7 +6,9 @@ const Utils = imports.utils;
 
 /* Module listing */
 
-let getModuleAtPath = function(path) {
+let getModuleAtPath = function(vpath) {
+    let path = Utils.resolvePath(vpath);
+
     if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
         return null;
 
@@ -19,28 +21,31 @@ let getModuleAtPath = function(path) {
     let manifest;
 
     try {
-        manifest = JSON.parse('' + manifestContent);
-        manifest.path = path;
+        module = JSON.parse('' + manifestContent);
+        module.vpath = vpath;
+        module.path = path;
     } catch (e) {
         return null;
     }
 
     /* Quick sanity check */
-    if (!manifest.name ||
-        !manifest.noflo)
+    if (!module.name ||
+        !module.noflo)
         return null;
 
-    return manifest;
+    return module;
 };
 
-let getModulesInPath = function(path) {
+let getModulesInPath = function(vpath) {
     let modules = {};
+    let path = Utils.resolvePath(vpath);
 
     if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
         return modules;
 
     Utils.forEachInDirectory(Gio.File.new_for_path(path), function(child) {
-        let module = getModuleAtPath(child.get_path());
+        let module = getModuleAtPath(Utils.buildPath(vpath,
+                                                     child.get_basename()));
 
         if (module)
             modules[module.name] = module;
@@ -102,7 +107,7 @@ let ComponentLoader = function(options) {
     };
 
     let getComponentFullPath = function(module, component) {
-        return module.path + '/' + module.noflo.components[component];
+        return module.vpath + '/' + module.noflo.components[component];
     };
 
     let getComponentRequirePath = function(module, component) {
@@ -145,7 +150,7 @@ let ComponentLoader = function(options) {
                 }
 
                 if (module.noflo.loader) {
-                    let path = module.path + '/' + module.noflo.loader;
+                    let path = module.vpath + '/' + module.noflo.loader;
                     path = removeExtension(path);
                     let loader = require(path);
                     loader(self);
