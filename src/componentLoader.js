@@ -100,7 +100,7 @@ let ComponentLoader = function(options) {
 
     let generateComponentCodeLoader = function(path) {
         return function() {
-            let file = Gio.File.new_for_path(path);
+            let file = Gio.File.new_for_path(Utils.resolvePath(path));
             let [, code] = file.load_contents(null);
             return '' + code;
         };
