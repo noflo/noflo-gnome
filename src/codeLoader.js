@@ -3,6 +3,8 @@ const Utils = imports.utils;
 
 const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
 
+// from: GFile
+// to: GFile
 let compileFile = function(to, from) {
     let [, coffeeSource] = from.load_contents(null);
     let javascriptSource = CoffeeScript.compile('' + coffeeSource,
