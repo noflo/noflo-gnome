@@ -1,3 +1,4 @@
 - Imports graphs from libraries
 - More robust libraries loading
-- Caching coffeescript
+- Add manifest file
+- Package graphs/components/assets into application bundles
