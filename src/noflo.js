@@ -6,9 +6,6 @@ const Path = imports.path;
 const Runtime = imports.runtime;
 const Utils = imports.utils;
 
-/* CoffeeScript compiler */
-//const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
-
 /**/
 
 let NoFloContext = null;
