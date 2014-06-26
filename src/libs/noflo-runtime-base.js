@@ -1,4 +1,3 @@
-var node_require = require;
 
 /**
  * Require the given path.
@@ -8,12 +7,18 @@ var node_require = require;
  * @api public
  */
 
-var require = function(path, parent, orig) {
+function require(path, parent, orig) {
   var resolved = require.resolve(path);
 
   // lookup failed
   if (null == resolved) {
-    return node_require(path);
+    orig = orig || path;
+    parent = parent || 'root';
+    var err = new Error('Failed to require "' + orig + '" from "' + parent + '"');
+    err.path = orig;
+    err.parent = parent;
+    err.require = true;
+    throw err;
   }
 
   var module = require.modules[resolved];
@@ -71,7 +76,7 @@ require.resolve = function(path) {
     path + '/index.json'
   ];
 
-  for (var i = 0, len = paths.length; i < len; i++) {
+  for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
     if (require.modules.hasOwnProperty(path)) return path;
     if (require.aliases.hasOwnProperty(path)) return require.aliases[path];
@@ -95,7 +100,7 @@ require.normalize = function(curr, path) {
   curr = curr.split('/');
   path = path.split('/');
 
-  for (var i = 0, len = path.length; i < len; ++i) {
+  for (var i = 0; i < path.length; ++i) {
     if ('..' == path[i]) {
       curr.pop();
     } else if ('.' != path[i] && '' != path[i]) {
@@ -161,11 +166,8 @@ require.relative = function(parent) {
    */
 
   function localRequire(path) {
-    var resolved = require.resolve(localRequire.resolve(path));
-    if (resolved && require.modules.hasOwnProperty(resolved)) {
-      return require(resolved, parent, path);
-    }
-    return require(path);
+    var resolved = localRequire.resolve(path);
+    return require(resolved, parent, path);
   }
 
   /**
@@ -197,13 +199,13 @@ require.relative = function(parent) {
 
   return localRequire;
 };
-require.register("component-emitter/index.js", function(exports, require, module){
+require.register("bergie-emitter/index.js", function(exports, require, module){
 
 /**
  * Expose `Emitter`.
  */
 
-module.exports = Emitter;
+module.exports.EventEmitter = Emitter;
 
 /**
  * Initialize a new `Emitter`.
@@ -364,21 +366,18 @@ Emitter.prototype.hasListeners = function(event){
 };
 
 });
-require.register("component-underscore/index.js", function(exports, require, module){
-//     Underscore.js 1.3.3
-//     (c) 2009-2012 Jeremy Ashkenas, DocumentCloud Inc.
-//     Underscore is freely distributable under the MIT license.
-//     Portions of Underscore are inspired or borrowed from Prototype,
-//     Oliver Steele's Functional, and John Resig's Micro-Templating.
-//     For all details and documentation:
-//     http://documentcloud.github.com/underscore
+require.register("jashkenas-underscore/underscore.js", function(exports, require, module){
+//     Underscore.js 1.6.0
+//     http://underscorejs.org
+//     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+//     Underscore may be freely distributed under the MIT license.
 
 (function() {
 
   // Baseline setup
   // --------------
 
-  // Establish the root object, `window` in the browser, or `global` on the server.
+  // Establish the root object, `window` in the browser, or `exports` on the server.
   var root = this;
 
   // Save the previous value of the `_` variable.
@@ -391,30 +390,26 @@ require.register("component-underscore/index.js", function(exports, require, mod
   var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
 
   // Create quick reference variables for speed access to core prototypes.
-  var push             = ArrayProto.push,
-      slice            = ArrayProto.slice,
-      unshift          = ArrayProto.unshift,
-      toString         = ObjProto.toString,
-      hasOwnProperty   = ObjProto.hasOwnProperty;
+  var
+    push             = ArrayProto.push,
+    slice            = ArrayProto.slice,
+    concat           = ArrayProto.concat,
+    toString         = ObjProto.toString,
+    hasOwnProperty   = ObjProto.hasOwnProperty;
 
   // All **ECMAScript 5** native function implementations that we hope to use
   // are declared here.
   var
-    nativeForEach      = ArrayProto.forEach,
-    nativeMap          = ArrayProto.map,
-    nativeReduce       = ArrayProto.reduce,
-    nativeReduceRight  = ArrayProto.reduceRight,
-    nativeFilter       = ArrayProto.filter,
-    nativeEvery        = ArrayProto.every,
-    nativeSome         = ArrayProto.some,
-    nativeIndexOf      = ArrayProto.indexOf,
-    nativeLastIndexOf  = ArrayProto.lastIndexOf,
     nativeIsArray      = Array.isArray,
     nativeKeys         = Object.keys,
     nativeBind         = FuncProto.bind;
 
   // Create a safe reference to the Underscore object for use below.
-  var _ = function(obj) { return new wrapper(obj); };
+  var _ = function(obj) {
+    if (obj instanceof _) return obj;
+    if (!(this instanceof _)) return new _(obj);
+    this._wrapped = obj;
+  };
 
   // Export the Underscore object for **Node.js**, with
   // backwards-compatibility for the old `require()` API. If we're in
@@ -426,87 +421,125 @@ require.register("component-underscore/index.js", function(exports, require, mod
     }
     exports._ = _;
   } else {
-    root['_'] = _;
+    root._ = _;
   }
 
   // Current version.
-  _.VERSION = '1.3.3';
+  _.VERSION = '1.6.0';
+
+  // Internal function: creates a callback bound to its context if supplied
+  var createCallback = function(func, context, argCount) {
+    if (context === void 0) return func;
+    switch (argCount == null ? 3 : argCount) {
+      case 1: return function(value) {
+        return func.call(context, value);
+      };
+      case 2: return function(value, other) {
+        return func.call(context, value, other);
+      };
+      case 3: return function(value, index, collection) {
+        return func.call(context, value, index, collection);
+      };
+      case 4: return function(accumulator, value, index, collection) {
+        return func.call(context, accumulator, value, index, collection);
+      };
+    }
+    return function() {
+      return func.apply(context, arguments);
+    };
+  };
+
+  // An internal function to generate lookup iterators.
+  var lookupIterator = function(value, context, argCount) {
+    if (value == null) return _.identity;
+    if (_.isFunction(value)) return createCallback(value, context, argCount);
+    if (_.isObject(value)) return _.matches(value);
+    return _.property(value);
+  };
 
   // Collection Functions
   // --------------------
 
   // The cornerstone, an `each` implementation, aka `forEach`.
-  // Handles objects with the built-in `forEach`, arrays, and raw objects.
-  // Delegates to **ECMAScript 5**'s native `forEach` if available.
-  var each = _.each = _.forEach = function(obj, iterator, context) {
-    if (obj == null) return;
-    if (nativeForEach && obj.forEach === nativeForEach) {
-      obj.forEach(iterator, context);
-    } else if (obj.length === +obj.length) {
-      for (var i = 0, l = obj.length; i < l; i++) {
-        if (iterator.call(context, obj[i], i, obj) === breaker) return;
+  // Handles raw objects in addition to array-likes. Treats all
+  // sparse array-likes as if they were dense.
+  _.each = _.forEach = function(obj, iterator, context) {
+    var i, length;
+    if (obj == null) return obj;
+    iterator = createCallback(iterator, context);
+    if (obj.length === +obj.length) {
+      for (i = 0, length = obj.length; i < length; i++) {
+        if (iterator(obj[i], i, obj) === breaker) break;
       }
     } else {
-      for (var key in obj) {
-        if (_.has(obj, key)) {
-          if (iterator.call(context, obj[key], key, obj) === breaker) return;
-        }
+      var keys = _.keys(obj);
+      for (i = 0, length = keys.length; i < length; i++) {
+        if (iterator(obj[keys[i]], keys[i], obj) === breaker) break;
       }
     }
+    return obj;
   };
 
   // Return the results of applying the iterator to each element.
-  // Delegates to **ECMAScript 5**'s native `map` if available.
   _.map = _.collect = function(obj, iterator, context) {
     var results = [];
     if (obj == null) return results;
-    if (nativeMap && obj.map === nativeMap) return obj.map(iterator, context);
-    each(obj, function(value, index, list) {
-      results[results.length] = iterator.call(context, value, index, list);
+    iterator = lookupIterator(iterator, context);
+    _.each(obj, function(value, index, list) {
+      results.push(iterator(value, index, list));
     });
     return results;
   };
 
+  var reduceError = 'Reduce of empty array with no initial value';
+
   // **Reduce** builds up a single result from a list of values, aka `inject`,
-  // or `foldl`. Delegates to **ECMAScript 5**'s native `reduce` if available.
+  // or `foldl`.
   _.reduce = _.foldl = _.inject = function(obj, iterator, memo, context) {
     var initial = arguments.length > 2;
     if (obj == null) obj = [];
-    if (nativeReduce && obj.reduce === nativeReduce) {
-      if (context) iterator = _.bind(iterator, context);
-      return initial ? obj.reduce(iterator, memo) : obj.reduce(iterator);
-    }
-    each(obj, function(value, index, list) {
+    iterator = createCallback(iterator, context, 4);
+    _.each(obj, function(value, index, list) {
       if (!initial) {
         memo = value;
         initial = true;
       } else {
-        memo = iterator.call(context, memo, value, index, list);
+        memo = iterator(memo, value, index, list);
       }
     });
-    if (!initial) throw new TypeError('Reduce of empty array with no initial value');
+    if (!initial) throw TypeError(reduceError);
     return memo;
   };
 
   // The right-associative version of reduce, also known as `foldr`.
-  // Delegates to **ECMAScript 5**'s native `reduceRight` if available.
   _.reduceRight = _.foldr = function(obj, iterator, memo, context) {
     var initial = arguments.length > 2;
     if (obj == null) obj = [];
-    if (nativeReduceRight && obj.reduceRight === nativeReduceRight) {
-      if (context) iterator = _.bind(iterator, context);
-      return initial ? obj.reduceRight(iterator, memo) : obj.reduceRight(iterator);
+    var length = obj.length;
+    iterator = createCallback(iterator, context, 4);
+    if (length !== +length) {
+      var keys = _.keys(obj);
+      length = keys.length;
     }
-    var reversed = _.toArray(obj).reverse();
-    if (context && !initial) iterator = _.bind(iterator, context);
-    return initial ? _.reduce(reversed, iterator, memo, context) : _.reduce(reversed, iterator);
+    _.each(obj, function(value, index, list) {
+      index = keys ? keys[--length] : --length;
+      if (!initial) {
+        memo = obj[index];
+        initial = true;
+      } else {
+        memo = iterator(memo, obj[index], index, list);
+      }
+    });
+    if (!initial) throw TypeError(reduceError);
+    return memo;
   };
 
   // Return the first value which passes a truth test. Aliased as `detect`.
-  _.find = _.detect = function(obj, iterator, context) {
+  _.find = _.detect = function(obj, predicate, context) {
     var result;
-    any(obj, function(value, index, list) {
-      if (iterator.call(context, value, index, list)) {
+    predicate = lookupIterator(predicate, context);
+    _.some(obj, function(value, index, list) {
+      if (predicate(value, index, list)) {
         result = value;
         return true;
       }
@@ -515,198 +548,243 @@ require.register("component-underscore/index.js", function(exports, require, mod
   };
 
   // Return all the elements that pass a truth test.
-  // Delegates to **ECMAScript 5**'s native `filter` if available.
   // Aliased as `select`.
-  _.filter = _.select = function(obj, iterator, context) {
+  _.filter = _.select = function(obj, predicate, context) {
     var results = [];
     if (obj == null) return results;
-    if (nativeFilter && obj.filter === nativeFilter) return obj.filter(iterator, context);
-    each(obj, function(value, index, list) {
-      if (iterator.call(context, value, index, list)) results[results.length] = value;
+    predicate = lookupIterator(predicate, context);
+    _.each(obj, function(value, index, list) {
+      if (predicate(value, index, list)) results.push(value);
     });
     return results;
   };
 
   // Return all the elements for which a truth test fails.
-  _.reject = function(obj, iterator, context) {
-    var results = [];
-    if (obj == null) return results;
-    each(obj, function(value, index, list) {
-      if (!iterator.call(context, value, index, list)) results[results.length] = value;
-    });
-    return results;
+  _.reject = function(obj, predicate, context) {
+    return _.filter(obj, _.negate(lookupIterator(predicate)), context);
   };
 
   // Determine whether all of the elements match a truth test.
-  // Delegates to **ECMAScript 5**'s native `every` if available.
   // Aliased as `all`.
-  _.every = _.all = function(obj, iterator, context) {
+  _.every = _.all = function(obj, predicate, context) {
     var result = true;
     if (obj == null) return result;
-    if (nativeEvery && obj.every === nativeEvery) return obj.every(iterator, context);
-    each(obj, function(value, index, list) {
-      if (!(result = result && iterator.call(context, value, index, list))) return breaker;
+    predicate = lookupIterator(predicate, context);
+    _.each(obj, function(value, index, list) {
+      result = predicate(value, index, list);
+      if (!result) return breaker;
     });
     return !!result;
   };
 
   // Determine if at least one element in the object matches a truth test.
-  // Delegates to **ECMAScript 5**'s native `some` if available.
   // Aliased as `any`.
-  var any = _.some = _.any = function(obj, iterator, context) {
-    iterator || (iterator = _.identity);
+  _.some = _.any = function(obj, predicate, context) {
     var result = false;
     if (obj == null) return result;
-    if (nativeSome && obj.some === nativeSome) return obj.some(iterator, context);
-    each(obj, function(value, index, list) {
-      if (result || (result = iterator.call(context, value, index, list))) return breaker;
+    predicate = lookupIterator(predicate, context);
+    _.each(obj, function(value, index, list) {
+      result = predicate(value, index, list);
+      if (result) return breaker;
     });
     return !!result;
   };
 
-  // Determine if a given value is included in the array or object using `===`.
-  // Aliased as `contains`.
-  _.include = _.contains = function(obj, target) {
-    var found = false;
-    if (obj == null) return found;
-    if (nativeIndexOf && obj.indexOf === nativeIndexOf) return obj.indexOf(target) != -1;
-    found = any(obj, function(value) {
-      return value === target;
-    });
-    return found;
+  // Determine if the array or object contains a given value (using `===`).
+  // Aliased as `include`.
+  _.contains = _.include = function(obj, target) {
+    if (obj == null) return false;
+    if (obj.length !== +obj.length) obj = _.values(obj);
+    return _.indexOf(obj, target) >= 0;
   };
 
   // Invoke a method (with arguments) on every item in a collection.
   _.invoke = function(obj, method) {
     var args = slice.call(arguments, 2);
+    var isFunc = _.isFunction(method);
     return _.map(obj, function(value) {
-      return (_.isFunction(method) ? method : value[method]).apply(value, args);
+      return (isFunc ? method : value[method]).apply(value, args);
     });
   };
 
   // Convenience version of a common use case of `map`: fetching a property.
   _.pluck = function(obj, key) {
-    return _.map(obj, function(value){ return value[key]; });
+    return _.map(obj, _.property(key));
   };
 
-  // Return the maximum element or (element-based computation).
-  // Can't optimize arrays of integers longer than 65,535 elements.
-  // See: https://bugs.webkit.org/show_bug.cgi?id=80797
+  // Convenience version of a common use case of `filter`: selecting only objects
+  // containing specific `key:value` pairs.
+  _.where = function(obj, attrs) {
+    return _.filter(obj, _.matches(attrs));
+  };
+
+  // Convenience version of a common use case of `find`: getting the first object
+  // containing specific `key:value` pairs.
+  _.findWhere = function(obj, attrs) {
+    return _.find(obj, _.matches(attrs));
+  };
+
+  // Return the maximum element (or element-based computation).
   _.max = function(obj, iterator, context) {
-    if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
-      return Math.max.apply(Math, obj);
+    var result = -Infinity, lastComputed = -Infinity,
+        value, computed;
+    if (!iterator && _.isArray(obj)) {
+      for (var i = 0, length = obj.length; i < length; i++) {
+        value = obj[i];
+        if (value > result) {
+          result = value;
+        }
+      }
+    } else {
+      iterator = lookupIterator(iterator, context);
+      _.each(obj, function(value, index, list) {
+        computed = iterator(value, index, list);
+        if (computed > lastComputed || computed === -Infinity && result === -Infinity) {
+          result = value;
+          lastComputed = computed;
+        }
+      });
     }
-    if (!iterator && _.isEmpty(obj)) return -Infinity;
-    var result = {computed : -Infinity};
-    each(obj, function(value, index, list) {
-      var computed = iterator ? iterator.call(context, value, index, list) : value;
-      computed >= result.computed && (result = {value : value, computed : computed});
-    });
-    return result.value;
+    return result;
   };
 
   // Return the minimum element (or element-based computation).
   _.min = function(obj, iterator, context) {
-    if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
-      return Math.min.apply(Math, obj);
+    var result = Infinity, lastComputed = Infinity,
+        value, computed;
+    if (!iterator && _.isArray(obj)) {
+      for (var i = 0, length = obj.length; i < length; i++) {
+        value = obj[i];
+        if (value < result) {
+          result = value;
+        }
+      }
+    } else {
+      iterator = lookupIterator(iterator, context);
+      _.each(obj, function(value, index, list) {
+        computed = iterator(value, index, list);
+        if (computed < lastComputed || computed === Infinity && result === Infinity) {
+          result = value;
+          lastComputed = computed;
+        }
+      });
     }
-    if (!iterator && _.isEmpty(obj)) return Infinity;
-    var result = {computed : Infinity};
-    each(obj, function(value, index, list) {
-      var computed = iterator ? iterator.call(context, value, index, list) : value;
-      computed < result.computed && (result = {value : value, computed : computed});
-    });
-    return result.value;
+    return result;
   };
 
-  // Shuffle an array.
+  // Shuffle an array, using the modern version of the
+  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
   _.shuffle = function(obj) {
     var rand;
     var index = 0;
     var shuffled = [];
-    each(obj, function(value) {
-      rand = Math.floor(Math.random() * ++index);
+    _.each(obj, function(value) {
+      rand = _.random(index++);
       shuffled[index - 1] = shuffled[rand];
       shuffled[rand] = value;
     });
     return shuffled;
   };
 
+  // Sample **n** random values from a collection.
+  // If **n** is not specified, returns a single random element.
+  // The internal `guard` argument allows it to work with `map`.
+  _.sample = function(obj, n, guard) {
+    if (n == null || guard) {
+      if (obj.length !== +obj.length) obj = _.values(obj);
+      return obj[_.random(obj.length - 1)];
+    }
+    return _.shuffle(obj).slice(0, Math.max(0, n));
+  };
+
   // Sort the object's values by a criterion produced by an iterator.
-  _.sortBy = function(obj, val, context) {
-    var iterator = lookupIterator(obj, val);
+  _.sortBy = function(obj, iterator, context) {
+    iterator = lookupIterator(iterator, context);
     return _.pluck(_.map(obj, function(value, index, list) {
       return {
-        value : value,
-        criteria : iterator.call(context, value, index, list)
+        value: value,
+        index: index,
+        criteria: iterator(value, index, list)
       };
     }).sort(function(left, right) {
-      var a = left.criteria, b = right.criteria;
-      if (a === void 0) return 1;
-      if (b === void 0) return -1;
-      return a < b ? -1 : a > b ? 1 : 0;
+      var a = left.criteria;
+      var b = right.criteria;
+      if (a !== b) {
+        if (a > b || a === void 0) return 1;
+        if (a < b || b === void 0) return -1;
+      }
+      return left.index - right.index;
     }), 'value');
   };
 
-  // An internal function to generate lookup iterators.
-  var lookupIterator = function(obj, val) {
-    return _.isFunction(val) ? val : function(obj) { return obj[val]; };
-  };
-
   // An internal function used for aggregate "group by" operations.
-  var group = function(obj, val, behavior) {
-    var result = {};
-    var iterator = lookupIterator(obj, val);
-    each(obj, function(value, index) {
-      var key = iterator(value, index);
-      behavior(result, key, value);
-    });
-    return result;
+  var group = function(behavior) {
+    return function(obj, iterator, context) {
+      var result = {};
+      iterator = lookupIterator(iterator, context);
+      _.each(obj, function(value, index) {
+        var key = iterator(value, index, obj);
+        behavior(result, value, key);
+      });
+      return result;
+    };
   };
 
   // Groups the object's values by a criterion. Pass either a string attribute
   // to group by, or a function that returns the criterion.
-  _.groupBy = function(obj, val) {
-    return group(obj, val, function(result, key, value) {
-      (result[key] || (result[key] = [])).push(value);
-    });
-  };
+  _.groupBy = group(function(result, value, key) {
+    if (_.has(result, key)) result[key].push(value); else result[key] = [value];
+  });
+
+  // Indexes the object's values by a criterion, similar to `groupBy`, but for
+  // when you know that your index values will be unique.
+  _.indexBy = group(function(result, value, key) {
+    result[key] = value;
+  });
 
   // Counts instances of an object that group by a certain criterion. Pass
   // either a string attribute to count by, or a function that returns the
   // criterion.
-  _.countBy = function(obj, val) {
-    return group(obj, val, function(result, key, value) {
-      result[key] || (result[key] = 0);
-      result[key]++;
-    });
-  };
+  _.countBy = group(function(result, value, key) {
+    if (_.has(result, key)) result[key]++; else result[key] = 1;
+  });
 
   // Use a comparator function to figure out the smallest index at which
   // an object should be inserted so as to maintain order. Uses binary search.
-  _.sortedIndex = function(array, obj, iterator) {
-    iterator || (iterator = _.identity);
+  _.sortedIndex = function(array, obj, iterator, context) {
+    iterator = lookupIterator(iterator, context, 1);
     var value = iterator(obj);
     var low = 0, high = array.length;
     while (low < high) {
-      var mid = (low + high) >> 1;
-      iterator(array[mid]) < value ? low = mid + 1 : high = mid;
+      var mid = (low + high) >>> 1;
+      if (iterator(array[mid]) < value) low = mid + 1; else high = mid;
     }
     return low;
   };
 
-  // Safely convert anything iterable into a real, live array.
+  // Safely create a real, live array from anything iterable.
   _.toArray = function(obj) {
-    if (!obj)                                     return [];
-    if (_.isArray(obj))                           return slice.call(obj);
-    if (_.isArguments(obj))                       return slice.call(obj);
-    if (obj.toArray && _.isFunction(obj.toArray)) return obj.toArray();
+    if (!obj) return [];
+    if (_.isArray(obj)) return slice.call(obj);
+    if (obj.length === +obj.length) return _.map(obj, _.identity);
     return _.values(obj);
   };
 
   // Return the number of elements in an object.
   _.size = function(obj) {
-    return _.isArray(obj) ? obj.length : _.keys(obj).length;
+    if (obj == null) return 0;
+    return obj.length === +obj.length ? obj.length : _.keys(obj).length;
+  };
+
+  // Split a collection into two arrays: one whose elements all satisfy the given
+  // predicate, and one whose elements all do not satisfy the predicate.
+  _.partition = function(obj, predicate, context) {
+    predicate = lookupIterator(predicate, context);
+    var pass = [], fail = [];
+    _.each(obj, function(value, key, obj) {
+      (predicate(value, key, obj) ? pass : fail).push(value);
+    });
+    return [pass, fail];
   };
 
   // Array Functions
@@ -716,7 +794,10 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // values in the array. Aliased as `head` and `take`. The **guard** check
   // allows it to work with `_.map`.
   _.first = _.head = _.take = function(array, n, guard) {
-    return (n != null) && !guard ? slice.call(array, 0, n) : array[0];
+    if (array == null) return void 0;
+    if (n == null || guard) return array[0];
+    if (n < 0) return [];
+    return slice.call(array, 0, n);
   };
 
   // Returns everything but the last entry of the array. Especially useful on
@@ -724,47 +805,51 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // the array, excluding the last N. The **guard** check allows it to work with
   // `_.map`.
   _.initial = function(array, n, guard) {
-    return slice.call(array, 0, array.length - ((n == null) || guard ? 1 : n));
+    return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
   };
 
   // Get the last element of an array. Passing **n** will return the last N
   // values in the array. The **guard** check allows it to work with `_.map`.
   _.last = function(array, n, guard) {
-    if ((n != null) && !guard) {
-      return slice.call(array, Math.max(array.length - n, 0));
-    } else {
-      return array[array.length - 1];
-    }
+    if (array == null) return void 0;
+    if (n == null || guard) return array[array.length - 1];
+    return slice.call(array, Math.max(array.length - n, 0));
   };
 
-  // Returns everything but the first entry of the array. Aliased as `tail`.
-  // Especially useful on the arguments object. Passing an **index** will return
-  // the rest of the values in the array from that index onward. The **guard**
+  // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+  // Especially useful on the arguments object. Passing an **n** will return
+  // the rest N values in the array. The **guard**
   // check allows it to work with `_.map`.
-  _.rest = _.tail = function(array, index, guard) {
-    return slice.call(array, (index == null) || guard ? 1 : index);
+  _.rest = _.tail = _.drop = function(array, n, guard) {
+    return slice.call(array, n == null || guard ? 1 : n);
   };
 
   // Trim out all falsy values from an array.
   _.compact = function(array) {
-    return _.filter(array, function(value){ return !!value; });
+    return _.filter(array, _.identity);
   };
 
   // Internal implementation of a recursive `flatten` function.
-  var flatten = function(input, shallow, output) {
-    each(input, function(value) {
-      if (_.isArray(value)) {
-        shallow ? push.apply(output, value) : flatten(value, shallow, output);
+  var flatten = function(input, shallow, strict, output) {
+    if (shallow && _.every(input, _.isArray)) {
+      return concat.apply(output, input);
+    }
+    for (var i = 0, length = input.length; i < length; i++) {
+      var value = input[i];
+      if (!_.isArray(value) && !_.isArguments(value)) {
+        if (!strict) output.push(value);
+      } else if (shallow) {
+        push.apply(output, value);
       } else {
-        output.push(value);
+        flatten(value, shallow, strict, output);
       }
-    });
+    }
     return output;
   };
 
-  // Return a completely flattened version of an array.
+  // Flatten out an array, either recursively (by default), or just one level.
   _.flatten = function(array, shallow) {
-    return flatten(array, shallow, []);
+    return flatten(array, shallow, false, []);
   };
 
   // Return a version of the array that does not contain the specified value(s).
@@ -775,89 +860,114 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // Produce a duplicate-free version of the array. If the array has already
   // been sorted, you have the option of using a faster algorithm.
   // Aliased as `unique`.
-  _.uniq = _.unique = function(array, isSorted, iterator) {
-    var initial = iterator ? _.map(array, iterator) : array;
-    var results = [];
-    _.reduce(initial, function(memo, value, index) {
-      if (isSorted ? (_.last(memo) !== value || !memo.length) : !_.include(memo, value)) {
-        memo.push(value);
-        results.push(array[index]);
+  _.uniq = _.unique = function(array, isSorted, iterator, context) {
+    if (array == null) return [];
+    if (_.isFunction(isSorted)) {
+      context = iterator;
+      iterator = isSorted;
+      isSorted = false;
+    }
+    if (iterator) iterator = lookupIterator(iterator, context);
+    var result = [];
+    var seen = [];
+    for (var i = 0, length = array.length; i < length; i++) {
+      var value = array[i];
+      if (iterator) value = iterator(value, i, array);
+      if (isSorted ? !i || seen !== value : !_.contains(seen, value)) {
+        if (isSorted) seen = value;
+        else seen.push(value);
+        result.push(array[i]);
       }
-      return memo;
-    }, []);
-    return results;
+    }
+    return result;
   };
 
   // Produce an array that contains the union: each distinct element from all of
   // the passed-in arrays.
   _.union = function() {
-    return _.uniq(flatten(arguments, true, []));
+    return _.uniq(flatten(arguments, true, true, []));
   };
 
   // Produce an array that contains every item shared between all the
   // passed-in arrays.
   _.intersection = function(array) {
-    var rest = slice.call(arguments, 1);
-    return _.filter(_.uniq(array), function(item) {
-      return _.every(rest, function(other) {
-        return _.indexOf(other, item) >= 0;
-      });
-    });
+    if (array == null) return [];
+    var result = [];
+    var argsLength = arguments.length;
+    for (var i = 0, length = array.length; i < length; i++) {
+      var item = array[i];
+      if (_.contains(result, item)) continue;
+      for (var j = 1; j < argsLength; j++) {
+        if (!_.contains(arguments[j], item)) break;
+      }
+      if (j === argsLength) result.push(item);
+    }
+    return result;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
-    var rest = flatten(slice.call(arguments, 1), true, []);
-    return _.filter(array, function(value){ return !_.include(rest, value); });
+    var rest = flatten(slice.call(arguments, 1), true, true, []);
+    return _.filter(array, function(value){
+      return !_.contains(rest, value);
+    });
   };
 
   // Zip together multiple lists into a single array -- elements that share
   // an index go together.
-  _.zip = function() {
-    var args = slice.call(arguments);
-    var length = _.max(_.pluck(args, 'length'));
-    var results = new Array(length);
+  _.zip = function(array) {
+    if (array == null) return [];
+    var length = _.max(arguments, 'length').length;
+    var results = Array(length);
     for (var i = 0; i < length; i++) {
-      results[i] = _.pluck(args, "" + i);
+      results[i] = _.pluck(arguments, i);
     }
     return results;
   };
 
-  // Zip together two arrays -- an array of keys and an array of values -- into
-  // a single object.
-  _.zipObject = function(keys, values) {
+  // Converts lists into objects. Pass either a single array of `[key, value]`
+  // pairs, or two parallel arrays of the same length -- one of keys, and one of
+  // the corresponding values.
+  _.object = function(list, values) {
+    if (list == null) return {};
     var result = {};
-    for (var i = 0, l = keys.length; i < l; i++) {
-      result[keys[i]] = values[i];
+    for (var i = 0, length = list.length; i < length; i++) {
+      if (values) {
+        result[list[i]] = values[i];
+      } else {
+        result[list[i][0]] = list[i][1];
+      }
     }
     return result;
   };
 
-  // If the browser doesn't supply us with indexOf (I'm looking at you, **MSIE**),
-  // we need this function. Return the position of the first occurrence of an
-  // item in an array, or -1 if the item is not included in the array.
-  // Delegates to **ECMAScript 5**'s native `indexOf` if available.
+  // Return the position of the first occurrence of an item in an array,
+  // or -1 if the item is not included in the array.
   // If the array is large and already in sort order, pass `true`
   // for **isSorted** to use binary search.
   _.indexOf = function(array, item, isSorted) {
     if (array == null) return -1;
-    var i, l;
+    var i = 0, length = array.length;
     if (isSorted) {
-      i = _.sortedIndex(array, item);
-      return array[i] === item ? i : -1;
+      if (typeof isSorted == 'number') {
+        i = isSorted < 0 ? Math.max(0, length + isSorted) : isSorted;
+      } else {
+        i = _.sortedIndex(array, item);
+        return array[i] === item ? i : -1;
+      }
     }
-    if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item);
-    for (i = 0, l = array.length; i < l; i++) if (array[i] === item) return i;
+    for (; i < length; i++) if (array[i] === item) return i;
     return -1;
   };
 
-  // Delegates to **ECMAScript 5**'s native `lastIndexOf` if available.
-  _.lastIndexOf = function(array, item) {
+  _.lastIndexOf = function(array, item, from) {
     if (array == null) return -1;
-    if (nativeLastIndexOf && array.lastIndexOf === nativeLastIndexOf) return array.lastIndexOf(item);
-    var i = array.length;
-    while (i--) if (array[i] === item) return i;
+    var idx = array.length;
+    if (typeof from == 'number') {
+      idx = from < 0 ? idx + from + 1 : Math.min(from, idx);
+    }
+    while (--idx >= 0) if (array[idx] === item) return idx;
     return -1;
   };
 
@@ -871,11 +981,11 @@ require.register("component-underscore/index.js", function(exports, require, mod
     }
     step = arguments[2] || 1;
 
-    var len = Math.max(Math.ceil((stop - start) / step), 0);
+    var length = Math.max(Math.ceil((stop - start) / step), 0);
     var idx = 0;
-    var range = new Array(len);
+    var range = Array(length);
 
-    while(idx < len) {
+    while (idx < length) {
       range[idx++] = start;
       start += step;
     }
@@ -887,51 +997,76 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // ------------------
 
   // Reusable constructor function for prototype setting.
-  var ctor = function(){};
+  var Ctor = function(){};
 
   // Create a function bound to a given object (assigning `this`, and arguments,
-  // optionally). Binding with arguments is also known as `curry`.
-  // Delegates to **ECMAScript 5**'s native `Function.bind` if available.
-  // We check for `func.bind` first, to fail fast when `func` is undefined.
-  _.bind = function bind(func, context) {
-    var bound, args;
-    if (func.bind === nativeBind && nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
-    if (!_.isFunction(func)) throw new TypeError;
+  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
+  // available.
+  _.bind = function(func, context) {
+    var args, bound;
+    if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+    if (!_.isFunction(func)) throw TypeError('Bind must be called on a function');
     args = slice.call(arguments, 2);
-    return bound = function() {
+    bound = function() {
       if (!(this instanceof bound)) return func.apply(context, args.concat(slice.call(arguments)));
-      ctor.prototype = func.prototype;
-      var self = new ctor;
+      Ctor.prototype = func.prototype;
+      var self = new Ctor;
+      Ctor.prototype = null;
       var result = func.apply(self, args.concat(slice.call(arguments)));
       if (Object(result) === result) return result;
       return self;
     };
+    return bound;
   };
 
-  // Bind all of an object's methods to that object. Useful for ensuring that
-  // all callbacks defined on an object belong to it.
+  // Partially apply a function by creating a version that has had some of its
+  // arguments pre-filled, without changing its dynamic `this` context. _ acts
+  // as a placeholder, allowing any combination of arguments to be pre-filled.
+  _.partial = function(func) {
+    var boundArgs = slice.call(arguments, 1);
+    return function() {
+      var position = 0;
+      var args = boundArgs.slice();
+      for (var i = 0, length = args.length; i < length; i++) {
+        if (args[i] === _) args[i] = arguments[position++];
+      }
+      while (position < arguments.length) args.push(arguments[position++]);
+      return func.apply(this, args);
+    };
+  };
+
+  // Bind a number of an object's methods to that object. Remaining arguments
+  // are the method names to be bound. Useful for ensuring that all callbacks
+  // defined on an object belong to it.
   _.bindAll = function(obj) {
-    var funcs = slice.call(arguments, 1);
-    if (funcs.length == 0) funcs = _.functions(obj);
-    each(funcs, function(f) { obj[f] = _.bind(obj[f], obj); });
+    var i = 1, length = arguments.length, key;
+    if (length <= 1) throw Error('bindAll must be passed function names');
+    for (; i < length; i++) {
+      key = arguments[i];
+      obj[key] = _.bind(obj[key], obj);
+    }
     return obj;
   };
 
   // Memoize an expensive function by storing its results.
   _.memoize = function(func, hasher) {
-    var memo = {};
-    hasher || (hasher = _.identity);
-    return function() {
-      var key = hasher.apply(this, arguments);
-      return _.has(memo, key) ? memo[key] : (memo[key] = func.apply(this, arguments));
+    var memoize = function(key) {
+      var cache = memoize.cache;
+      var address = hasher ? hasher.apply(this, arguments) : key;
+      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+      return cache[key];
     };
+    memoize.cache = {};
+    return memoize;
   };
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
   _.delay = function(func, wait) {
     var args = slice.call(arguments, 2);
-    return setTimeout(function(){ return func.apply(null, args); }, wait);
+    return setTimeout(function(){
+      return func.apply(null, args);
+    }, wait);
   };
 
   // Defers a function, scheduling it to run after the current call stack has
@@ -941,25 +1076,36 @@ require.register("component-underscore/index.js", function(exports, require, mod
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
-  // during a given window of time.
-  _.throttle = function(func, wait) {
-    var context, args, timeout, throttling, more, result;
-    var whenDone = _.debounce(function(){ more = throttling = false; }, wait);
+  // during a given window of time. Normally, the throttled function will run
+  // as much as it can, without ever going more than once per `wait` duration;
+  // but if you'd like to disable the execution on the leading edge, pass
+  // `{leading: false}`. To disable execution on the trailing edge, ditto.
+  _.throttle = function(func, wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    if (!options) options = {};
+    var later = function() {
+      previous = options.leading === false ? 0 : _.now();
+      timeout = null;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    };
     return function() {
-      context = this; args = arguments;
-      var later = function() {
+      var now = _.now();
+      if (!previous && options.leading === false) previous = now;
+      var remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0 || remaining > wait) {
+        clearTimeout(timeout);
         timeout = null;
-        if (more) func.apply(context, args);
-        whenDone();
-      };
-      if (!timeout) timeout = setTimeout(later, wait);
-      if (throttling) {
-        more = true;
-      } else {
-        throttling = true;
+        previous = now;
         result = func.apply(context, args);
+        if (!timeout) context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
       }
-      whenDone();
       return result;
     };
   };
@@ -969,17 +1115,34 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // N milliseconds. If `immediate` is passed, trigger the function on the
   // leading edge, instead of the trailing.
   _.debounce = function(func, wait, immediate) {
-    var timeout;
-    return function() {
-      var context = this, args = arguments;
-      var later = function() {
+    var timeout, args, context, timestamp, result;
+
+    var later = function() {
+      var last = _.now() - timestamp;
+
+      if (last < wait && last > 0) {
+        timeout = setTimeout(later, wait - last);
+      } else {
         timeout = null;
-        if (!immediate) func.apply(context, args);
-      };
+        if (!immediate) {
+          result = func.apply(context, args);
+          if (!timeout) context = args = null;
+        }
+      }
+    };
+
+    return function() {
+      context = this;
+      args = arguments;
+      timestamp = _.now();
       var callNow = immediate && !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-      if (callNow) func.apply(context, args);
+      if (!timeout) timeout = setTimeout(later, wait);
+      if (callNow) {
+        result = func.apply(context, args);
+        context = args = null;
+      }
+
+      return result;
     };
   };
 
@@ -990,7 +1153,9 @@ require.register("component-underscore/index.js", function(exports, require, mod
     return function() {
       if (ran) return memo;
       ran = true;
-      return memo = func.apply(this, arguments);
+      memo = func.apply(this, arguments);
+      func = null;
+      return memo;
     };
   };
 
@@ -998,28 +1163,31 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // allowing you to adjust arguments, run code before and after, and
   // conditionally execute the original function.
   _.wrap = function(func, wrapper) {
+    return _.partial(wrapper, func);
+  };
+
+  // Returns a negated version of the passed-in predicate.
+  _.negate = function(predicate) {
     return function() {
-      var args = [func].concat(slice.call(arguments, 0));
-      return wrapper.apply(this, args);
+      return !predicate.apply(this, arguments);
     };
   };
 
   // Returns a function that is the composition of a list of functions, each
   // consuming the return value of the function that follows.
   _.compose = function() {
-    var funcs = arguments;
+    var args = arguments;
+    var start = args.length - 1;
     return function() {
-      var args = arguments;
-      for (var i = funcs.length - 1; i >= 0; i--) {
-        args = [funcs[i].apply(this, args)];
-      }
-      return args[0];
+      var i = start;
+      var result = args[start].apply(this, arguments);
+      while (i--) result = args[i].call(this, result);
+      return result;
     };
   };
 
   // Returns a function that will only be executed after being called N times.
   _.after = function(times, func) {
-    if (times <= 0) return func();
     return function() {
       if (--times < 1) {
         return func.apply(this, arguments);
@@ -1032,16 +1200,44 @@ require.register("component-underscore/index.js", function(exports, require, mod
 
   // Retrieve the names of an object's properties.
   // Delegates to **ECMAScript 5**'s native `Object.keys`
-  _.keys = nativeKeys || function(obj) {
-    if (obj !== Object(obj)) throw new TypeError('Invalid object');
+  _.keys = function(obj) {
+    if (!_.isObject(obj)) return [];
+    if (nativeKeys) return nativeKeys(obj);
     var keys = [];
-    for (var key in obj) if (_.has(obj, key)) keys[keys.length] = key;
+    for (var key in obj) if (_.has(obj, key)) keys.push(key);
     return keys;
   };
 
   // Retrieve the values of an object's properties.
   _.values = function(obj) {
-    return _.map(obj, _.identity);
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var values = Array(length);
+    for (var i = 0; i < length; i++) {
+      values[i] = obj[keys[i]];
+    }
+    return values;
+  };
+
+  // Convert an object into a list of `[key, value]` pairs.
+  _.pairs = function(obj) {
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var pairs = Array(length);
+    for (var i = 0; i < length; i++) {
+      pairs[i] = [keys[i], obj[keys[i]]];
+    }
+    return pairs;
+  };
+
+  // Invert the keys and values of an object. The values must be serializable.
+  _.invert = function(obj) {
+    var result = {};
+    var keys = _.keys(obj);
+    for (var i = 0, length = keys.length; i < length; i++) {
+      result[obj[keys[i]]] = keys[i];
+    }
+    return result;
   };
 
   // Return a sorted list of the function names available on the object.
@@ -1056,30 +1252,60 @@ require.register("component-underscore/index.js", function(exports, require, mod
 
   // Extend a given object with all the properties in passed-in object(s).
   _.extend = function(obj) {
-    each(slice.call(arguments, 1), function(source) {
-      for (var prop in source) {
+    if (!_.isObject(obj)) return obj;
+    var source, prop;
+    for (var i = 1, length = arguments.length; i < length; i++) {
+      source = arguments[i];
+      for (prop in source) {
         obj[prop] = source[prop];
       }
-    });
+    }
     return obj;
   };
 
   // Return a copy of the object only containing the whitelisted properties.
-  _.pick = function(obj) {
-    var result = {};
-    each(flatten(slice.call(arguments, 1), true, []), function(key) {
-      if (key in obj) result[key] = obj[key];
-    });
+  _.pick = function(obj, iterator, context) {
+    var result = {}, key;
+    if (obj == null) return result;
+    if (_.isFunction(iterator)) {
+      iterator = createCallback(iterator, context);
+      for (key in obj) {
+        var value = obj[key];
+        if (iterator(value, key, obj)) result[key] = value;
+      }
+    } else {
+      var keys = concat.apply([], slice.call(arguments, 1));
+      obj = Object(obj);
+      for (var i = 0, length = keys.length; i < length; i++) {
+        key = keys[i];
+        if (key in obj) result[key] = obj[key];
+      }
+    }
     return result;
+  };
+
+   // Return a copy of the object without the blacklisted properties.
+  _.omit = function(obj, iterator, context) {
+    if (_.isFunction(iterator)) {
+      iterator = _.negate(iterator);
+    } else {
+      var keys = _.map(concat.apply([], slice.call(arguments, 1)), String);
+      iterator = function(value, key) {
+        return !_.contains(keys, key);
+      };
+    }
+    return _.pick(obj, iterator, context);
   };
 
   // Fill in a given object with default properties.
   _.defaults = function(obj) {
-    each(slice.call(arguments, 1), function(source) {
+    if (!_.isObject(obj)) return obj;
+    for (var i = 1, length = arguments.length; i < length; i++) {
+      var source = arguments[i];
       for (var prop in source) {
-        if (obj[prop] == null) obj[prop] = source[prop];
+        if (obj[prop] === void 0) obj[prop] = source[prop];
       }
-    });
+    }
     return obj;
   };
 
@@ -1098,116 +1324,118 @@ require.register("component-underscore/index.js", function(exports, require, mod
   };
 
   // Internal recursive comparison function for `isEqual`.
-  var eq = function(a, b, stack) {
+  var eq = function(a, b, aStack, bStack) {
     // Identical objects are equal. `0 === -0`, but they aren't identical.
-    // See the Harmony `egal` proposal: http://wiki.ecmascript.org/doku.php?id=harmony:egal.
-    if (a === b) return a !== 0 || 1 / a == 1 / b;
+    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
+    if (a === b) return a !== 0 || 1 / a === 1 / b;
     // A strict comparison is necessary because `null == undefined`.
     if (a == null || b == null) return a === b;
     // Unwrap any wrapped objects.
-    if (a._chain) a = a._wrapped;
-    if (b._chain) b = b._wrapped;
-    // Invoke a custom `isEqual` method if one is provided.
-    if (a.isEqual && _.isFunction(a.isEqual)) return a.isEqual(b);
-    if (b.isEqual && _.isFunction(b.isEqual)) return b.isEqual(a);
+    if (a instanceof _) a = a._wrapped;
+    if (b instanceof _) b = b._wrapped;
     // Compare `[[Class]]` names.
     var className = toString.call(a);
-    if (className != toString.call(b)) return false;
+    if (className !== toString.call(b)) return false;
     switch (className) {
-      // Strings, numbers, dates, and booleans are compared by value.
+      // Strings, numbers, regular expressions, dates, and booleans are compared by value.
+      case '[object RegExp]':
+      // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
       case '[object String]':
         // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
         // equivalent to `new String("5")`.
-        return a == String(b);
+        return '' + a === '' + b;
       case '[object Number]':
-        // `NaN`s are equivalent, but non-reflexive. An `egal` comparison is performed for
-        // other numeric values.
-        return a != +a ? b != +b : (a == 0 ? 1 / a == 1 / b : a == +b);
+        // `NaN`s are equivalent, but non-reflexive.
+        // Object(NaN) is equivalent to NaN
+        if (a != +a) return b != +b;
+        // An `egal` comparison is performed for other numeric values.
+        return a == 0 ? 1 / a == 1 / b : a == +b;
       case '[object Date]':
       case '[object Boolean]':
         // Coerce dates and booleans to numeric primitive values. Dates are compared by their
         // millisecond representations. Note that invalid dates with millisecond representations
         // of `NaN` are not equivalent.
-        return +a == +b;
-      // RegExps are compared by their source patterns and flags.
-      case '[object RegExp]':
-        return a.source == b.source &&
-               a.global == b.global &&
-               a.multiline == b.multiline &&
-               a.ignoreCase == b.ignoreCase;
+        return +a === +b;
     }
     if (typeof a != 'object' || typeof b != 'object') return false;
     // Assume equality for cyclic structures. The algorithm for detecting cyclic
     // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
-    var length = stack.length;
+    var length = aStack.length;
     while (length--) {
       // Linear search. Performance is inversely proportional to the number of
       // unique nested structures.
-      if (stack[length] == a) return true;
+      if (aStack[length] === a) return bStack[length] === b;
+    }
+    // Objects with different constructors are not equivalent, but `Object`s
+    // from different frames are.
+    var aCtor = a.constructor, bCtor = b.constructor;
+    if (
+      aCtor !== bCtor &&
+      // Handle Object.create(x) cases
+      'constructor' in a && 'constructor' in b &&
+      !(_.isFunction(aCtor) && aCtor instanceof aCtor &&
+        _.isFunction(bCtor) && bCtor instanceof bCtor)
+    ) {
+      return false;
     }
     // Add the first object to the stack of traversed objects.
-    stack.push(a);
-    var size = 0, result = true;
+    aStack.push(a);
+    bStack.push(b);
+    var size, result;
     // Recursively compare objects and arrays.
-    if (className == '[object Array]') {
+    if (className === '[object Array]') {
       // Compare array lengths to determine if a deep comparison is necessary.
       size = a.length;
-      result = size == b.length;
+      result = size === b.length;
       if (result) {
         // Deep compare the contents, ignoring non-numeric properties.
         while (size--) {
-          // Ensure commutative equality for sparse arrays.
-          if (!(result = size in a == size in b && eq(a[size], b[size], stack))) break;
+          if (!(result = eq(a[size], b[size], aStack, bStack))) break;
         }
       }
     } else {
-      // Objects with different constructors are not equivalent.
-      if ('constructor' in a != 'constructor' in b || a.constructor != b.constructor) return false;
       // Deep compare objects.
-      for (var key in a) {
-        if (_.has(a, key)) {
-          // Count the expected number of properties.
-          size++;
-          // Deep compare each member.
-          if (!(result = _.has(b, key) && eq(a[key], b[key], stack))) break;
-        }
-      }
-      // Ensure that both objects contain the same number of properties.
+      var keys = _.keys(a), key;
+      size = keys.length;
+      // Ensure that both objects contain the same number of properties before comparing deep equality.
+      result = _.keys(b).length == size;
       if (result) {
-        for (key in b) {
-          if (_.has(b, key) && !(size--)) break;
+        while (size--) {
+          // Deep compare each member
+          key = keys[size];
+          if (!(result = _.has(b, key) && eq(a[key], b[key], aStack, bStack))) break;
         }
-        result = !size;
       }
     }
     // Remove the first object from the stack of traversed objects.
-    stack.pop();
+    aStack.pop();
+    bStack.pop();
     return result;
   };
 
   // Perform a deep comparison to check if two objects are equal.
   _.isEqual = function(a, b) {
-    return eq(a, b, []);
+    return eq(a, b, [], []);
   };
 
   // Is a given array, string, or object empty?
   // An "empty" object has no enumerable own-properties.
   _.isEmpty = function(obj) {
     if (obj == null) return true;
-    if (_.isArray(obj) || _.isString(obj)) return obj.length === 0;
+    if (_.isArray(obj) || _.isString(obj) || _.isArguments(obj)) return obj.length === 0;
     for (var key in obj) if (_.has(obj, key)) return false;
     return true;
   };
 
   // Is a given value a DOM element?
   _.isElement = function(obj) {
-    return !!(obj && obj.nodeType == 1);
+    return !!(obj && obj.nodeType === 1);
   };
 
   // Is a given value an array?
   // Delegates to ECMA5's native Array.isArray
   _.isArray = nativeIsArray || function(obj) {
-    return toString.call(obj) == '[object Array]';
+    return toString.call(obj) === '[object Array]';
   };
 
   // Is a given variable an object?
@@ -1216,9 +1444,9 @@ require.register("component-underscore/index.js", function(exports, require, mod
   };
 
   // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp.
-  each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp'], function(name) {
+  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp'], function(name) {
     _['is' + name] = function(obj) {
-      return toString.call(obj) == '[object ' + name + ']';
+      return toString.call(obj) === '[object ' + name + ']';
     };
   });
 
@@ -1226,24 +1454,30 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // there isn't any inspectable "Arguments" type.
   if (!_.isArguments(arguments)) {
     _.isArguments = function(obj) {
-      return !!(obj && _.has(obj, 'callee'));
+      return _.has(obj, 'callee');
+    };
+  }
+
+  // Optimize `isFunction` if appropriate.
+  if (typeof /./ !== 'function') {
+    _.isFunction = function(obj) {
+      return typeof obj === 'function';
     };
   }
 
   // Is a given object a finite number?
   _.isFinite = function(obj) {
-    return _.isNumber(obj) && isFinite(obj);
+    return isFinite(obj) && !isNaN(parseFloat(obj));
   };
 
-  // Is the given value `NaN`?
+  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
   _.isNaN = function(obj) {
-    // `NaN` is the only value for which `===` is not reflexive.
-    return obj !== obj;
+    return _.isNumber(obj) && obj !== +obj;
   };
 
   // Is a given value a boolean?
   _.isBoolean = function(obj) {
-    return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
+    return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
   };
 
   // Is a given value equal to null?
@@ -1259,7 +1493,7 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // Shortcut function for checking if an object has a given property directly
   // on itself (in other words, not on a prototype).
   _.has = function(obj, key) {
-    return hasOwnProperty.call(obj, key);
+    return obj != null && hasOwnProperty.call(obj, key);
   };
 
   // Utility Functions
@@ -1277,52 +1511,93 @@ require.register("component-underscore/index.js", function(exports, require, mod
     return value;
   };
 
+  _.constant = function(value) {
+    return function() {
+      return value;
+    };
+  };
+
+  _.noop = function(){};
+
+  _.property = function(key) {
+    return function(obj) {
+      return obj[key];
+    };
+  };
+
+  // Returns a predicate for checking whether an object has a given set of `key:value` pairs.
+  _.matches = function(attrs) {
+    return function(obj) {
+      if (obj == null) return _.isEmpty(attrs);
+      if (obj === attrs) return true;
+      for (var key in attrs) if (attrs[key] !== obj[key]) return false;
+      return true;
+    };
+  };
+
   // Run a function **n** times.
   _.times = function(n, iterator, context) {
-    for (var i = 0; i < n; i++) iterator.call(context, i);
+    var accum = Array(Math.max(0, n));
+    iterator = createCallback(iterator, context, 1);
+    for (var i = 0; i < n; i++) accum[i] = iterator(i);
+    return accum;
+  };
+
+  // Return a random integer between min and max (inclusive).
+  _.random = function(min, max) {
+    if (max == null) {
+      max = min;
+      min = 0;
+    }
+    return min + Math.floor(Math.random() * (max - min + 1));
+  };
+
+  // A (possibly faster) way to get the current timestamp as an integer.
+  _.now = Date.now || function() {
+    return new Date().getTime();
   };
 
   // List of HTML entities for escaping.
-  var htmlEscapes = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;'
+  var entityMap = {
+    escape: {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;'
+    }
+  };
+  entityMap.unescape = _.invert(entityMap.escape);
+
+  // Regexes containing the keys and values listed immediately above.
+  var entityRegexes = {
+    escape:   RegExp('[' + _.keys(entityMap.escape).join('') + ']', 'g'),
+    unescape: RegExp('(' + _.keys(entityMap.unescape).join('|') + ')', 'g')
   };
 
-  // Regex containing the keys listed immediately above.
-  var htmlEscaper = /[&<>"'\/]/g;
+  // Functions for escaping and unescaping strings to/from HTML interpolation.
+  _.each(['escape', 'unescape'], function(method) {
+    _[method] = function(string) {
+      if (string == null) return '';
+      return ('' + string).replace(entityRegexes[method], function(match) {
+        return entityMap[method][match];
+      });
+    };
+  });
 
-  // Escape a string for HTML interpolation.
-  _.escape = function(string) {
-    return ('' + string).replace(htmlEscaper, function(match) {
-      return htmlEscapes[match];
-    });
-  };
-
-  // If the value of the named property is a function then invoke it;
-  // otherwise, return it.
+  // If the value of the named `property` is a function then invoke it with the
+  // `object` as context; otherwise, return it.
   _.result = function(object, property) {
-    if (object == null) return null;
+    if (object == null) return void 0;
     var value = object[property];
-    return _.isFunction(value) ? value.call(object) : value;
-  };
-
-  // Add your own custom functions to the Underscore object, ensuring that
-  // they're correctly added to the OOP wrapper as well.
-  _.mixin = function(obj) {
-    each(_.functions(obj), function(name){
-      addToWrapper(name, _[name] = obj[name]);
-    });
+    return _.isFunction(value) ? object[property]() : value;
   };
 
   // Generate a unique integer id (unique within the entire client session).
   // Useful for temporary DOM ids.
   var idCounter = 0;
   _.uniqueId = function(prefix) {
-    var id = idCounter++;
+    var id = ++idCounter + '';
     return prefix ? prefix + id : id;
   };
 
@@ -1337,138 +1612,154 @@ require.register("component-underscore/index.js", function(exports, require, mod
   // When customizing `templateSettings`, if you don't want to define an
   // interpolation, evaluation or escaping regex, we need one that is
   // guaranteed not to match.
-  var noMatch = /.^/;
+  var noMatch = /(.)^/;
 
   // Certain characters need to be escaped so that they can be put into a
   // string literal.
   var escapes = {
-    '\\':   '\\',
-    "'":    "'",
-    r:      '\r',
-    n:      '\n',
-    t:      '\t',
-    u2028:  '\u2028',
-    u2029:  '\u2029'
+    "'":      "'",
+    '\\':     '\\',
+    '\r':     'r',
+    '\n':     'n',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
   };
 
-  for (var key in escapes) escapes[escapes[key]] = key;
-  var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g;
-  var unescaper = /\\(\\|'|r|n|t|u2028|u2029)/g;
+  var escaper = /\\|'|\r|\n|\u2028|\u2029/g;
 
-  // Within an interpolation, evaluation, or escaping, remove HTML escaping
-  // that had been previously added.
-  var unescape = function(code) {
-    return code.replace(unescaper, function(match, escape) {
-      return escapes[escape];
-    });
+  var escapeChar = function(match) {
+    return '\\' + escapes[match];
   };
 
   // JavaScript micro-templating, similar to John Resig's implementation.
   // Underscore templating handles arbitrary delimiters, preserves whitespace,
   // and correctly escapes quotes within interpolated code.
   _.template = function(text, data, settings) {
-    settings = _.defaults(settings || {}, _.templateSettings);
+    settings = _.defaults({}, settings, _.templateSettings);
 
-    // Compile the template source, taking care to escape characters that
-    // cannot be included in a string literal and then unescape them in code
-    // blocks.
-    var source = "__p+='" + text
-      .replace(escaper, function(match) {
-        return '\\' + escapes[match];
-      })
-      .replace(settings.escape || noMatch, function(match, code) {
-        return "'+\n((__t=(" + unescape(code) + "))==null?'':_.escape(__t))+\n'";
-      })
-      .replace(settings.interpolate || noMatch, function(match, code) {
-        return "'+\n((__t=(" + unescape(code) + "))==null?'':__t)+\n'";
-      })
-      .replace(settings.evaluate || noMatch, function(match, code) {
-        return "';\n" + unescape(code) + "\n__p+='";
-      }) + "';\n";
+    // Combine delimiters into one regular expression via alternation.
+    var matcher = RegExp([
+      (settings.escape || noMatch).source,
+      (settings.interpolate || noMatch).source,
+      (settings.evaluate || noMatch).source
+    ].join('|') + '|$', 'g');
+
+    // Compile the template source, escaping string literals appropriately.
+    var index = 0;
+    var source = "__p+='";
+    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+      source += text.slice(index, offset).replace(escaper, escapeChar);
+      index = offset + match.length;
+
+      if (escape) {
+        source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
+      } else if (interpolate) {
+        source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+      } else if (evaluate) {
+        source += "';\n" + evaluate + "\n__p+='";
+      }
+
+      // Adobe VMs need the match returned to produce the correct offest.
+      return match;
+    });
+    source += "';\n";
 
     // If a variable is not specified, place data values in local scope.
     if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
 
     source = "var __t,__p='',__j=Array.prototype.join," +
-      "print=function(){__p+=__j.call(arguments,'')};\n" +
-      source + "return __p;\n";
+      "print=function(){__p+=__j.call(arguments,'');};\n" +
+      source + 'return __p;\n';
 
-    var render = new Function(settings.variable || 'obj', '_', source);
+    try {
+      var render = Function(settings.variable || 'obj', '_', source);
+    } catch (e) {
+      e.source = source;
+      throw e;
+    }
+
     if (data) return render(data, _);
     var template = function(data) {
       return render.call(this, data, _);
     };
 
-    // Provide the compiled function source as a convenience for precompilation.
-    template.source = 'function(' + (settings.variable || 'obj') + '){\n' + source + '}';
+    // Provide the compiled source as a convenience for precompilation.
+    var argument = settings.variable || 'obj';
+    template.source = 'function(' + argument + '){\n' + source + '}';
 
     return template;
   };
 
-  // Add a "chain" function, which will delegate to the wrapper.
+  // Add a "chain" function. Start chaining a wrapped Underscore object.
   _.chain = function(obj) {
-    return _(obj).chain();
+    var instance = _(obj);
+    instance._chain = true;
+    return instance;
   };
 
-  // The OOP Wrapper
+  // OOP
   // ---------------
-
   // If Underscore is called as a function, it returns a wrapped object that
   // can be used OO-style. This wrapper holds altered versions of all the
   // underscore functions. Wrapped objects may be chained.
-  var wrapper = function(obj) { this._wrapped = obj; };
-
-  // Expose `wrapper.prototype` as `_.prototype`
-  _.prototype = wrapper.prototype;
 
   // Helper function to continue chaining intermediate results.
-  var result = function(obj, chain) {
-    return chain ? _(obj).chain() : obj;
+  var result = function(obj) {
+    return this._chain ? _(obj).chain() : obj;
   };
 
-  // A method to easily add functions to the OOP wrapper.
-  var addToWrapper = function(name, func) {
-    wrapper.prototype[name] = function() {
-      var args = slice.call(arguments);
-      unshift.call(args, this._wrapped);
-      return result(func.apply(_, args), this._chain);
-    };
+  // Add your own custom functions to the Underscore object.
+  _.mixin = function(obj) {
+    _.each(_.functions(obj), function(name) {
+      var func = _[name] = obj[name];
+      _.prototype[name] = function() {
+        var args = [this._wrapped];
+        push.apply(args, arguments);
+        return result.call(this, func.apply(_, args));
+      };
+    });
   };
 
   // Add all of the Underscore functions to the wrapper object.
   _.mixin(_);
 
   // Add all mutator Array functions to the wrapper.
-  each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
+  _.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
     var method = ArrayProto[name];
-    wrapper.prototype[name] = function() {
+    _.prototype[name] = function() {
       var obj = this._wrapped;
       method.apply(obj, arguments);
-      if ((name == 'shift' || name == 'splice') && obj.length === 0) delete obj[0];
-      return result(obj, this._chain);
+      if ((name === 'shift' || name === 'splice') && obj.length === 0) delete obj[0];
+      return result.call(this, obj);
     };
   });
 
   // Add all accessor Array functions to the wrapper.
-  each(['concat', 'join', 'slice'], function(name) {
+  _.each(['concat', 'join', 'slice'], function(name) {
     var method = ArrayProto[name];
-    wrapper.prototype[name] = function() {
-      return result(method.apply(this._wrapped, arguments), this._chain);
+    _.prototype[name] = function() {
+      return result.call(this, method.apply(this._wrapped, arguments));
     };
   });
 
-  // Start chaining a wrapped Underscore object.
-  wrapper.prototype.chain = function() {
-    this._chain = true;
-    return this;
-  };
-
   // Extracts the result from a wrapped and chained object.
-  wrapper.prototype.value = function() {
+  _.prototype.value = function() {
     return this._wrapped;
   };
 
-}).call(this);
+  // AMD registration happens at the end for compatibility with AMD loaders
+  // that may not enforce next-turn semantics on modules. Even though general
+  // practice for AMD registration is to be anonymous, underscore registers
+  // as a named module because, like jQuery, it is a base library that is
+  // popular enough to be bundled in a third party lib, but not be part of
+  // an AMD load request. Those cases could generate an error when an
+  // anonymous define() is called outside of a loader request.
+  if (typeof define === 'function' && define.amd) {
+    define('underscore', [], function() {
+      return _;
+    });
+  }
+}.call(this));
 
 });
 require.register("noflo-fbp/lib/fbp.js", function(exports, require, module){
@@ -3253,18 +3544,14 @@ module.exports = (function(){
 })();
 });
 require.register("noflo-noflo/component.json", function(exports, require, module){
-module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.5.2","dependencies":{"component/emitter":"*","component/underscore":"*","noflo/fbp":"*"},"remotes":["https://raw.githubusercontent.com"],"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/BasePort.coffee","src/lib/InPort.coffee","src/lib/OutPort.coffee","src/lib/Ports.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/lib/Platform.coffee","src/lib/Journal.coffee","src/lib/Utils.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.js"}}}');
+module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.5.6","dependencies":{"bergie/emitter":"*","jashkenas/underscore":"*","noflo/fbp":"*"},"remotes":["https://raw.githubusercontent.com"],"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/BasePort.coffee","src/lib/InPort.coffee","src/lib/OutPort.coffee","src/lib/Ports.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/lib/Platform.coffee","src/lib/Journal.coffee","src/lib/Utils.coffee","src/lib/Helpers.coffee","src/lib/Streams.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.coffee"}}}');
 });
 require.register("noflo-noflo/src/lib/Graph.js", function(exports, require, module){
 var EventEmitter, Graph, clone, platform,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-if (!require('./Platform').isBrowser()) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
 clone = require('./Utils').clone;
 
@@ -4320,8 +4607,6 @@ exports.loadFile = function(file, success, metadata) {
   if (platform.isBrowser()) {
     try {
       definition = require(file);
-      exports.loadJSON(definition, success, metadata);
-      return;
     } catch (_error) {
       e = _error;
       exports.loadHTTP(file, function(data) {
@@ -4330,12 +4615,14 @@ exports.loadFile = function(file, success, metadata) {
           return;
         }
         if (file.split('.').pop() === 'fbp') {
-          return exports.loadFBP(data, success);
+          return exports.loadFBP(data, success, metadata);
         }
         definition = JSON.parse(data);
-        return exports.loadJSON(definition, success);
+        return exports.loadJSON(definition, success, metadata);
       });
+      return;
     }
+    exports.loadJSON(definition, success, metadata);
     return;
   }
   return require('fs').readFile(file, "utf-8", function(err, data) {
@@ -4356,11 +4643,7 @@ var EventEmitter, InternalSocket,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-if (!require('./Platform').isBrowser()) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
 InternalSocket = (function(_super) {
   __extends(InternalSocket, _super);
@@ -4445,13 +4728,9 @@ var BasePort, EventEmitter, validTypes,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-if (!require('./Platform').isBrowser()) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
-validTypes = ['all', 'string', 'number', 'int', 'object', 'array', 'boolean', 'color', 'date', 'bang', 'function'];
+validTypes = ['all', 'string', 'number', 'int', 'object', 'array', 'boolean', 'color', 'date', 'bang', 'function', 'buffer'];
 
 BasePort = (function(_super) {
   __extends(BasePort, _super);
@@ -4471,7 +4750,7 @@ BasePort = (function(_super) {
       options.datatype = 'all';
     }
     if (options.required === void 0) {
-      options.required = true;
+      options.required = false;
     }
     if (options.datatype === 'integer') {
       options.datatype = 'int';
@@ -4787,9 +5066,20 @@ BasePort = require('./BasePort');
 OutPort = (function(_super) {
   __extends(OutPort, _super);
 
-  function OutPort() {
-    return OutPort.__super__.constructor.apply(this, arguments);
+  function OutPort(options) {
+    this.cache = {};
+    OutPort.__super__.constructor.call(this, options);
   }
+
+  OutPort.prototype.attach = function(socket, index) {
+    if (index == null) {
+      index = null;
+    }
+    OutPort.__super__.attach.call(this, socket, index);
+    if (this.isCaching() && (this.cache[index] != null)) {
+      return this.send(this.cache[index], index);
+    }
+  };
 
   OutPort.prototype.connect = function(socketId) {
     var socket, sockets, _i, _len, _results;
@@ -4837,6 +5127,9 @@ OutPort = (function(_super) {
     }
     sockets = this.getSockets(socketId);
     this.checkRequired(sockets);
+    if (this.isCaching() && data !== this.cache[socketId]) {
+      this.cache[socketId] = data;
+    }
     return sockets.forEach(function(socket) {
       if (!socket) {
         return;
@@ -4906,6 +5199,13 @@ OutPort = (function(_super) {
     return this.sockets;
   };
 
+  OutPort.prototype.isCaching = function() {
+    if (this.options.caching) {
+      return true;
+    }
+    return false;
+  };
+
   return OutPort;
 
 })(BasePort);
@@ -4918,11 +5218,7 @@ var EventEmitter, InPort, InPorts, OutPort, OutPorts, Ports,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-if (!require('./Platform').isBrowser()) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
 InPort = require('./InPort');
 
@@ -5053,11 +5349,7 @@ var EventEmitter, Port,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-if (!require('./Platform').isBrowser()) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
 Port = (function(_super) {
   __extends(Port, _super);
@@ -5503,11 +5795,7 @@ var Component, EventEmitter, ports,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-if (!require('./Platform').isBrowser()) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
 ports = require('./Ports');
 
@@ -5835,11 +6123,7 @@ nofloGraph = require('./Graph');
 
 utils = require('./Utils');
 
-if (!require('./Platform').isBrowser()) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
 ComponentLoader = (function(_super) {
   __extends(ComponentLoader, _super);
@@ -6219,6 +6503,8 @@ exports.AsyncComponent = require('./AsyncComponent').AsyncComponent;
 
 exports.LoggingComponent = require('./LoggingComponent').LoggingComponent;
 
+exports.helpers = require('./Helpers');
+
 ports = require('./Ports');
 
 exports.InPorts = ports.InPorts;
@@ -6292,12 +6578,12 @@ internalSocket = require("./InternalSocket");
 
 graph = require("./Graph");
 
+EventEmitter = require('events').EventEmitter;
+
 if (!require('./Platform').isBrowser()) {
   componentLoader = require("./nodejs/ComponentLoader");
-  EventEmitter = require('events').EventEmitter;
 } else {
   componentLoader = require('./ComponentLoader');
-  EventEmitter = require('emitter');
 }
 
 Network = (function(_super) {
@@ -6926,11 +7212,7 @@ var EventEmitter, Journal, JournalStore, MemoryJournalStore, calculateMeta, clon
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-if (typeof process !== 'undefined' && process.execPath && process.execPath.indexOf('node') !== -1) {
-  EventEmitter = require('events').EventEmitter;
-} else {
-  EventEmitter = require('emitter');
-}
+EventEmitter = require('events').EventEmitter;
 
 clone = require('./Utils').clone;
 
@@ -7595,6 +7877,719 @@ exports.clone = clone;
 exports.guessLanguageFromFilename = guessLanguageFromFilename;
 
 });
+require.register("noflo-noflo/src/lib/Helpers.js", function(exports, require, module){
+var StreamReceiver, StreamSender,
+  __hasProp = {}.hasOwnProperty;
+
+StreamSender = require('./Streams').StreamSender;
+
+StreamReceiver = require('./Streams').StreamReceiver;
+
+exports.MapComponent = function(component, func, config) {
+  var groups, inPort, outPort;
+  if (!config) {
+    config = {};
+  }
+  if (!config.inPort) {
+    config.inPort = 'in';
+  }
+  if (!config.outPort) {
+    config.outPort = 'out';
+  }
+  inPort = component.inPorts[config.inPort];
+  outPort = component.outPorts[config.outPort];
+  groups = [];
+  return inPort.process = function(event, payload) {
+    switch (event) {
+      case 'connect':
+        return outPort.connect();
+      case 'begingroup':
+        groups.push(payload);
+        return outPort.beginGroup(payload);
+      case 'data':
+        return func(payload, groups, outPort);
+      case 'endgroup':
+        groups.pop();
+        return outPort.endGroup();
+      case 'disconnect':
+        groups = [];
+        return outPort.disconnect();
+    }
+  };
+};
+
+exports.WirePattern = function(component, config, proc) {
+  var collectGroups, completeParamsCount, groupedData, groupedDataGroups, inPorts, name, outPorts, port, processQueue, q, requiredParamsCount, taskQ, _fn, _fn1, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1;
+  inPorts = 'in' in config ? config["in"] : 'in';
+  if (!(inPorts instanceof Array)) {
+    inPorts = [inPorts];
+  }
+  outPorts = 'out' in config ? config.out : 'out';
+  if (!(outPorts instanceof Array)) {
+    outPorts = [outPorts];
+  }
+  if (!('async' in config)) {
+    config.async = false;
+  }
+  if (!('ordered' in config)) {
+    config.ordered = false;
+  }
+  if (!('group' in config)) {
+    config.group = false;
+  }
+  if (!('field' in config)) {
+    config.field = null;
+  }
+  if (!('forwardGroups' in config)) {
+    config.forwardGroups = false;
+  }
+  if (!('receiveStreams' in config)) {
+    config.receiveStreams = false;
+  }
+  if (typeof config.receiveStreams === 'string') {
+    config.receiveStreams = [config.receiveStreams];
+  }
+  if (!('sendStreams' in config)) {
+    config.sendStreams = false;
+  }
+  if (typeof config.sendStreams === 'string') {
+    config.sendStreams = [config.sendStreams];
+  }
+  if (config.async) {
+    config.sendStreams = outPorts;
+  }
+  if (!('params' in config)) {
+    config.params = [];
+  }
+  collectGroups = config.forwardGroups;
+  if (typeof collectGroups === 'boolean' && !config.group) {
+    collectGroups = inPorts;
+  }
+  if (typeof collectGroups === 'string' && !config.group) {
+    collectGroups = [collectGroups];
+  }
+  if (collectGroups !== false && config.group) {
+    collectGroups = true;
+  }
+  for (_i = 0, _len = inPorts.length; _i < _len; _i++) {
+    name = inPorts[_i];
+    if (!component.inPorts[name]) {
+      throw new Error("no inPort named '" + name + "'");
+    }
+  }
+  for (_j = 0, _len1 = outPorts.length; _j < _len1; _j++) {
+    name = outPorts[_j];
+    if (!component.outPorts[name]) {
+      throw new Error("no outPort named '" + name + "'");
+    }
+  }
+  groupedData = {};
+  groupedDataGroups = {};
+  q = [];
+  processQueue = function() {
+    var flushed, key, stream, streams;
+    while (q.length > 0) {
+      streams = q[0];
+      flushed = false;
+      if (outPorts.length === 1) {
+        if (streams.resolved) {
+          flushed = streams.flush();
+          if (flushed) {
+            q.shift();
+          }
+        }
+      } else {
+        for (key in streams) {
+          stream = streams[key];
+          if (stream.resolved) {
+            flushed = stream.flush();
+            if (flushed) {
+              q.shift();
+            }
+          }
+        }
+      }
+      if (!flushed) {
+        return;
+      }
+    }
+  };
+  if (config.async) {
+    if ('load' in component.outPorts) {
+      component.load = 0;
+    }
+    component.beforeProcess = function(outs) {
+      if (config.ordered) {
+        q.push(outs);
+      }
+      component.load++;
+      if ('load' in component.outPorts && component.outPorts.load.isAttached()) {
+        component.outPorts.load.send(component.load);
+        return component.outPorts.load.disconnect();
+      }
+    };
+    component.afterProcess = function(err, outs) {
+      processQueue();
+      component.load--;
+      if ('load' in component.outPorts && component.outPorts.load.isAttached()) {
+        component.outPorts.load.send(component.load);
+        return component.outPorts.load.disconnect();
+      }
+    };
+  }
+  taskQ = [];
+  component.params = {};
+  requiredParamsCount = 0;
+  completeParamsCount = 0;
+  _ref = config.params;
+  for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
+    port = _ref[_k];
+    if (!component.inPorts[port]) {
+      throw new Error("no inPort named '" + port + "'");
+    }
+    if (component.inPorts[port].isRequired()) {
+      requiredParamsCount++;
+    }
+  }
+  _ref1 = config.params;
+  _fn = function(port) {
+    var inPort;
+    inPort = component.inPorts[port];
+    return inPort.process = function(event, payload) {
+      var task, _results;
+      if (event !== 'data') {
+        return;
+      }
+      component.params[port] = payload;
+      completeParamsCount = Object.keys(component.params).length;
+      if (completeParamsCount >= requiredParamsCount && taskQ.length > 0) {
+        _results = [];
+        while (taskQ.length > 0) {
+          task = taskQ.shift();
+          _results.push(task());
+        }
+        return _results;
+      }
+    };
+  };
+  for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+    port = _ref1[_l];
+    _fn(port);
+  }
+  _fn1 = function(port) {
+    var inPort;
+    if (config.receiveStreams && config.receiveStreams.indexOf(port) !== -1) {
+      inPort = new StreamReceiver(component.inPorts[port]);
+    } else {
+      inPort = component.inPorts[port];
+    }
+    inPort.groups = [];
+    return inPort.process = function(event, payload) {
+      var data, g, groups, grp, key, out, outs, p, requiredLength, task, whenDone, _len5, _len6, _len7, _len8, _len9, _n, _o, _p, _q, _r, _ref2;
+      switch (event) {
+        case 'begingroup':
+          return inPort.groups.push(payload);
+        case 'endgroup':
+          return inPort.groups.pop();
+        case 'data':
+          key = '';
+          if (config.group && inPort.groups.length > 0) {
+            key = inPort.groups.toString();
+            if (config.group instanceof RegExp) {
+              if (!config.group.test(key)) {
+                key = '';
+              }
+            }
+          } else if (config.field && typeof payload === 'object' && config.field in payload) {
+            key = payload[config.field];
+          }
+          if (!(key in groupedData)) {
+            groupedData[key] = {};
+          }
+          if (config.field) {
+            groupedData[key][config.field] = key;
+          }
+          if (inPorts.length === 1) {
+            groupedData[key] = payload;
+          } else {
+            groupedData[key][port] = payload;
+          }
+          if (collectGroups instanceof Array && collectGroups.indexOf(port) !== -1) {
+            if (!(key in groupedDataGroups)) {
+              groupedDataGroups[key] = [];
+            }
+            _ref2 = inPort.groups;
+            for (_n = 0, _len5 = _ref2.length; _n < _len5; _n++) {
+              grp = _ref2[_n];
+              if (groupedDataGroups[key].indexOf(grp) === -1) {
+                groupedDataGroups[key].push(grp);
+              }
+            }
+          }
+          requiredLength = inPorts.length;
+          if (config.field) {
+            ++requiredLength;
+          }
+          if (requiredLength === 1 || Object.keys(groupedData[key]).length === requiredLength) {
+            if (collectGroups === true) {
+              groups = inPort.groups;
+            } else {
+              groups = groupedDataGroups[key];
+            }
+            for (_o = 0, _len6 = inPorts.length; _o < _len6; _o++) {
+              p = inPorts[_o];
+              component.inPorts[p].groups = [];
+            }
+            outs = {};
+            for (_p = 0, _len7 = outPorts.length; _p < _len7; _p++) {
+              name = outPorts[_p];
+              if (config.async || config.sendStreams && config.sendStreams.indexOf(name) !== -1) {
+                outs[name] = new StreamSender(component.outPorts[name], config.ordered);
+              } else {
+                outs[name] = component.outPorts[name];
+              }
+            }
+            if (outPorts.length === 1) {
+              outs = outs[outPorts[0]];
+            }
+            whenDone = function(err) {
+              var g, out, _len8, _len9, _q, _r;
+              if (err) {
+                component.error(err, groups);
+              }
+              if (typeof component.fail === 'function' && component.hasErrors) {
+                component.fail();
+              }
+              if (outPorts.length === 1) {
+                if (config.forwardGroups) {
+                  for (_q = 0, _len8 = groups.length; _q < _len8; _q++) {
+                    g = groups[_q];
+                    outs.endGroup();
+                  }
+                }
+                outs.disconnect();
+              } else {
+                for (name in outs) {
+                  out = outs[name];
+                  if (config.forwardGroups) {
+                    for (_r = 0, _len9 = groups.length; _r < _len9; _r++) {
+                      g = groups[_r];
+                      out.endGroup();
+                    }
+                  }
+                  out.disconnect();
+                }
+              }
+              if (typeof component.afterProcess === 'function') {
+                return component.afterProcess(err || component.hasErrors, outs);
+              }
+            };
+            data = groupedData[key];
+            delete groupedData[key];
+            delete groupedDataGroups[key];
+            if (typeof component.beforeProcess === 'function') {
+              component.beforeProcess(outs);
+            }
+            if (outPorts.length === 1) {
+              if (config.forwardGroups) {
+                for (_q = 0, _len8 = groups.length; _q < _len8; _q++) {
+                  g = groups[_q];
+                  outs.beginGroup(g);
+                }
+              }
+            } else {
+              for (name in outs) {
+                out = outs[name];
+                if (config.forwardGroups) {
+                  for (_r = 0, _len9 = groups.length; _r < _len9; _r++) {
+                    g = groups[_r];
+                    out.beginGroup(g);
+                  }
+                }
+              }
+            }
+            if (config.async) {
+              task = function() {
+                return proc(data, groups, outs, whenDone);
+              };
+            } else {
+              task = function() {
+                proc(data, groups, outs);
+                return whenDone();
+              };
+            }
+            if (completeParamsCount >= requiredParamsCount) {
+              return task();
+            } else {
+              return taskQ.push(task);
+            }
+          }
+      }
+    };
+  };
+  for (_m = 0, _len4 = inPorts.length; _m < _len4; _m++) {
+    port = inPorts[_m];
+    _fn1(port);
+  }
+  return component;
+};
+
+exports.GroupedInput = exports.WirePattern;
+
+exports.CustomError = function(message, options) {
+  var err;
+  err = new Error(message);
+  return exports.CustomizeError(err, options);
+};
+
+exports.CustomizeError = function(err, options) {
+  var key, val;
+  for (key in options) {
+    if (!__hasProp.call(options, key)) continue;
+    val = options[key];
+    err[key] = val;
+  }
+  return err;
+};
+
+exports.MultiError = function(component, group, errorPort) {
+  if (group == null) {
+    group = '';
+  }
+  if (errorPort == null) {
+    errorPort = 'error';
+  }
+  if (!(errorPort in component.outPorts)) {
+    throw new Error("Missing error port '" + errorPort + "'");
+  }
+  component.hasErrors = false;
+  component.errors = [];
+  component.error = function(e, groups) {
+    if (groups == null) {
+      groups = [];
+    }
+    component.errors.push({
+      err: e,
+      groups: groups
+    });
+    return component.hasErrors = true;
+  };
+  component.fail = function(e, groups) {
+    var error, grp, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+    if (e == null) {
+      e = null;
+    }
+    if (groups == null) {
+      groups = [];
+    }
+    if (e) {
+      component.error(e, groups);
+    }
+    if (!component.hasErrors) {
+      return;
+    }
+    if (group) {
+      component.outPorts[errorPort].beginGroup(group);
+    }
+    _ref = component.errors;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      error = _ref[_i];
+      _ref1 = error.groups;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        grp = _ref1[_j];
+        component.outPorts[errorPort].beginGroup(grp);
+      }
+      component.outPorts[errorPort].send(error.err);
+      _ref2 = error.groups;
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        grp = _ref2[_k];
+        component.outPorts[errorPort].endGroup();
+      }
+    }
+    if (group) {
+      component.outPorts[errorPort].endGroup();
+    }
+    component.outPorts[errorPort].disconnect();
+    component.hasErrors = false;
+    return component.errors = [];
+  };
+  return component;
+};
+
+});
+require.register("noflo-noflo/src/lib/Streams.js", function(exports, require, module){
+var IP, StreamReceiver, StreamSender, Substream;
+
+IP = (function() {
+  function IP(data) {
+    this.data = data;
+  }
+
+  IP.prototype.sendTo = function(port) {
+    return port.send(this.data);
+  };
+
+  IP.prototype.getValue = function() {
+    return this.data;
+  };
+
+  IP.prototype.toObject = function() {
+    return this.data;
+  };
+
+  return IP;
+
+})();
+
+exports.IP = IP;
+
+Substream = (function() {
+  function Substream(key) {
+    this.key = key;
+    this.value = [];
+  }
+
+  Substream.prototype.push = function(value) {
+    return this.value.push(value);
+  };
+
+  Substream.prototype.sendTo = function(port) {
+    var ip, _i, _len, _ref;
+    port.beginGroup(this.key);
+    _ref = this.value;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      ip = _ref[_i];
+      if (ip instanceof Substream || ip instanceof IP) {
+        ip.sendTo(port);
+      } else {
+        port.send(ip);
+      }
+    }
+    return port.endGroup();
+  };
+
+  Substream.prototype.getKey = function() {
+    return this.key;
+  };
+
+  Substream.prototype.getValue = function() {
+    var hasKeys, ip, obj, res, val, _i, _len, _ref;
+    switch (this.value.length) {
+      case 0:
+        return null;
+      case 1:
+        if (typeof this.value[0].getValue === 'function') {
+          if (this.value[0] instanceof Substream) {
+            obj = {};
+            obj[this.value[0].key] = this.value[0].getValue();
+            return obj;
+          } else {
+            return this.value[0].getValue();
+          }
+        } else {
+          return this.value[0];
+        }
+        break;
+      default:
+        res = [];
+        hasKeys = false;
+        _ref = this.value;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          ip = _ref[_i];
+          val = typeof ip.getValue === 'function' ? ip.getValue() : ip;
+          if (ip instanceof Substream) {
+            obj = {};
+            obj[ip.key] = ip.getValue();
+            res.push(obj);
+          } else {
+            res.push(val);
+          }
+        }
+        return res;
+    }
+  };
+
+  Substream.prototype.toObject = function() {
+    var obj;
+    obj = {};
+    obj[this.key] = this.getValue();
+    return obj;
+  };
+
+  return Substream;
+
+})();
+
+exports.Substream = Substream;
+
+StreamSender = (function() {
+  function StreamSender(port, ordered) {
+    this.port = port;
+    this.ordered = ordered != null ? ordered : false;
+    this.q = [];
+    this.resetCurrent();
+    this.resolved = false;
+  }
+
+  StreamSender.prototype.resetCurrent = function() {
+    this.level = 0;
+    this.current = null;
+    return this.stack = [];
+  };
+
+  StreamSender.prototype.beginGroup = function(group) {
+    var stream;
+    this.level++;
+    stream = new Substream(group);
+    this.stack.push(stream);
+    this.current = stream;
+    return this;
+  };
+
+  StreamSender.prototype.endGroup = function() {
+    var parent, value;
+    if (this.level > 0) {
+      this.level--;
+    }
+    value = this.stack.pop();
+    if (this.level === 0) {
+      this.q.push(value);
+      this.resetCurrent();
+    } else {
+      parent = this.stack[this.stack.length - 1];
+      parent.push(value);
+      this.current = parent;
+    }
+    return this;
+  };
+
+  StreamSender.prototype.send = function(data) {
+    if (this.level === 0) {
+      this.q.push(new IP(data));
+    } else {
+      this.current.push(new IP(data));
+    }
+    return this;
+  };
+
+  StreamSender.prototype.disconnect = function() {
+    if (this.ordered) {
+      this.resolved = true;
+    } else {
+      this.flush();
+    }
+    return this;
+  };
+
+  StreamSender.prototype.flush = function() {
+    var ip, res, _i, _len, _ref;
+    res = false;
+    if (this.q.length > 0) {
+      this.port.connect();
+      _ref = this.q;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        ip = _ref[_i];
+        ip.sendTo(this.port);
+      }
+      this.port.disconnect();
+      res = true;
+    }
+    this.q = [];
+    return res;
+  };
+
+  StreamSender.prototype.isAttached = function() {
+    return this.port.isAttached();
+  };
+
+  return StreamSender;
+
+})();
+
+exports.StreamSender = StreamSender;
+
+StreamReceiver = (function() {
+  function StreamReceiver(port, buffered, process) {
+    this.port = port;
+    this.buffered = buffered != null ? buffered : false;
+    this.process = process != null ? process : null;
+    this.q = [];
+    this.resetCurrent();
+    this.port.process = (function(_this) {
+      return function(event, payload, index) {
+        var stream;
+        switch (event) {
+          case 'connect':
+            if (typeof _this.process === 'function') {
+              return _this.process('connect', index);
+            }
+            break;
+          case 'begingroup':
+            _this.level++;
+            stream = new Substream(payload);
+            if (_this.level === 1) {
+              _this.root = stream;
+              _this.parent = null;
+            } else {
+              _this.parent = _this.current;
+            }
+            return _this.current = stream;
+          case 'endgroup':
+            if (_this.level > 0) {
+              _this.level--;
+            }
+            if (_this.level === 0) {
+              if (_this.buffered) {
+                _this.q.push(_this.root);
+                _this.process('readable', index);
+              } else {
+                if (typeof _this.process === 'function') {
+                  _this.process('data', _this.root, index);
+                }
+              }
+              return _this.resetCurrent();
+            } else {
+              _this.parent.push(_this.current);
+              return _this.current = _this.parent;
+            }
+            break;
+          case 'data':
+            if (_this.level === 0) {
+              return _this.q.push(new IP(payload));
+            } else {
+              return _this.current.push(new IP(payload));
+            }
+            break;
+          case 'disconnect':
+            if (typeof _this.process === 'function') {
+              return _this.process('disconnect', index);
+            }
+        }
+      };
+    })(this);
+  }
+
+  StreamReceiver.prototype.resetCurrent = function() {
+    this.level = 0;
+    this.root = null;
+    this.current = null;
+    return this.parent = null;
+  };
+
+  StreamReceiver.prototype.read = function() {
+    if (this.q.length === 0) {
+      return void 0;
+    }
+    return this.q.shift();
+  };
+
+  return StreamReceiver;
+
+})();
+
+exports.StreamReceiver = StreamReceiver;
+
+});
 require.register("noflo-noflo/src/components/Graph.js", function(exports, require, module){
 var Graph, noflo,
   __hasProp = {}.hasOwnProperty,
@@ -7669,6 +8664,7 @@ Graph = (function(_super) {
 
   Graph.prototype.createNetwork = function(graph) {
     this.description = graph.properties.description || '';
+    this.icon = graph.properties.icon || this.icon;
     graph.componentLoader = this.loader;
     return noflo.createNetwork(graph, (function(_this) {
       return function(network) {
@@ -8225,6 +9221,11 @@ prepareSocketEvent = function(event, req) {
     payload.group = event.group;
   }
   if (event.data) {
+    if (!noflo.isBrowser()) {
+      if (Buffer.isBuffer(event.data)) {
+        event.data = event.data.slice(0, 20);
+      }
+    }
     if (event.data.toJSON) {
       payload.data = event.data.toJSON();
     }
@@ -8610,13 +9611,16 @@ require.alias("noflo-noflo/src/lib/Network.js", "noflo-runtime-base/deps/noflo/s
 require.alias("noflo-noflo/src/lib/Platform.js", "noflo-runtime-base/deps/noflo/src/lib/Platform.js");
 require.alias("noflo-noflo/src/lib/Journal.js", "noflo-runtime-base/deps/noflo/src/lib/Journal.js");
 require.alias("noflo-noflo/src/lib/Utils.js", "noflo-runtime-base/deps/noflo/src/lib/Utils.js");
+require.alias("noflo-noflo/src/lib/Helpers.js", "noflo-runtime-base/deps/noflo/src/lib/Helpers.js");
+require.alias("noflo-noflo/src/lib/Streams.js", "noflo-runtime-base/deps/noflo/src/lib/Streams.js");
 require.alias("noflo-noflo/src/components/Graph.js", "noflo-runtime-base/deps/noflo/src/components/Graph.js");
 require.alias("noflo-noflo/src/lib/NoFlo.js", "noflo-runtime-base/deps/noflo/index.js");
 require.alias("noflo-noflo/src/lib/NoFlo.js", "noflo/index.js");
-require.alias("component-emitter/index.js", "noflo-noflo/deps/emitter/index.js");
+require.alias("bergie-emitter/index.js", "noflo-noflo/deps/events/index.js");
 
-require.alias("component-underscore/index.js", "noflo-noflo/deps/underscore/index.js");
-
+require.alias("jashkenas-underscore/underscore.js", "noflo-noflo/deps/underscore/underscore.js");
+require.alias("jashkenas-underscore/underscore.js", "noflo-noflo/deps/underscore/index.js");
+require.alias("jashkenas-underscore/underscore.js", "jashkenas-underscore/index.js");
 require.alias("noflo-fbp/lib/fbp.js", "noflo-noflo/deps/fbp/lib/fbp.js");
 require.alias("noflo-fbp/lib/fbp.js", "noflo-noflo/deps/fbp/index.js");
 require.alias("noflo-fbp/lib/fbp.js", "noflo-fbp/index.js");

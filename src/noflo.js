@@ -83,7 +83,7 @@ Emulation.inject();
 
 const NoFlo = NoFloContext.require('noflo');
 
-NoFloContext.require.alias("component-underscore/index.js", "underscore");
+NoFloContext.require.alias("jashkenas-underscore/underscore.js", "underscore");
 NoFloContext.require.alias("noflo-fbp/lib/fbp.js", "fbp");
 
 const RuntimeBase = NoFloContext.require('noflo-runtime-base');
