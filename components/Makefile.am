@@ -16,6 +16,5 @@ components_DATA = \
 	ListenProperty.coffee \
 	ListenSignal.coffee \
 	Log.coffee \
-	MonitorProperty.coffee \
 	RunGC.coffee \
 	$(NULL)

@@ -21,7 +21,6 @@
       "ListenProperty": "ListenProperty.coffee",
       "ListenSignal": "ListenSignal.coffee",
       "Log": "Log.coffee",
-      "MonitorProperty": "MonitorProperty.coffee",
       "RunGC": "RunGC.coffee"
     }
   }
