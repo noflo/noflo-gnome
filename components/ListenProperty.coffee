@@ -14,6 +14,10 @@ class ListenProperty extends noflo.Component
         datatype: 'string'
         description: 'Property change to listen to'
         required: yes
+      readback:
+        datatype: 'boolean'
+        description: 'Initial value readback'
+        required: no
     @outPorts = new noflo.OutPorts
       object:
         datatype: 'object'
@@ -24,19 +28,27 @@ class ListenProperty extends noflo.Component
         description: 'Property value'
         required: no
 
-    @inPorts.object.on 'data', (@object) =>
-      @updateListener()
-    @inPorts.property.on 'data', (@property) =>
-      @updateListener()
+    @inPorts.readback.on 'data', (@readback) =>
+    noflo.helpers.WirePattern @,
+      in: ['object', 'property']
+      out: []
+      forwardGroups: false,
+      (data, groups, out) =>
+        @updateListener(data.object, data.property)
 
-  updateListener: () ->
-    return unless @object? and @property?
+  updateListener: (object, property) ->
     @disconnectListener()
+    @object = object
+    @property = property
     @listener = @object.connect "notify::#{@property}", Lang.bind @, () =>
-      @outPorts.object.send @object
-      @outPorts.object.disconnect()
-      @outPorts.value.send @object[@property]
-      @outPorts.value.disconnect()
+      @sendOutputs()
+    @sendOutputs() if @readback
+
+  sendOutputs: () ->
+    @outPorts.object.send @object
+    @outPorts.object.disconnect()
+    @outPorts.value.send @object[@property]
+    @outPorts.value.disconnect()
 
   disconnectListener: () ->
     if @listener
