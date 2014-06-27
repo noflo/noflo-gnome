@@ -113,6 +113,14 @@ let saveTextFileContent = function(path, content) {
                           null);
 };
 
+let parseJSON = function(data) {
+    try {
+        return JSON.parse(data);
+    } catch (e) {
+    }
+    return null;
+};
+
 let guessLanguageFromFilename = function(filename) {
     if (/.*\.coffee$/.test(filename))
         return 'coffeescript';
