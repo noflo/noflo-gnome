@@ -100,7 +100,7 @@ let resolveCachedPath = function(virtualPath) {
 let loadTextFileContent = function(path) {
     let file = Gio.File.new_for_path(path);
     let [, content] = file.load_contents(null);
-    return content;
+    return '' + content;
 };
 
 let saveTextFileContent = function(path, content) {
