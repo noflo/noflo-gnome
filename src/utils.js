@@ -97,6 +97,22 @@ let resolveCachedPath = function(virtualPath) {
     return ret;
 };
 
+let loadTextFileContent = function(path) {
+    let file = Gio.File.new_for_path(path);
+    let [, content] = file.load_contents(null);
+    return content;
+};
+
+let saveTextFileContent = function(path, content) {
+    let file = Gio.File.new_for_path(path);
+
+    file.replace_contents(content,
+                          null,
+                          false,
+                          Gio.FileCreateFlags.NONE, null,
+                          null);
+};
+
 let guessLanguageFromFilename = function(filename) {
     if (/.*\.coffee$/.test(filename))
         return 'coffeescript';
