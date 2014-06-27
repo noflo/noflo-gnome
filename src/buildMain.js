@@ -1,6 +1,8 @@
 const GLib = imports.gi.GLib;
 const Options = imports.options;
 
+const builderInit = imports.builderInit;
+
 /**/
 
 let printProgram = function(msg) {
@@ -18,7 +20,7 @@ let printHelp = function() {
 
 let commands = {
     'init': {
-        exec: function(args) { return 2; },
+        exec: builderInit.exec,
         help: 'Initialize a new application repository',
     },
     'bundle': {
