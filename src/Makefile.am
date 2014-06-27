@@ -19,6 +19,7 @@ do_subst = sed  -e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g'		\
 
 js_filesdir = $(pkgdatadir)/js
 js_files_DATA = \
+	builderInit.js \
 	buildMain.js \
 	codeLoader.js \
 	componentLoader.js \
