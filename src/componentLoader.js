@@ -92,9 +92,14 @@ let ComponentLoader = function(options) {
 
     let generateComponentInstance = function(path) {
         return function(metadata) {
-            let implementation = require(path);
-            let instance = implementation.getComponent(metadata);
-            return instance;
+            try {
+                let implementation = require(path);
+                let instance = implementation.getComponent(metadata);
+                return instance;
+            } catch (e) {
+                log('Failed to load : ' + path);
+                throw e;
+            }
         };
     };
 
