@@ -3,6 +3,8 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Utils = imports.utils;
+const NoFlo = imports.noflo;
+const Fbp = require('fbp');
 
 /* Module listing */
 
@@ -103,6 +105,24 @@ let ComponentLoader = function(options) {
         };
     };
 
+    let generateGraphLoader = function(vpath) {
+        return function() {
+            try {
+                let path = Utils.resolvePath(vpath);
+                let source = Utils.loadTextFileContent(path);
+                if (path.indexOf('.fbp'))
+                    source = Fbp.parse(source);
+                else
+                    source = JSON.parse(source);
+                return source;
+            } catch (e) {
+                log('Failed to load : ' + vpath);
+                throw e;
+            }
+            return '';
+        };
+    };
+
     let generateComponentCodeLoader = function(path) {
         return function() {
             let file = Gio.File.new_for_path(Utils.resolvePath(path));
@@ -113,6 +133,10 @@ let ComponentLoader = function(options) {
 
     let getComponentFullPath = function(module, component) {
         return module.vpath + '/' + module.noflo.components[component];
+    };
+
+    let getGraphFullPath = function(module, component) {
+        return module.vpath + '/' + module.noflo.graphs[component];
     };
 
     let getComponentRequirePath = function(module, component) {
@@ -139,21 +163,37 @@ let ComponentLoader = function(options) {
             self.components = {};
             for (let moduleName in modules) {
                 let module = modules[moduleName];
+
+                // Components
                 for (let componentName in module.noflo.components) {
                     let path = normalizeName(moduleName + '/' + componentName);
-                    let requirePath = getComponentRequirePath(module, componentName);
                     let fullPath = getComponentFullPath(module, componentName);
+                    let requirePath = removeExtension(fullPath);
                     self.components[path] = {
+                        isGraph: false,
                         module: module,
                         moduleName: normalizeName(moduleName),
                         name: componentName,
                         create: generateComponentInstance(requirePath),
                         getCode: generateComponentCodeLoader(fullPath),
                         language: Utils.guessLanguageFromFilename(fullPath),
-                        path: fullPath
                     };
                 }
 
+                // Graphs
+                for (let graphName in module.noflo.graphs) {
+                    let path = normalizeName(moduleName + '/' + graphName);
+                    let fullPath = getGraphFullPath(module, graphName);
+                    self.components[path] = {
+                        isGraph: true,
+                        module: module,
+                        moduleName: normalizeName(moduleName),
+                        name: graphName,
+                        getCode: generateGraphLoader(fullPath),
+                    };
+                }
+
+                // Loaders
                 if (module.noflo.loader) {
                     let path = module.vpath + '/' + module.noflo.loader;
                     path = removeExtension(path);
@@ -174,24 +214,49 @@ let ComponentLoader = function(options) {
     };
 
     self.load = function(name, callback, delayed, metadata) {
-        if (!self.components[name])
+        let item = self.components[name];
+        if (!item)
             throw new Error('Component ' + name + ' not available');
 
+        if (item.isGraph)
+            self.loadGraph(item, delayed, metadata, callback);
+        else
+            self.loadComponent(item, metadata, callback);
+    };
+
+    self.loadComponent = function(item, metadata, callback) {
+        log('loadComponent ' + item.name);
         Mainloop.timeout_add(0, Lang.bind(this, function() {
-            callback(self.components[name].create(metadata));
+            callback(item.create(metadata));
             return false;
         }));
+    }
+
+    self.loadGraph = function(item, delayed, metadata, callback) {
+        log('loadGraph ' + item.name);
+        let graphSocket = NoFlo.internalSocket.createSocket();
+        let graph = NoFlo.Graph.getComponent(metadata);
+        graph.loader = self;
+
+        if (delayed) {
+            delaySocket = NoFlo.internalSocket.createSocket();
+            graph.inPorts.start.attach(delaySocket);
+        }
+
+        graph.inPorts.graph.attach(graphSocket);
+        graphSocket.send(item.getCode());
+        graphSocket.disconnect();
+        graph.inPorts.remove('graph');
+        graph.inPorts.remove('start');
+        graph.setIcon('sitemap');
+        callback(graph);
     };
 
-    self.loadGraph = function(name, component, callback, delayed, metadata) {
-        log('loadGraph ' + name);
-    };
-
-    self.registerComponent = function(packageId, name, cPath, callback) {
+    self.registerComponent = function(packageId, name, constructor) {
         self.components[packageId + '/' + name] = {
             module: packageId,
             name: name,
-            create: cPath,
+            create: constructor,
             language: 'javascript'
         };
         log('registerComponent ' + packageId + ' / ' + name);
@@ -206,7 +271,9 @@ let ComponentLoader = function(options) {
     };
 
     self.getSource = function(name, callback) {
-        if (self.components[name].getCode) {
+        log('getting code for ' + name);
+        let item = self.components[name];
+        if (item && !item.isGraph && item.getCode) {
             try {
                 callback(null,
                          { name: self.components[name].name,

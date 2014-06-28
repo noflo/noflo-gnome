@@ -85,9 +85,11 @@ const NoFlo = NoFloContext.require('noflo');
 
 NoFloContext.require.alias("jashkenas-underscore/underscore.js", "underscore");
 NoFloContext.require.alias("noflo-fbp/lib/fbp.js", "fbp");
+NoFloContext.require.alias("noflo-noflo/src/components/Graph.js", "Graph");
 
 const RuntimeBase = NoFloContext.require('noflo-runtime-base');
-const Fbp = NoFloContext.require('fbp');
+const Graph = NoFloContext.require('noflo-noflo/src/components/Graph.js');
+const internalSocket = NoFlo.internalSocket;
 
 /**/
 
