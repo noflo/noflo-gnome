@@ -22,6 +22,7 @@ let getModuleAtPath = function(vpath) {
     let [, manifestContent] = file.load_contents(null);
     let manifest;
 
+    let module;
     try {
         module = JSON.parse('' + manifestContent);
         module.vpath = vpath;
@@ -239,7 +240,7 @@ let ComponentLoader = function(options) {
         graph.loader = self;
 
         if (delayed) {
-            delaySocket = NoFlo.internalSocket.createSocket();
+            let delaySocket = NoFlo.internalSocket.createSocket();
             graph.inPorts.start.attach(delaySocket);
         }
 
