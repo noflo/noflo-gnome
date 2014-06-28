@@ -92,14 +92,14 @@ let ComponentLoader = function(options) {
         return ret.replace(/\.js$/, '');
     };
 
-    let generateComponentInstance = function(path) {
+    let generateComponentInstance = function(vpath) {
         return function(metadata) {
             try {
-                let implementation = require(path);
+                let implementation = require(vpath);
                 let instance = implementation.getComponent(metadata);
                 return instance;
             } catch (e) {
-                log('Failed to load : ' + path);
+                log('Failed to load : ' + vpath);
                 throw e;
             }
         };
