@@ -263,7 +263,7 @@ let ComponentLoader = function(options) {
     };
 
     self.registerGraph = function(packageId, name, gPath, callback) {
-        log('registerGraph ' + packageId + ' / ' + name);
+        throw new Error('registerGraph ' + packageId + ' / ' + name);
     };
 
     self.setSource = function(packageId, name, source, language, callback) {
