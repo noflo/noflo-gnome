@@ -78,7 +78,9 @@ let ComponentLoader = function(options) {
         self.options.path = ['.'];
 
     self.components = {};
-    self.listCallbacks = [];
+    self.listComponentsCallbacks = [];
+    self.graphs = {};
+    self.listGraphsCallbacks = [];
 
     let logFunc = function(name) {
         log('calling : ' +  name);
@@ -93,6 +95,8 @@ let ComponentLoader = function(options) {
         return ret.replace(/\.js$/, '');
     };
 
+    /* Components */
+
     let generateComponentInstance = function(vpath) {
         return function(metadata) {
             try {
@@ -106,24 +110,6 @@ let ComponentLoader = function(options) {
         };
     };
 
-    let generateGraphLoader = function(vpath) {
-        return function() {
-            try {
-                let path = Utils.resolvePath(vpath);
-                let source = Utils.loadTextFileContent(path);
-                if (path.indexOf('.fbp'))
-                    source = Fbp.parse(source);
-                else
-                    source = JSON.parse(source);
-                return source;
-            } catch (e) {
-                log('Failed to load : ' + vpath);
-                throw e;
-            }
-            return '';
-        };
-    };
-
     let generateComponentCodeLoader = function(path) {
         return function() {
             let file = Gio.File.new_for_path(Utils.resolvePath(path));
@@ -131,6 +117,30 @@ let ComponentLoader = function(options) {
             return '' + code;
         };
     };
+
+    /* Graphs */
+
+    let generateGraphDefinition = function(vpath) {
+        log('generate graph def for ' + vpath);
+        return function() {
+            try {
+                let path = Utils.resolvePath(vpath);
+                let source = Utils.loadTextFileContent(path);
+                let description;
+                if (path.indexOf('.fbp'))
+                    description = Fbp.parse(source);
+                else
+                    description = JSON.parse(source);
+                return description;
+            } catch (e) {
+                log('Failed to load : ' + vpath);
+                throw e;
+            }
+            return null;
+        };
+    };
+
+    /**/
 
     let getComponentFullPath = function(module, component) {
         return module.vpath + '/' + module.noflo.components[component];
@@ -146,18 +156,18 @@ let ComponentLoader = function(options) {
 
     self.listComponents = function(callback) {
         // List is built already
-        if (self.builtList) {
+        if (self.builtComponentList) {
             callback(self.components);
             return;
         }
 
-        self.listCallbacks.push(callback);
+        self.listComponentsCallbacks.push(callback);
 
         // Building list
-        if (self.buildingList)
+        if (self.buildingComponentList)
             return;
 
-        self.buildingList = true;
+        self.buildingComponentList = true;
 
         Mainloop.timeout_add(0, Lang.bind(this, function() {
             let modules = getModules(self.options.paths);
@@ -190,7 +200,17 @@ let ComponentLoader = function(options) {
                         module: module,
                         moduleName: normalizeName(moduleName),
                         name: graphName,
-                        getCode: generateGraphLoader(fullPath),
+                        getDefinition: generateGraphDefinition(fullPath),
+                        getCode: function() {
+                            return JSON.stringify(this.getDefinition());
+                        },
+                        create: function(metadata) {
+                            return NoFlo.NoFlo.graph.loadJSON(
+                                this.getDefinition(),
+                                function(a) { return a; },
+                                metadata);
+                        },
+                        language: 'json',
                     };
                 }
 
@@ -203,10 +223,10 @@ let ComponentLoader = function(options) {
                 }
             }
 
-            let callbacks = self.listCallbacks;
-            self.listCallbacks = [];
-            self.buildingList = false;
-            self.builtList = true;
+            let callbacks = self.listComponentsCallbacks;
+            self.listComponentsCallbacks = [];
+            self.buildingComponentList = false;
+            self.builtComponentList = true;
             for (let i in callbacks)
                 callbacks[i](self.components);
 
@@ -245,7 +265,7 @@ let ComponentLoader = function(options) {
         }
 
         graph.inPorts.graph.attach(graphSocket);
-        graphSocket.send(item.getCode());
+        graphSocket.send(item.create(metadata));
         graphSocket.disconnect();
         graph.inPorts.remove('graph');
         graph.inPorts.remove('start');
@@ -274,22 +294,21 @@ let ComponentLoader = function(options) {
     self.getSource = function(name, callback) {
         log('getting code for ' + name);
         let item = self.components[name];
-        if (item && !item.isGraph && item.getCode) {
+        if (item) {
             try {
-                callback(null,
-                         { name: self.components[name].name,
-                           library: self.components[name].moduleName,
-                           code: self.components[name].getCode(),
-                           language: self.components[name].language
-                         });
+                callback(null, { name: item.name,
+                                 library: item.moduleName,
+                                 code: item.getCode(),
+                                 language: item.language
+                               });
             } catch (e) {
                 log('error loading ' + name + ' : ' + e.message);
                 callback(new Error("Cannot load source code for " +
                                    name + " : " + e.message));
             }
         } else {
-            log('no source code for ' + name);
-            callback(new Error("No source code available for " + name));
+            log('Unknown component ' + name);
+            callback(new Error('Unknown component ' + name));
         }
     };
 };
