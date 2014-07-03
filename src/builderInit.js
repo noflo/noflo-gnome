@@ -25,7 +25,10 @@ let exec = function(args) {
         name: options.options['name'],
         version: options.options['version'],
         ui: [],
-        components: {},
+        noflo: {
+            components: {},
+            graphs: {},
+        },
     };
 
     let manifestPath = GLib.getenv('PWD') + '/manifest.json';
