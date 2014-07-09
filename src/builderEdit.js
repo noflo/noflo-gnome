@@ -19,15 +19,26 @@ let exec = function(args) {
     }
 
     let runtime = {
-        label: 'NoFlo Gnome - ' + (manifest != null ? manifest.name : ''),
+        label: 'NoFlo Gnome',
         id: '516416d5-9d62-41a1-a901-7ac469455c03',
         protocol: 'websocket',
         address: 'ws://localhost:5555',
         type: 'noflo-gnome',
     };
+    let project = {
+        id: manifest.name,
+        name: manifest.name,
+        components: [],
+        graphs: [],
+        main: manifest.noflo.main,
+        type: 'noflo-gnome',
+    };
 
-    let uri = 'http://localhost:1080/#';
-    uri += '?runtime=' + GLib.base64_encode(JSON.stringify(runtime));
+    let uri = 'http://localhost:1080/live.html#';
+    uri += '?runtime=' + Soup.uri_encode(GLib.base64_encode(JSON.stringify(runtime)),
+                                         null);
+    uri += '&project=' + Soup.uri_encode(GLib.base64_encode(JSON.stringify(project)),
+                                         null);
 
     print('Open: ' + uri);
 
