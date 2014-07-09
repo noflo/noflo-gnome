@@ -50,13 +50,15 @@ const WebProtoServer = new Lang.Class({
                                              baseDir: '/noflo-runtime-base',
                                              type: 'noflo-nodejs', });
 
+        let loader = new ComponentLoader({
+            baseDir: '/noflo-runtime-base',
+            paths: [ 'library://components',
+                     'local://components', ],
+        });
         this.runtime.component.loaders = {
-            '/noflo-runtime-base': new ComponentLoader({
-                baseDir: '/noflo-runtime-base',
-                paths: [ 'library://components',
-                         'local://components', ],
-            })
+            '/noflo-runtime-base': loader,
         };
+        loader.install(this.runtime);
 
         this.signals = [];
 

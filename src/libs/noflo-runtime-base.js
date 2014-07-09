@@ -8919,7 +8919,7 @@ GraphProtocol = (function() {
 
   GraphProtocol.prototype.receive = function(topic, payload, context) {
     var graph;
-    if (topic !== 'clear') {
+    if (topic !== 'clear' && topic !== 'list') {
       graph = this.resolveGraph(payload, context);
       if (!graph) {
         return;
@@ -8928,16 +8928,24 @@ GraphProtocol = (function() {
     switch (topic) {
       case 'clear':
         return this.initGraph(payload, context);
+      case 'get':
+        return this.getGraph(graph, payload, context);
+      case 'list':
+        return this.listGraphs(payload, context);
       case 'addnode':
         return this.addNode(graph, payload, context);
       case 'removenode':
         return this.removeNode(graph, payload, context);
       case 'renamenode':
         return this.renameNode(graph, payload, context);
+      case 'changenode':
+        return this.changeNode(graph, payload, context);
       case 'addedge':
         return this.addEdge(graph, payload, context);
       case 'removeedge':
         return this.removeEdge(graph, payload, context);
+      case 'changeedge':
+        return this.changeEdge(graph, payload, context);
       case 'addinitial':
         return this.addInitial(graph, payload, context);
       case 'removeinitial':
@@ -8969,6 +8977,27 @@ GraphProtocol = (function() {
     return this.graphs[payload.graph];
   };
 
+  GraphProtocol.prototype.getLoader = function(baseDir) {
+    if (!this.loaders[baseDir]) {
+      this.loaders[baseDir] = new noflo.ComponentLoader(baseDir);
+    }
+    return this.loaders[baseDir];
+  };
+
+  GraphProtocol.prototype.getGraph = function(graph, payload, context) {
+    return this.send('graph', graph.toJSON(), context);
+  };
+
+  GraphProtocol.prototype.listGraphs = function(payload, context) {
+    var graph, graphName, _ref;
+    _ref = this.graphs;
+    for (graphName in _ref) {
+      graph = _ref[graphName];
+      this.send('graph', graph.toJSON(), context);
+    }
+    return this.send('graphsdone', true, context);
+  };
+
   GraphProtocol.prototype.initGraph = function(payload, context) {
     var fullName, graph;
     if (!payload.id) {
@@ -8992,6 +9021,11 @@ GraphProtocol = (function() {
     return this.graphs[payload.id] = graph;
   };
 
+  GraphProtocol.prototype.registerGraph = function(id, graph) {
+    this.subscribeGraph(id, graph, '');
+    return this.graphs[id] = graph;
+  };
+
   GraphProtocol.prototype.subscribeGraph = function(id, graph, context) {
     graph.on('addNode', (function(_this) {
       return function(node) {
@@ -9010,6 +9044,15 @@ GraphProtocol = (function() {
         return _this.send('renamenode', {
           from: oldId,
           to: newId,
+          graph: id
+        }, context);
+      };
+    })(this));
+    graph.on('changeNode', (function(_this) {
+      return function(node, before) {
+        return _this.send('changenode', {
+          id: node.id,
+          metadata: node.metadata,
           graph: id
         }, context);
       };
@@ -9042,6 +9085,18 @@ GraphProtocol = (function() {
           graph: id
         };
         return _this.send('removeedge', edgeData, context);
+      };
+    })(this));
+    graph.on('changeEdge', (function(_this) {
+      return function(edge) {
+        var edgeData;
+        edgeData = {
+          src: edge.from,
+          tgt: edge.to,
+          metadata: edge.metadata,
+          graph: id
+        };
+        return _this.send('changeedge', edgeData, context);
       };
     })(this));
     graph.on('addInitial', (function(_this) {
@@ -9094,6 +9149,14 @@ GraphProtocol = (function() {
     return graph.renameNode(payload.from, payload.to);
   };
 
+  GraphProtocol.prototype.changeNode = function(graph, payload, context) {
+    if (!(payload.id || payload.metadata)) {
+      this.send('error', new Error('No id or metadata supplied'), context);
+      return;
+    }
+    return graph.setNodeMetadata(payload.id, payload.metadata);
+  };
+
   GraphProtocol.prototype.addEdge = function(graph, edge, context) {
     if (!(edge.src || edge.tgt)) {
       this.send('error', new Error('No src or tgt supplied'), context);
@@ -9114,6 +9177,14 @@ GraphProtocol = (function() {
       return;
     }
     return graph.removeEdge(edge.src.node, edge.src.port, edge.tgt.node, edge.tgt.port);
+  };
+
+  GraphProtocol.prototype.changeEdge = function(graph, edge, context) {
+    if (!(edge.src || edge.tgt)) {
+      this.send('error', new Error('No src or tgt supplied'), context);
+      return;
+    }
+    return graph.setEdgeMetadata(edge.src.node, edge.src.port, edge.tgt.node, edge.tgt.port, edge.metadata);
   };
 
   GraphProtocol.prototype.addInitial = function(graph, payload, context) {
@@ -9258,15 +9329,19 @@ NetworkProtocol = (function() {
 
   NetworkProtocol.prototype.receive = function(topic, payload, context) {
     var graph;
-    graph = this.resolveGraph(payload, context);
-    if (!graph) {
-      return;
+    if (topic !== 'list') {
+      graph = this.resolveGraph(payload, context);
+      if (!graph) {
+        return;
+      }
     }
     switch (topic) {
       case 'start':
         return this.initNetwork(graph, payload, context);
       case 'stop':
         return this.stopNetwork(graph, payload, context);
+      case 'list':
+        return this.listNetworks(payload, context);
     }
   };
 
@@ -9283,6 +9358,10 @@ NetworkProtocol = (function() {
   };
 
   NetworkProtocol.prototype.initNetwork = function(graph, payload, context) {
+    if (this.networks[payload.graph]) {
+      this.networks[payload.graph].stop();
+      delete this.networks[payload.graph];
+    }
     graph.componentLoader = this.transport.component.getLoader(graph.baseDir);
     return noflo.createNetwork(graph, (function(_this) {
       return function(network) {
@@ -9354,6 +9433,19 @@ NetworkProtocol = (function() {
       return;
     }
     return this.networks[payload.graph].stop();
+  };
+
+  NetworkProtocol.prototype.listNetworks = function(payload, context) {
+    var graph, network, _ref;
+    _ref = this.networks;
+    for (graph in _ref) {
+      network = _ref[graph];
+      this.send('network', {
+        graph: graph,
+        started: network.isStarted()
+      }, context);
+    }
+    return this.send('networksdone', null, context);
   };
 
   return NetworkProtocol;

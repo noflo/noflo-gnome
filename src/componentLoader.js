@@ -8,13 +8,13 @@ const Fbp = require('fbp');
 
 /* Module listing */
 
-let getModuleAtPath = function(vpath) {
+let getModuleAtPath = function(vpath, alternativeFile) {
     let path = Utils.resolvePath(vpath);
 
     if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
         return null;
 
-    let manifestPath = path + '/component.json';
+    let manifestPath = path + (alternativeFile ? alternativeFile : '/component.json');
     if (!GLib.file_test(manifestPath, GLib.FileTest.IS_REGULAR))
         return null;
 
@@ -35,6 +35,8 @@ let getModuleAtPath = function(vpath) {
     if (!module.name ||
         !module.noflo)
         return null;
+
+    log('loaded: ' + module.name);
 
     return module;
 };
@@ -72,19 +74,16 @@ let ComponentLoader = function(options) {
 
     /* Ensure with have valid options */
     self.options = options;
-    if (!self.options)
-        self.options = { paths: [ '.' ] };
-    if (!self.options.path)
-        self.options.path = ['.'];
+    if (!self.options || !self.options.paths)
+        self.options = { paths: [ 'library://components' ] };
 
+    self.applicationName = null;
+    self.mainGraphName = null;
+    self.modules = {};
     self.components = {};
-    self.listComponentsCallbacks = [];
-    self.graphs = {};
-    self.listGraphsCallbacks = [];
-
-    let logFunc = function(name) {
-        log('calling : ' +  name);
-    };
+    //self.listComponentsCallbacks = [];
+    // self.graphs = {};
+    // self.listGraphsCallbacks = [];
 
     let normalizeName = function(name) {
         return name.replace('noflo-', '');
@@ -104,7 +103,7 @@ let ComponentLoader = function(options) {
                 let instance = implementation.getComponent(metadata);
                 return instance;
             } catch (e) {
-                log('Failed to load : ' + vpath);
+                log('Failed to load component : ' + vpath + ' : ' + e.message);
                 throw e;
             }
         };
@@ -121,22 +120,36 @@ let ComponentLoader = function(options) {
     /* Graphs */
 
     let generateGraphDefinition = function(vpath) {
-        log('generate graph def for ' + vpath);
         return function() {
             try {
                 let path = Utils.resolvePath(vpath);
                 let source = Utils.loadTextFileContent(path);
-                let description;
-                if (path.indexOf('.fbp'))
-                    description = Fbp.parse(source);
+                let def;
+                if (path.indexOf('.fbp') >= 0)
+                    def = Fbp.parse(source);
                 else
-                    description = JSON.parse(source);
-                return description;
+                    def = JSON.parse(source);
+                def.properties = {
+                    name: this.name,
+                    id: this.name,
+                };
+                return def;
             } catch (e) {
-                log('Failed to load : ' + vpath);
+                log('Failed to load graph : ' + vpath + ' : ' + e.message);
                 throw e;
             }
             return null;
+        };
+    };
+
+    let generateGraphLoader = function() {
+        return function(metadata) {
+            let graph = NoFlo.NoFlo.graph.loadJSON(
+                this.getDefinition(),
+                function(a) { return a; },
+                metadata);
+            graph.baseDir = self.options.baseDir;
+            return graph;
         };
     };
 
@@ -154,107 +167,89 @@ let ComponentLoader = function(options) {
         return removeExtension(getComponentFullPath(module, component));
     };
 
-    self.listComponents = function(callback) {
-        // List is built already
-        if (self.builtComponentList) {
-            callback(self.components);
-            return;
-        }
+    /**/
 
-        self.listComponentsCallbacks.push(callback);
+    self._loadModules = function() {
+        // Load libray modules
+        self.modules = getModules(self.options.paths);
+        // Load application components/graphs
+        let appModule = getModuleAtPath('local://', 'manifest.json');
+        self.applicationName = appModule.name;
+        self.mainGraphName = appModule.noflo.main;
+        self.modules[appModule.name] = appModule;
 
-        // Building list
-        if (self.buildingComponentList)
-            return;
+        for (let moduleName in self.modules) {
+            let module = self.modules[moduleName];
 
-        self.buildingComponentList = true;
-
-        Mainloop.timeout_add(0, Lang.bind(this, function() {
-            let modules = getModules(self.options.paths);
-            self.components = {};
-            for (let moduleName in modules) {
-                let module = modules[moduleName];
-
-                // Components
-                for (let componentName in module.noflo.components) {
-                    let path = normalizeName(moduleName + '/' + componentName);
-                    let fullPath = getComponentFullPath(module, componentName);
-                    let requirePath = removeExtension(fullPath);
-                    self.components[path] = {
-                        isGraph: false,
-                        module: module,
-                        moduleName: normalizeName(moduleName),
-                        name: componentName,
-                        create: generateComponentInstance(requirePath),
-                        getCode: generateComponentCodeLoader(fullPath),
-                        language: Utils.guessLanguageFromFilename(fullPath),
-                    };
-                }
-
-                // Graphs
-                for (let graphName in module.noflo.graphs) {
-                    let path = normalizeName(moduleName + '/' + graphName);
-                    let fullPath = getGraphFullPath(module, graphName);
-                    self.components[path] = {
-                        isGraph: true,
-                        module: module,
-                        moduleName: normalizeName(moduleName),
-                        name: graphName,
-                        getDefinition: generateGraphDefinition(fullPath),
-                        getCode: function() {
-                            return JSON.stringify(this.getDefinition());
-                        },
-                        create: function(metadata) {
-                            return NoFlo.NoFlo.graph.loadJSON(
-                                this.getDefinition(),
-                                function(a) { return a; },
-                                metadata);
-                        },
-                        language: 'json',
-                    };
-                }
-
-                // Loaders
-                if (module.noflo.loader) {
-                    let path = module.vpath + '/' + module.noflo.loader;
-                    path = removeExtension(path);
-                    let loader = require(path);
-                    loader(self);
-                }
+            //log('loading ' + moduleName);
+            // Components
+            for (let componentName in module.noflo.components) {
+                let path = normalizeName(moduleName + '/' + componentName);
+                let fullPath = getComponentFullPath(module, componentName);
+                let requirePath = removeExtension(fullPath);
+                self.components[path] = {
+                    isGraph: false,
+                    module: module,
+                    moduleName: normalizeName(moduleName),
+                    name: componentName,
+                    create: generateComponentInstance(requirePath),
+                    getCode: generateComponentCodeLoader(fullPath),
+                    language: Utils.guessLanguageFromFilename(fullPath),
+                };
             }
 
-            let callbacks = self.listComponentsCallbacks;
-            self.listComponentsCallbacks = [];
-            self.buildingComponentList = false;
-            self.builtComponentList = true;
-            for (let i in callbacks)
-                callbacks[i](self.components);
+            // Graphs
+            for (let graphName in module.noflo.graphs) {
+                let path = normalizeName(moduleName + '/' + graphName);
+                let fullPath = getGraphFullPath(module, graphName);
+                self.components[path] = {
+                    isGraph: true,
+                    module: module,
+                    moduleName: normalizeName(moduleName),
+                    name: graphName,
+                    getDefinition: generateGraphDefinition(fullPath),
+                    getCode: generateGraphDefinition(fullPath),
+                    create: generateGraphLoader(),
+                    language: 'json',
+                };
+            }
 
-            return false;
-        }));
+            // Loaders
+            if (module.noflo.loader) {
+                let path = module.vpath + '/' + module.noflo.loader;
+                path = removeExtension(path);
+                let loader = require(path);
+                loader(self);
+            }
+        }
+    };
+
+    self.listComponents = function(callback) {
+        callback(self.components);
     };
 
     self.load = function(name, callback, delayed, metadata) {
+        //log('load name=' + name);
         let item = self.components[name];
         if (!item)
             throw new Error('Component ' + name + ' not available');
 
         if (item.isGraph)
-            self.loadGraph(item, delayed, metadata, callback);
+            self._loadGraph(item, delayed, metadata, callback);
         else
-            self.loadComponent(item, metadata, callback);
+            self._loadComponent(item, metadata, callback);
     };
 
-    self.loadComponent = function(item, metadata, callback) {
-        log('loadComponent ' + item.name);
+    self._loadComponent = function(item, metadata, callback) {
         Mainloop.timeout_add(0, Lang.bind(this, function() {
+            //log('loadComponent ' + item.name);
             callback(item.create(metadata));
             return false;
         }));
     }
 
-    self.loadGraph = function(item, delayed, metadata, callback) {
-        log('loadGraph ' + item.name);
+    self._loadGraph = function(item, delayed, metadata, callback) {
+        //log('loadGraph ' + item.name);
         let graphSocket = NoFlo.internalSocket.createSocket();
         let graph = NoFlo.Graph.getComponent(metadata);
         graph.loader = self;
@@ -274,8 +269,15 @@ let ComponentLoader = function(options) {
     };
 
     self.registerComponent = function(packageId, name, constructor) {
-        self.components[packageId + '/' + name] = {
-            module: packageId,
+        let path = (packageId != '') ? (packageId + '/' + name) : name;
+
+        if (self.components[path]) {
+            log('Dismissing registration for ' + path);
+            return;
+        }
+
+        self.components[path] = {
+            module: null,
             name: name,
             create: constructor,
             language: 'javascript'
@@ -284,18 +286,21 @@ let ComponentLoader = function(options) {
     };
 
     self.registerGraph = function(packageId, name, gPath, callback) {
+        log('----------> registerGraph ' + packageId + ' / ' + name);
         throw new Error('registerGraph ' + packageId + ' / ' + name);
     };
+
+    /**/
 
     self.setSource = function(packageId, name, source, language, callback) {
         log('setSource ' + packageId + ' / ' + name);
     };
 
     self.getSource = function(name, callback) {
-        log('getting code for ' + name);
         let item = self.components[name];
         if (item) {
             try {
+                //log(JSON.stringify(item.getCode()));
                 callback(null, { name: item.name,
                                  library: item.moduleName,
                                  code: item.getCode(),
@@ -310,5 +315,56 @@ let ComponentLoader = function(options) {
             log('Unknown component ' + name);
             callback(new Error('Unknown component ' + name));
         }
+    };
+
+    self.getGraphDefinition = function(name, callback) {
+        let item = self.components[name];
+
+        if (item) {
+            try {
+                let descr = item.getDefinition();
+                callback(null, descr);
+            } catch (e) {
+                log('error loading ' + name + ' : ' + e.message);
+                callback(new Error("Cannot load definition for " +
+                                   name + " : " + e.message));
+            }
+        } else {
+            log('Unknown graph ' + name);
+            callback(new Error('Unknown graph ' + name));
+        }
+    };
+
+    /**/
+
+    self._installGraphs = function(runtime) {
+        for (let graphName in self.modules[self.applicationName].noflo.graphs) {
+            let path = self.applicationName + '/' + graphName;
+            let component = self.components[path];
+
+            runtime.graph.registerGraph(path, component.create());
+        }
+    };
+
+    self._installNetwork = function(runtime) {
+        let path = self.applicationName + '/' + self.mainGraphName;
+        let component = self.components[path];
+
+        log('Registred graphs: ');
+        for (let i in runtime.graph.graphs) {
+            log(i + ' : ' + JSON.stringify(runtime.graph.graphs[i].toJSON()));
+        }
+
+        runtime.network.initNetwork(runtime.graph.graphs[path],
+                                    { graph: path, },
+                                    '');
+    };
+
+    /**/
+
+    self.install = function(runtime) {
+        self._loadModules();
+        self._installGraphs(runtime);
+        self._installNetwork(runtime);
     };
 };
