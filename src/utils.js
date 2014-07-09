@@ -74,7 +74,7 @@ let resolvePath = function(virtualPath) {
     if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
         ret = Path.RESOURCE_DIR + '/' + ret[1];
     else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = ret[1];
+        ret = Path.CURRENT_DIR + '/' + ret[1];
     else
         ret = virtualPath
 

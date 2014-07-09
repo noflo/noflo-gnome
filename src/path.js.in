@@ -4,3 +4,4 @@ let RESOURCE_DIR = "@pkgdatadir@";
 let PACKAGE_NAME = "@PACKAGE_NAME@";
 let HOME_DIR = GLib.getenv('HOME');
 let CACHE_DIR = HOME_DIR + '/.cache/' + PACKAGE_NAME;
+let CURRENT_DIR = GLib.getenv('PWD');
