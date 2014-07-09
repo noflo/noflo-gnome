@@ -114,6 +114,8 @@ const WebProtoServer = new Lang.Class({
 
     sendMessage: function(message) {
         //log('sending message: ' + message);
+        if (!this.connection)
+            return;
         this.connection.send_text(message);
     },
 
