@@ -3,6 +3,7 @@ const Lang = imports.lang;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Soup = imports.gi.Soup;
+const CodeWriter = imports.codeWriter;
 const Path = imports.path;
 const Utils = imports.utils;
 
@@ -110,6 +111,11 @@ const WebProtoServer = new Lang.Class({
             this.connection.disconnect(this.signals[i]);
         this.signals = [];
         this.connection = null;
+
+        for (let i in this.runtime.graph.graphs) {
+            let graph = this.runtime.graph.graphs[i];
+            CodeWriter.writeGraph(graph);
+        }
     },
 
     sendMessage: function(message) {

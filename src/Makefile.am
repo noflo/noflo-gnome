@@ -23,6 +23,7 @@ js_files_DATA = \
 	builderInit.js \
 	buildMain.js \
 	codeLoader.js \
+	codeWriter.js \
 	componentLoader.js \
 	emulation.js \
 	runtimeMain.js \
