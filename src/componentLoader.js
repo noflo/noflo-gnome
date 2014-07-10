@@ -79,6 +79,7 @@ let ComponentLoader = function(options) {
 
     self.applicationName = null;
     self.mainGraphName = null;
+    self.mainGraph = null;
     self.modules = {};
     self.components = {};
 
@@ -200,16 +201,22 @@ let ComponentLoader = function(options) {
             for (let graphName in module.noflo.graphs) {
                 let path = normalizeName(moduleName + '/' + graphName);
                 let fullPath = getGraphFullPath(module, graphName);
-                self.components[path] = {
+                let component = {
                     isGraph: true,
                     module: module,
                     moduleName: normalizeName(moduleName),
                     name: graphName,
                     getDefinition: generateGraphDefinition(fullPath),
                     getCode: generateGraphDefinition(fullPath),
-                    create: generateGraphLoader(),
+                    create: generateGraphLoader(path),
                     language: 'json',
                 };
+
+                if (module == appModule &&
+                    graphName == self.mainGraphName)
+                    self.mainGraph = component;
+                else
+                    self.components[path] = component;
             }
 
             // Loaders
@@ -239,8 +246,8 @@ let ComponentLoader = function(options) {
     };
 
     self._loadComponent = function(item, metadata, callback) {
+
         Mainloop.timeout_add(0, Lang.bind(this, function() {
-            //log('loadComponent ' + item.name);
             callback(item.create(metadata));
             return false;
         }));
@@ -248,9 +255,10 @@ let ComponentLoader = function(options) {
 
     self._loadGraph = function(item, delayed, metadata, callback) {
         //log('loadGraph ' + item.name);
-        let graphSocket = NoFlo.internalSocket.createSocket();
         let graph = NoFlo.Graph.getComponent(metadata);
+        let graphSocket = NoFlo.internalSocket.createSocket();
         graph.loader = self;
+        graph.baseDir = self.options.baseDir
 
         if (delayed) {
             let delaySocket = NoFlo.internalSocket.createSocket();
@@ -340,18 +348,16 @@ let ComponentLoader = function(options) {
             let path = self.applicationName + '/' + graphName;
             let component = self.components[path];
 
-            runtime.graph.registerGraph(path, component.create());
+            if (component)
+                runtime.graph.registerGraph(path, component.create());
         }
+        runtime.graph.registerGraph(self.applicationName + '/' + self.mainGraphName,
+                                    self.mainGraph.create());
     };
 
     self._installNetwork = function(runtime) {
         let path = self.applicationName + '/' + self.mainGraphName;
         let component = self.components[path];
-
-        log('Registred graphs: ');
-        for (let i in runtime.graph.graphs) {
-            log(i + ' : ' + JSON.stringify(runtime.graph.graphs[i].toJSON()));
-        }
 
         runtime.network.initNetwork(runtime.graph.graphs[path],
                                     { graph: path, },
