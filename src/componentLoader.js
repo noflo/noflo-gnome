@@ -81,9 +81,6 @@ let ComponentLoader = function(options) {
     self.mainGraphName = null;
     self.modules = {};
     self.components = {};
-    //self.listComponentsCallbacks = [];
-    // self.graphs = {};
-    // self.listGraphsCallbacks = [];
 
     let normalizeName = function(name) {
         return name.replace('noflo-', '');
