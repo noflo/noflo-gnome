@@ -383,9 +383,6 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
   // Save the previous value of the `_` variable.
   var previousUnderscore = root._;
 
-  // Establish the object that gets returned to break out of a loop iteration.
-  var breaker = {};
-
   // Save bytes in the minified (but not gzipped) version:
   var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
 
@@ -464,17 +461,17 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
   // Handles raw objects in addition to array-likes. Treats all
   // sparse array-likes as if they were dense.
   _.each = _.forEach = function(obj, iterator, context) {
-    var i, length;
     if (obj == null) return obj;
     iterator = createCallback(iterator, context);
-    if (obj.length === +obj.length) {
-      for (i = 0, length = obj.length; i < length; i++) {
-        if (iterator(obj[i], i, obj) === breaker) break;
+    var i, length = obj.length;
+    if (length === +length) {
+      for (i = 0; i < length; i++) {
+        iterator(obj[i], i, obj);
       }
     } else {
       var keys = _.keys(obj);
       for (i = 0, length = keys.length; i < length; i++) {
-        if (iterator(obj[keys[i]], keys[i], obj) === breaker) break;
+        iterator(obj[keys[i]], keys[i], obj);
       }
     }
     return obj;
@@ -482,12 +479,19 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
 
   // Return the results of applying the iterator to each element.
   _.map = _.collect = function(obj, iterator, context) {
-    var results = [];
-    if (obj == null) return results;
+    if (obj == null) return [];
     iterator = lookupIterator(iterator, context);
-    _.each(obj, function(value, index, list) {
-      results.push(iterator(value, index, list));
-    });
+    var length = obj.length,
+        currentKey, keys;
+    if (length !== +length) {
+      keys = _.keys(obj);
+      length = keys.length;
+    }
+    var results = Array(length);
+    for (var index = 0; index < length; index++) {
+      currentKey = keys ? keys[index] : index;
+      results[index] = iterator(obj[currentKey], currentKey, obj);
+    }
     return results;
   };
 
@@ -496,41 +500,43 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
   // **Reduce** builds up a single result from a list of values, aka `inject`,
   // or `foldl`.
   _.reduce = _.foldl = _.inject = function(obj, iterator, memo, context) {
-    var initial = arguments.length > 2;
     if (obj == null) obj = [];
     iterator = createCallback(iterator, context, 4);
-    _.each(obj, function(value, index, list) {
-      if (!initial) {
-        memo = value;
-        initial = true;
-      } else {
-        memo = iterator(memo, value, index, list);
-      }
-    });
-    if (!initial) throw TypeError(reduceError);
+    var index = 0, length = obj.length,
+        currentKey, keys;
+    if (length !== +length) {
+      keys = _.keys(obj);
+      length = keys.length;
+    }
+    if (arguments.length < 3) {
+      if (!length) throw TypeError(reduceError);
+      memo = obj[keys ? keys[index++] : index++];
+    }
+    for (; index < length; index++) {
+      currentKey = keys ? keys[index] : index;
+      memo = iterator(memo, obj[currentKey], currentKey, obj);
+    }
     return memo;
   };
 
   // The right-associative version of reduce, also known as `foldr`.
   _.reduceRight = _.foldr = function(obj, iterator, memo, context) {
-    var initial = arguments.length > 2;
     if (obj == null) obj = [];
-    var length = obj.length;
     iterator = createCallback(iterator, context, 4);
-    if (length !== +length) {
-      var keys = _.keys(obj);
-      length = keys.length;
+    var index = obj.length,
+        currentKey, keys;
+    if (index !== +index) {
+      keys = _.keys(obj);
+      index = keys.length;
     }
-    _.each(obj, function(value, index, list) {
-      index = keys ? keys[--length] : --length;
-      if (!initial) {
-        memo = obj[index];
-        initial = true;
-      } else {
-        memo = iterator(memo, obj[index], index, list);
-      }
-    });
-    if (!initial) throw TypeError(reduceError);
+    if (arguments.length < 3) {
+      if (!index) throw TypeError(reduceError);
+      memo = obj[keys ? keys[--index] : --index];
+    }
+    while (index--) {
+      currentKey = keys ? keys[index] : index;
+      memo = iterator(memo, obj[currentKey], currentKey, obj);
+    }
     return memo;
   };
 
@@ -567,27 +573,39 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
   // Determine whether all of the elements match a truth test.
   // Aliased as `all`.
   _.every = _.all = function(obj, predicate, context) {
-    var result = true;
-    if (obj == null) return result;
+    if (obj == null) return true;
     predicate = lookupIterator(predicate, context);
-    _.each(obj, function(value, index, list) {
-      result = predicate(value, index, list);
-      if (!result) return breaker;
-    });
-    return !!result;
+    var length = obj.length;
+    var index, currentKey, keys;
+    if (length !== +length) {
+      keys = _.keys(obj);
+      length = keys.length;
+    }
+    for (index = 0; index < length; index++) {
+      currentKey = keys ? keys[index] : index;
+      if (!predicate(obj[currentKey], currentKey, obj)) return false;
+    }
+    return true;
   };
 
   // Determine if at least one element in the object matches a truth test.
   // Aliased as `any`.
+  // Determine if at least one element in the object matches a truth test.
+  // Aliased as `any`.
   _.some = _.any = function(obj, predicate, context) {
-    var result = false;
-    if (obj == null) return result;
+    if (obj == null) return false;
     predicate = lookupIterator(predicate, context);
-    _.each(obj, function(value, index, list) {
-      result = predicate(value, index, list);
-      if (result) return breaker;
-    });
-    return !!result;
+    var length = obj.length;
+    var index, currentKey, keys;
+    if (length !== +length) {
+      keys = _.keys(obj);
+      length = keys.length;
+    }
+    for (index = 0; index < length; index++) {
+      currentKey = keys ? keys[index] : index;
+      if (predicate(obj[currentKey], currentKey, obj)) return true;
+    }
+    return false;
   };
 
   // Determine if the array or object contains a given value (using `===`).
@@ -965,7 +983,7 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
     if (array == null) return -1;
     var idx = array.length;
     if (typeof from == 'number') {
-      idx = from < 0 ? idx + from + 1 : Math.min(from, idx);
+      idx = from < 0 ? idx + from + 1 : Math.min(idx, from + 1);
     }
     while (--idx >= 0) if (array[idx] === item) return idx;
     return -1;
@@ -979,15 +997,13 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
       stop = start || 0;
       start = 0;
     }
-    step = arguments[2] || 1;
+    step = step || 1;
 
     var length = Math.max(Math.ceil((stop - start) / step), 0);
-    var idx = 0;
     var range = Array(length);
 
-    while (idx < length) {
-      range[idx++] = start;
-      start += step;
+    for (var idx = 0; idx < length; idx++, start += step) {
+      range[idx] = start;
     }
 
     return range;
@@ -1013,7 +1029,7 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
       var self = new Ctor;
       Ctor.prototype = null;
       var result = func.apply(self, args.concat(slice.call(arguments)));
-      if (Object(result) === result) return result;
+      if (_.isObject(result)) return result;
       return self;
     };
     return bound;
@@ -1039,9 +1055,9 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
   // are the method names to be bound. Useful for ensuring that all callbacks
   // defined on an object belong to it.
   _.bindAll = function(obj) {
-    var i = 1, length = arguments.length, key;
+    var i, length = arguments.length, key;
     if (length <= 1) throw Error('bindAll must be passed function names');
-    for (; i < length; i++) {
+    for (i = 1; i < length; i++) {
       key = arguments[i];
       obj[key] = _.bind(obj[key], obj);
     }
@@ -1146,19 +1162,6 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
     };
   };
 
-  // Returns a function that will be executed at most one time, no matter how
-  // often you call it. Useful for lazy initialization.
-  _.once = function(func) {
-    var ran = false, memo;
-    return function() {
-      if (ran) return memo;
-      ran = true;
-      memo = func.apply(this, arguments);
-      func = null;
-      return memo;
-    };
-  };
-
   // Returns the first function passed as an argument to the second,
   // allowing you to adjust arguments, run code before and after, and
   // conditionally execute the original function.
@@ -1194,6 +1197,22 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
       }
     };
   };
+
+  // Returns a function that will only be executed before being called N times.
+  _.before = function(times, func) {
+    var memo;
+    return function() {
+      if (--times > 0) {
+        memo = func.apply(this, arguments);
+      }
+      else func = null;
+      return memo;
+    };
+  };
+
+  // Returns a function that will be executed at most one time, no matter how
+  // often you call it. Useful for lazy initialization.
+  _.once = _.partial(_.before, 2);
 
   // Object Functions
   // ----------------
@@ -1347,9 +1366,9 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
       case '[object Number]':
         // `NaN`s are equivalent, but non-reflexive.
         // Object(NaN) is equivalent to NaN
-        if (a != +a) return b != +b;
+        if (+a !== +a) return +b !== +b;
         // An `egal` comparison is performed for other numeric values.
-        return a == 0 ? 1 / a == 1 / b : a == +b;
+        return +a === 0 ? 1 / +a === 1 / b : +a === +b;
       case '[object Date]':
       case '[object Boolean]':
         // Coerce dates and booleans to numeric primitive values. Dates are compared by their
@@ -1398,7 +1417,7 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
       var keys = _.keys(a), key;
       size = keys.length;
       // Ensure that both objects contain the same number of properties before comparing deep equality.
-      result = _.keys(b).length == size;
+      result = _.keys(b).length === size;
       if (result) {
         while (size--) {
           // Deep compare each member
@@ -1440,7 +1459,8 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
 
   // Is a given variable an object?
   _.isObject = function(obj) {
-    return obj === Object(obj);
+    var type = typeof obj;
+    return type === 'function' || type === 'object' && !!obj;
   };
 
   // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp.
@@ -1527,10 +1547,14 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
 
   // Returns a predicate for checking whether an object has a given set of `key:value` pairs.
   _.matches = function(attrs) {
+    var pairs = _.pairs(attrs), length = pairs.length;
     return function(obj) {
-      if (obj == null) return _.isEmpty(attrs);
-      if (obj === attrs) return true;
-      for (var key in attrs) if (attrs[key] !== obj[key]) return false;
+      if (obj == null) return !length;
+      obj = Object(obj);
+      for (var i = 0; i < length; i++) {
+        var pair = pairs[i], key = pair[0];
+        if (pair[1] !== obj[key] || !(key in obj)) return false;
+      }
       return true;
     };
   };
@@ -4928,7 +4952,6 @@ InPort = (function(_super) {
       this.process = process;
     }
     InPort.__super__.constructor.call(this, options);
-    this.sendDefault();
     this.prepareBuffer();
   }
 
@@ -4997,22 +5020,21 @@ InPort = (function(_super) {
     return this.emit(event, payload);
   };
 
+  InPort.prototype.hasDefault = function() {
+    return this.options["default"] !== void 0;
+  };
+
   InPort.prototype.sendDefault = function() {
-    if (this.options["default"] === void 0) {
-      return;
+    var idx, socket, _i, _len, _ref, _results;
+    if (this.hasDefault()) {
+      _ref = this.sockets;
+      _results = [];
+      for (idx = _i = 0, _len = _ref.length; _i < _len; idx = ++_i) {
+        socket = _ref[idx];
+        _results.push(this.handleSocketEvent('data', this.options["default"], idx));
+      }
+      return _results;
     }
-    return setTimeout((function(_this) {
-      return function() {
-        var idx, socket, _i, _len, _ref, _results;
-        _ref = _this.sockets;
-        _results = [];
-        for (idx = _i = 0, _len = _ref.length; _i < _len; idx = ++_i) {
-          socket = _ref[idx];
-          _results.push(_this.handleSocketEvent('data', _this.options["default"], idx));
-        }
-        return _results;
-      };
-    })(this), 0);
   };
 
   InPort.prototype.prepareBuffer = function() {
@@ -5806,6 +5828,8 @@ Component = (function(_super) {
 
   Component.prototype.icon = null;
 
+  Component.prototype.started = false;
+
   function Component(options) {
     this.error = __bind(this.error, this);
     if (!options) {
@@ -5874,7 +5898,28 @@ Component = (function(_super) {
     throw e;
   };
 
-  Component.prototype.shutdown = function() {};
+  Component.prototype.shutdown = function() {
+    return this.started = false;
+  };
+
+  Component.prototype.start = function() {
+    var key, port, _ref;
+    if (!this.started) {
+      _ref = this.inPorts.ports;
+      for (key in _ref) {
+        port = _ref[key];
+        if (typeof port.sendDefault === 'function') {
+          port.sendDefault();
+        }
+      }
+      this.started = true;
+    }
+    return this.started;
+  };
+
+  Component.prototype.isStarted = function() {
+    return this.started;
+  };
 
   return Component;
 
@@ -6055,6 +6100,11 @@ AsyncComponent = (function(_super) {
     }
   };
 
+  AsyncComponent.prototype.shutdown = function() {
+    this.q = [];
+    return this.errorGroups = [];
+  };
+
   return AsyncComponent;
 
 })(component.Component);
@@ -6233,7 +6283,7 @@ ComponentLoader = (function(_super) {
   };
 
   ComponentLoader.prototype.load = function(name, callback, delayed, metadata) {
-    var component, componentName, implementation, instance;
+    var component, componentName, instance;
     if (!this.ready) {
       this.listComponents((function(_this) {
         return function() {
@@ -6271,31 +6321,31 @@ ComponentLoader = (function(_super) {
       }
       return;
     }
-    if (typeof component === 'function') {
-      implementation = component;
-      if (component.getComponent && typeof component.getComponent === 'function') {
-        instance = component.getComponent(metadata);
-      } else {
-        instance = component(metadata);
-      }
-    } else if (typeof component === 'object' && typeof component.getComponent === 'function') {
-      instance = component.getComponent(metadata);
-    } else {
-      implementation = require(component);
-      if (implementation.getComponent && typeof implementation.getComponent === 'function') {
-        instance = implementation.getComponent(metadata);
-      } else {
-        if (typeof implementation !== 'function') {
-          throw new Error("Component " + name + " is npt loadable");
-        }
-        instance = implementation(metadata);
-      }
+    instance = this.createComponent(name, component, metadata);
+    if (!instance) {
+      throw new Error("Component " + name + " could not be loaded.");
     }
     if (name === 'Graph') {
       instance.baseDir = this.baseDir;
     }
     this.setIcon(name, instance);
     return callback(instance);
+  };
+
+  ComponentLoader.prototype.createComponent = function(name, component, metadata) {
+    var implementation, instance;
+    implementation = component;
+    if (typeof implementation === 'string') {
+      implementation = require(implementation);
+    }
+    if (typeof implementation.getComponent === 'function') {
+      instance = implementation.getComponent(metadata);
+    } else if (typeof implementation === 'function') {
+      instance = implementation(metadata);
+    } else {
+      throw new Error("Invalid type " + (typeof implementation) + " for component " + name + ".");
+    }
+    return instance;
   };
 
   ComponentLoader.prototype.isGraph = function(cPath) {
@@ -6606,6 +6656,7 @@ Network = (function(_super) {
     this.connections = [];
     this.initials = [];
     this.graph = graph;
+    this.started = false;
     if (typeof process !== 'undefined' && process.execPath && process.execPath.indexOf('node') !== -1) {
       this.baseDir = graph.baseDir || process.cwd();
     } else {
@@ -6678,7 +6729,7 @@ Network = (function(_super) {
     }
     return this.load(node.component, node.metadata, (function(_this) {
       return function(instance) {
-        var name, port, _ref, _ref1;
+        var name, port, socket, _ref, _ref1;
         instance.nodeId = node.id;
         process.component = instance;
         _ref = process.component.inPorts;
@@ -6690,6 +6741,11 @@ Network = (function(_super) {
           port.node = node.id;
           port.nodeInstance = instance;
           port.name = name;
+          if (typeof port.hasDefault === 'function' && port.hasDefault() && !port.isAttached()) {
+            socket = internalSocket.createSocket();
+            _this.subscribeSocket(socket);
+            port.attach(socket);
+          }
         }
         _ref1 = process.component.outPorts;
         for (name in _ref1) {
@@ -7167,12 +7223,29 @@ Network = (function(_super) {
     }
   };
 
+  Network.prototype.isStarted = function() {
+    return this.started;
+  };
+
+  Network.prototype.startComponents = function() {
+    var id, process, _ref, _results;
+    _ref = this.processes;
+    _results = [];
+    for (id in _ref) {
+      process = _ref[id];
+      _results.push(process.component.start());
+    }
+    return _results;
+  };
+
   Network.prototype.start = function() {
+    this.started = true;
+    this.startComponents();
     return this.sendInitials();
   };
 
   Network.prototype.stop = function() {
-    var connection, id, process, _i, _len, _ref, _ref1, _results;
+    var connection, id, process, _i, _len, _ref, _ref1;
     _ref = this.connections;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       connection = _ref[_i];
@@ -7182,12 +7255,11 @@ Network = (function(_super) {
       connection.disconnect();
     }
     _ref1 = this.processes;
-    _results = [];
     for (id in _ref1) {
       process = _ref1[id];
-      _results.push(process.component.shutdown());
+      process.component.shutdown();
     }
-    return _results;
+    return this.started = false;
   };
 
   return Network;
@@ -7919,7 +7991,7 @@ exports.MapComponent = function(component, func, config) {
 };
 
 exports.WirePattern = function(component, config, proc) {
-  var collectGroups, completeParamsCount, groupedData, groupedDataGroups, inPorts, name, outPorts, port, processQueue, q, requiredParamsCount, taskQ, _fn, _fn1, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1;
+  var collectGroups, completeParams, groupedData, groupedDataGroups, inPorts, name, outPorts, port, processQueue, q, requiredParams, resumeTaskQ, taskQ, _fn, _fn1, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1;
   inPorts = 'in' in config ? config["in"] : 'in';
   if (!(inPorts instanceof Array)) {
     inPorts = [inPorts];
@@ -7927,6 +7999,9 @@ exports.WirePattern = function(component, config, proc) {
   outPorts = 'out' in config ? config.out : 'out';
   if (!(outPorts instanceof Array)) {
     outPorts = [outPorts];
+  }
+  if (!('error' in config)) {
+    config.error = 'error';
   }
   if (!('async' in config)) {
     config.async = false;
@@ -7961,6 +8036,12 @@ exports.WirePattern = function(component, config, proc) {
   if (!('params' in config)) {
     config.params = [];
   }
+  if (typeof config.params === 'string') {
+    config.params = [config.params];
+  }
+  if (!('name' in config)) {
+    config.name = '';
+  }
   collectGroups = config.forwardGroups;
   if (typeof collectGroups === 'boolean' && !config.group) {
     collectGroups = inPorts;
@@ -7976,6 +8057,7 @@ exports.WirePattern = function(component, config, proc) {
     if (!component.inPorts[name]) {
       throw new Error("no inPort named '" + name + "'");
     }
+    component.inPorts[name].options.required = true;
   }
   for (_j = 0, _len1 = outPorts.length; _j < _len1; _j++) {
     name = outPorts[_j];
@@ -8039,8 +8121,21 @@ exports.WirePattern = function(component, config, proc) {
   }
   taskQ = [];
   component.params = {};
-  requiredParamsCount = 0;
-  completeParamsCount = 0;
+  requiredParams = [];
+  completeParams = [];
+  resumeTaskQ = function() {
+    var task, temp, _results;
+    if (completeParams.length === requiredParams.length && taskQ.length > 0) {
+      temp = taskQ.slice(0);
+      taskQ = [];
+      _results = [];
+      while (temp.length > 0) {
+        task = temp.shift();
+        _results.push(task());
+      }
+      return _results;
+    }
+  };
   _ref = config.params;
   for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
     port = _ref[_k];
@@ -8048,7 +8143,7 @@ exports.WirePattern = function(component, config, proc) {
       throw new Error("no inPort named '" + port + "'");
     }
     if (component.inPorts[port].isRequired()) {
-      requiredParamsCount++;
+      requiredParams.push(port);
     }
   }
   _ref1 = config.params;
@@ -8056,20 +8151,14 @@ exports.WirePattern = function(component, config, proc) {
     var inPort;
     inPort = component.inPorts[port];
     return inPort.process = function(event, payload) {
-      var task, _results;
       if (event !== 'data') {
         return;
       }
       component.params[port] = payload;
-      completeParamsCount = Object.keys(component.params).length;
-      if (completeParamsCount >= requiredParamsCount && taskQ.length > 0) {
-        _results = [];
-        while (taskQ.length > 0) {
-          task = taskQ.shift();
-          _results.push(task());
-        }
-        return _results;
+      if (completeParams.indexOf(port) === -1 && requiredParams.indexOf(port) > -1) {
+        completeParams.push(port);
       }
+      return resumeTaskQ();
     };
   };
   for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
@@ -8085,7 +8174,7 @@ exports.WirePattern = function(component, config, proc) {
     }
     inPort.groups = [];
     return inPort.process = function(event, payload) {
-      var data, g, groups, grp, key, out, outs, p, requiredLength, task, whenDone, _len5, _len6, _len7, _len8, _len9, _n, _o, _p, _q, _r, _ref2;
+      var data, g, groups, grp, key, out, outs, p, postpone, postponedToQ, requiredLength, resume, task, whenDone, _len5, _len6, _len7, _len8, _len9, _n, _o, _p, _q, _r, _ref2;
       switch (event) {
         case 'begingroup':
           return inPort.groups.push(payload);
@@ -8208,21 +8297,38 @@ exports.WirePattern = function(component, config, proc) {
                 }
               }
             }
+            exports.MultiError(component, config.name, config.error, groups);
             if (config.async) {
+              postpone = function() {};
+              resume = function() {};
+              postponedToQ = false;
               task = function() {
-                return proc(data, groups, outs, whenDone);
+                return proc.call(component, data, groups, outs, whenDone, postpone, resume);
+              };
+              postpone = function(backToQueue) {
+                if (backToQueue == null) {
+                  backToQueue = true;
+                }
+                postponedToQ = backToQueue;
+                if (backToQueue) {
+                  return taskQ.push(task);
+                }
+              };
+              resume = function() {
+                if (postponedToQ) {
+                  return resumeTaskQ();
+                } else {
+                  return task();
+                }
               };
             } else {
               task = function() {
-                proc(data, groups, outs);
+                proc.call(component, data, groups, outs);
                 return whenDone();
               };
             }
-            if (completeParamsCount >= requiredParamsCount) {
-              return task();
-            } else {
-              return taskQ.push(task);
-            }
+            taskQ.push(task);
+            return resumeTaskQ();
           }
       }
     };
@@ -8252,15 +8358,15 @@ exports.CustomizeError = function(err, options) {
   return err;
 };
 
-exports.MultiError = function(component, group, errorPort) {
+exports.MultiError = function(component, group, errorPort, forwardedGroups) {
   if (group == null) {
     group = '';
   }
   if (errorPort == null) {
     errorPort = 'error';
   }
-  if (!(errorPort in component.outPorts)) {
-    throw new Error("Missing error port '" + errorPort + "'");
+  if (forwardedGroups == null) {
+    forwardedGroups = [];
   }
   component.hasErrors = false;
   component.errors = [];
@@ -8270,7 +8376,7 @@ exports.MultiError = function(component, group, errorPort) {
     }
     component.errors.push({
       err: e,
-      groups: groups
+      groups: forwardedGroups.concat(groups)
     });
     return component.hasErrors = true;
   };
@@ -8286,6 +8392,12 @@ exports.MultiError = function(component, group, errorPort) {
       component.error(e, groups);
     }
     if (!component.hasErrors) {
+      return;
+    }
+    if (!(errorPort in component.outPorts)) {
+      return;
+    }
+    if (!component.outPorts[errorPort].isAttached()) {
       return;
     }
     if (group) {
@@ -8995,7 +9107,7 @@ GraphProtocol = (function() {
       graph = _ref[graphName];
       this.send('graph', graph.toJSON(), context);
     }
-    return this.send('graphsdone', true, context);
+    return this.send('graphsdone', {}, context);
   };
 
   GraphProtocol.prototype.initGraph = function(payload, context) {
@@ -9368,7 +9480,7 @@ NetworkProtocol = (function() {
         _this.networks[payload.graph] = network;
         _this.subscribeNetwork(network, payload, context);
         return network.connect(function() {
-          network.sendInitials();
+          network.start();
           return graph.on('addInitial', function() {
             return network.sendInitials();
           });
@@ -9445,7 +9557,7 @@ NetworkProtocol = (function() {
         started: network.isStarted()
       }, context);
     }
-    return this.send('networksdone', null, context);
+    return this.send('networksdone', {}, context);
   };
 
   return NetworkProtocol;
