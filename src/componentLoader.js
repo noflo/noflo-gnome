@@ -96,8 +96,9 @@ let ComponentLoader = function(options) {
     let generateComponentInstance = function(vpath) {
         return function(metadata) {
             try {
-                let implementation = require(vpath);
-                let instance = implementation.getComponent(metadata);
+                if (!this.implementation)
+                    this.implementation = require(vpath);
+                let instance = this.implementation.getComponent(metadata);
                 return instance;
             } catch (e) {
                 log('Failed to load component : ' + vpath + ' : ' + e.message);
