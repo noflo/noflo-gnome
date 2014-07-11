@@ -1,13 +1,16 @@
 GladeConstructorComponent = require './GladeConstructorComponent'
 Gio = imports.gi.Gio
+Runtime = imports.runtime;
 Utils = imports.utils
 
 exports = (loader, done) ->
-  Utils.forEachInDirectory Gio.File.new_for_path('.'), (child) =>
-    path = child.get_path()
-    return unless path.match(/.*\.glade$/) or path.match(/.*\.ui$/)
-    log "Available glade ui file at #{child.get_path()}"
-    name = child.get_basename().replace('\.glade', '').replace(/[^a-zA-Z\/\-0-9_]/g, '')
-    component = GladeConstructorComponent.getComponentForFile child
+  manifest = Runtime.getApplicationManifest()
+  do done unless manifest.ui
+  for ui in manifest.ui
+    path = Utils.resolvePath('local://' + ui)
+    file = Gio.File.new_for_path path
+    log "Available glade ui file at #{file.get_path()}"
+    name = file.get_basename().replace(/\.glade$/, '').replace(/[^a-zA-Z\/\-0-9_]/g, '')
+    component = GladeConstructorComponent.getComponentForFile file
     loader.registerComponent 'gtk-builder', name, component
   do done if done
