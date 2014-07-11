@@ -1,4 +1,2 @@
-- Imports graphs from libraries
 - More robust libraries loading
-- Add manifest file
 - Package graphs/components/assets into application bundles
