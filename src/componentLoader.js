@@ -349,14 +349,14 @@ let ComponentLoader = function(options) {
             let component = self.components[path];
 
             if (component)
-                runtime.graph.registerGraph(path, component.create());
+                runtime.graph.registerGraph(graphName, component.create());
         }
-        runtime.graph.registerGraph(self.applicationName + '/' + self.mainGraphName,
+        runtime.graph.registerGraph(self.mainGraphName,
                                     self.mainGraph.create());
     };
 
     self._installNetwork = function(runtime) {
-        let path = self.applicationName + '/' + self.mainGraphName;
+        let path = self.mainGraphName;
         let component = self.components[path];
 
         runtime.network.initNetwork(runtime.graph.graphs[path],
