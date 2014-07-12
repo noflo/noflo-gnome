@@ -10,7 +10,7 @@ AC_INIT([noflo-gnome],
         [noflo-gnome])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_SRCDIR([src/main.js])
+AC_CONFIG_SRCDIR([src/runtimeMain.js])
 
 AM_INIT_AUTOMAKE([1.10 no-define foreign dist-xz no-dist-gzip])
 AM_MAINTAINER_MODE([enable])
