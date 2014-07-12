@@ -1,18 +1,28 @@
 noflo = require 'noflo'
 Gtk = imports.gi.Gtk
 
-exports.getComponentForFile = (file) ->
+exports.getComponentForFile = (file, additionals) ->
 
   (metadata) ->
     c = new noflo.Component
 
+    c.shutdown = () ->
+      @started = false
+
     builder = new Gtk.Builder
-    objects = []
+    objects = {}
     error = null
     try
       Gtk.init null, null
       builder.add_from_file(file.get_path())
-      objects = builder.get_objects()
+      for object in builder.get_objects()
+        try
+          objects[object.get_name()] = object
+        catch e
+      if additionals
+        for objectName in additionals
+          object = builder.get_object(objectName)
+          objects[objectName] = object if object
     catch e
       error = e
 
@@ -23,11 +33,14 @@ exports.getComponentForFile = (file) ->
       datatype: 'bang'
       process: (event, payload) ->
         return unless event is 'data'
+        c.started = true
         if error?
           c.outPorts.error.send error
           c.outPorts.error.disconnect()
         else
           for portName, port  of c.outPorts.ports
+            continue if portName is 'error'
+            #log "Sending #{port.object} on #{portName}"
             port.send port.object
             port.disconnect()
 
@@ -35,10 +48,19 @@ exports.getComponentForFile = (file) ->
       datatype: 'object'
       required: no
 
-    for obj in objects
-      name = obj.get_name().replace /[^A-Za-z0-9_]/g, ''
-      c.outPorts.add name,
+    # helper function to add ports
+    addOutPort = (component, name, object) ->
+      component.outPorts.add name,
         datatype: 'object'
         required: no
-      c.outPorts[name].object = obj
+      component.outPorts[name].object = object
+      component.outPorts[name].on 'attach', (socket) ->
+        return unless component.started
+        socket.send object
+        socket.disconnect()
+
+    # Add all ports
+    for name, obj of objects
+      filteredName = name.replace /[^A-Za-z0-9_]/g, '_'
+      addOutPort c, filteredName, obj
     c
