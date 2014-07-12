@@ -38,10 +38,13 @@ exports.getComponentForFile = (file, additionals) ->
           c.outPorts.error.send error
           c.outPorts.error.disconnect()
         else
+          ports = []
           for portName, port  of c.outPorts.ports
             continue if portName is 'error'
             #log "Sending #{port.object} on #{portName}"
             port.send port.object
+            ports.push port
+          for port in ports
             port.disconnect()
 
     c.outPorts.add 'error',
