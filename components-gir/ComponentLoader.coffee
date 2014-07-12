@@ -22,3 +22,4 @@ exports = (loader, done) ->
       loader.registerComponent lib.toLowerCase(), "Create#{name}", component
 
   do done if done
+  null
