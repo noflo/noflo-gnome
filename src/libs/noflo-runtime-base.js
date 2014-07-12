@@ -9074,6 +9074,14 @@ GraphProtocol = (function() {
         return this.removeOutport(graph, payload, context);
       case 'renameoutport':
         return this.renameOutport(graph, payload, context);
+      case 'addgroup':
+        return this.addGroup(graph, payload, context);
+      case 'removegroup':
+        return this.removeGroup(graph, payload, context);
+      case 'renamegroup':
+        return this.renameGroup(graph, payload, context);
+      case 'changegroup':
+        return this.changeGroup(graph, payload, context);
     }
   };
 
@@ -9223,7 +9231,7 @@ GraphProtocol = (function() {
         return _this.send('addinitial', iipData, context);
       };
     })(this));
-    return graph.on('removeInitial', (function(_this) {
+    graph.on('removeInitial', (function(_this) {
       return function(iip) {
         var iipData;
         iipData = {
@@ -9233,6 +9241,50 @@ GraphProtocol = (function() {
           graph: id
         };
         return _this.send('removeinitial', iipData, context);
+      };
+    })(this));
+    graph.on('addGroup', (function(_this) {
+      return function(group) {
+        var groupData;
+        groupData = {
+          name: group.name,
+          nodes: group.nodes,
+          metadata: group.metadata,
+          graph: id
+        };
+        return _this.send('addgroup', groupData, context);
+      };
+    })(this));
+    graph.on('removeGroup', (function(_this) {
+      return function(group) {
+        var groupData;
+        groupData = {
+          name: group.name,
+          graph: id
+        };
+        return _this.send('removegroup', groupData, context);
+      };
+    })(this));
+    graph.on('renameGroup', (function(_this) {
+      return function(oldName, newName) {
+        var groupData;
+        groupData = {
+          from: oldName,
+          to: newName,
+          graph: id
+        };
+        return _this.send('renamegroup', groupData, context);
+      };
+    })(this));
+    return graph.on('changeGroup', (function(_this) {
+      return function(group) {
+        var groupData;
+        groupData = {
+          name: group.name,
+          metadata: group.metadata,
+          graph: id
+        };
+        return _this.send('changegroup', groupData, context);
       };
     })(this));
   };
@@ -9365,6 +9417,38 @@ GraphProtocol = (function() {
       return;
     }
     return graph.renameOutport(payload.from, payload.to);
+  };
+
+  GraphProtocol.prototype.addGroup = function(graph, payload, context) {
+    if (!(payload.name || payload.nodes || payload.metadata)) {
+      this.send('error', new Error('No name or nodes or metadata supplied'), context);
+      return;
+    }
+    return graph.addGroup(payload.name, payload.nodes, payload.metadata);
+  };
+
+  GraphProtocol.prototype.removeGroup = function(graph, payload, context) {
+    if (!payload.name) {
+      this.send('error', new Error('No name supplied'), context);
+      return;
+    }
+    return graph.removeGroup(payload.name);
+  };
+
+  GraphProtocol.prototype.renameGroup = function(graph, payload, context) {
+    if (!(payload.from || payload.to)) {
+      this.send('error', new Error('No from or to supplied'), context);
+      return;
+    }
+    return graph.renameGroup(payload.from, payload.to);
+  };
+
+  GraphProtocol.prototype.changeGroup = function(graph, payload, context) {
+    if (!(payload.name || payload.metadata)) {
+      this.send('error', new Error('No name or metadata supplied'), context);
+      return;
+    }
+    return graph.changeGroup(payload.name, payload.metadata);
   };
 
   return GraphProtocol;
