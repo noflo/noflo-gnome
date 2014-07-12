@@ -1,0 +1,26 @@
+{
+  "name": "MyApplication",
+  "version": "0.0.1",
+  "ui": [
+    {
+      "file": "ui/basic-ui.glade"
+    },
+    {
+      "file": "ui/slider.ui",
+      "additionals": [
+        "scaleadjust",
+        "spinadjust"
+      ]
+    }
+  ],
+  "libraries": [
+    "Gtk"
+  ],
+  "noflo": {
+    "components": {},
+    "graphs": {
+      "Main": "graphs/Main.json"
+    },
+    "main": "Main"
+  }
+}

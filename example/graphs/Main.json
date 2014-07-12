@@ -1,0 +1,315 @@
+{
+ "properties": {
+  "name": "Main",
+  "id": "Main"
+ },
+ "inports": {},
+ "outports": {},
+ "groups": [
+  {
+   "name": "Print",
+   "nodes": [
+    "Message",
+    "StartClicked",
+    "gnome/Log_7m3j2"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  }
+ ],
+ "processes": {
+  "gtk/Init_ynmps": {
+   "component": "gtk/Init",
+   "metadata": {
+    "label": "gtk/Init",
+    "x": 180,
+    "y": 36
+   }
+  },
+  "UI": {
+   "component": "gtk-builder/basic-ui",
+   "metadata": {
+    "label": "UI",
+    "x": 324,
+    "y": 36
+   }
+  },
+  "ShowAll": {
+   "component": "gtk/Show",
+   "metadata": {
+    "label": "ShowAll",
+    "x": 540,
+    "y": -216
+   }
+  },
+  "StartClicked": {
+   "component": "gnome/ListenSignal",
+   "metadata": {
+    "label": "StartClicked",
+    "x": 540,
+    "y": -36
+   }
+  },
+  "gnome/Log_7m3j2": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "gnome/Log",
+    "x": 828,
+    "y": -72
+   }
+  },
+  "Message": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "Message",
+    "x": 684,
+    "y": -36
+   }
+  },
+  "core/Repeat_u1nsj": {
+   "component": "core/Repeat",
+   "metadata": {
+    "label": "core/Repeat",
+    "x": 36,
+    "y": 36
+   }
+  },
+  "Slider": {
+   "component": "gtk-builder/sliderui",
+   "metadata": {
+    "label": "Slider",
+    "x": 324,
+    "y": 144
+   }
+  },
+  "ListenScale": {
+   "component": "gnome/ListenProperty",
+   "metadata": {
+    "label": "ListenScale",
+    "x": 540,
+    "y": 144
+   }
+  },
+  "gnome/Log_typok": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "gnome/Log",
+    "x": 936,
+    "y": 144
+   }
+  },
+  "SetSpinnerVal": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "SetSpinnerVal",
+    "x": 828,
+    "y": 288
+   }
+  },
+  "SpinButton": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "SpinButton",
+    "x": 684,
+    "y": 288
+   }
+  }
+ },
+ "connections": [
+  {
+   "src": {
+    "process": "gtk/Init_ynmps",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "UI",
+    "port": "start"
+   }
+  },
+  {
+   "src": {
+    "process": "Message",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gnome/Log_7m3j2",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "core/Repeat_u1nsj",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gtk/Init_ynmps",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "StartClicked",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "Message",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "UI",
+    "port": "button_window"
+   },
+   "tgt": {
+    "process": "ShowAll",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Slider",
+    "port": "window1"
+   },
+   "tgt": {
+    "process": "ShowAll",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Slider",
+    "port": "scaleadjust"
+   },
+   "tgt": {
+    "process": "ListenScale",
+    "port": "object"
+   }
+  },
+  {
+   "src": {
+    "process": "ListenScale",
+    "port": "value"
+   },
+   "tgt": {
+    "process": "gnome/Log_typok",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "ListenScale",
+    "port": "value"
+   },
+   "tgt": {
+    "process": "SetSpinnerVal",
+    "port": "value"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/Init_ynmps",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Slider",
+    "port": "start"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "ListenScale",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "SpinButton",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Slider",
+    "port": "spinadjust"
+   },
+   "tgt": {
+    "process": "SpinButton",
+    "port": "data"
+   }
+  },
+  {
+   "src": {
+    "process": "SpinButton",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetSpinnerVal",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "UI",
+    "port": "start_button"
+   },
+   "tgt": {
+    "process": "StartClicked",
+    "port": "object"
+   }
+  },
+  {
+   "data": true,
+   "tgt": {
+    "process": "ShowAll",
+    "port": "all"
+   }
+  },
+  {
+   "data": "clicked",
+   "tgt": {
+    "process": "StartClicked",
+    "port": "signal"
+   }
+  },
+  {
+   "data": "\"Yooooo!\"",
+   "tgt": {
+    "process": "Message",
+    "port": "data"
+   }
+  },
+  {
+   "data": "true",
+   "tgt": {
+    "process": "core/Repeat_u1nsj",
+    "port": "in"
+   }
+  },
+  {
+   "data": "value",
+   "tgt": {
+    "process": "ListenScale",
+    "port": "property"
+   }
+  },
+  {
+   "data": "value",
+   "tgt": {
+    "process": "SetSpinnerVal",
+    "port": "property"
+   }
+  }
+ ]
+}

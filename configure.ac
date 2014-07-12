@@ -39,6 +39,7 @@ AC_CONFIG_FILES([
     components-clutter/Makefile
     components-gir/Makefile
     components-gtk/Makefile
+    example/Makefile
     src/Makefile
 ])
 AC_OUTPUT
