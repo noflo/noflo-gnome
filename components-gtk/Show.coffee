@@ -24,9 +24,9 @@ class Show extends noflo.Component
     @inPorts.all.on 'data', (@all) =>
     @inPorts.in.on 'data', (widget) =>
       if @all
-        widget.show()
-      else
         widget.show_all()
+      else
+        widget.show()
       @outPorts.out.send widget
       @outPorts.out.disconnect()
 
