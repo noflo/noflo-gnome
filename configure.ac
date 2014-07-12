@@ -1,6 +1,6 @@
-m4_define([noflo_gnome_major_version], [2])
-m4_define([noflo_gnome_minor_version], [30])
-m4_define([noflo_gnome_micro_version], [4])
+m4_define([noflo_gnome_major_version], [0])
+m4_define([noflo_gnome_minor_version], [1])
+m4_define([noflo_gnome_micro_version], [0])
 m4_define([noflo_gnome_version],
           [noflo_gnome_major_version.noflo_gnome_minor_version.noflo_gnome_micro_version])
 
