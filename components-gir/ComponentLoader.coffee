@@ -1,17 +1,15 @@
 constructorComponent = require './ConstructorComponent'
 GI = imports.gi.GIRepository
-
-# TODO: Read from component.json
-libs = [
-  'Gtk',
-  'GtkClutter'
-]
+Runtime = imports.runtime;
 
 exports = (loader, done) ->
   repo = GI.Repository.get_default()
+  manifest = Runtime.getApplicationManifest()
+
+  do done unless manifest and manifest.libraries
 
   # List the constructors
-  libs.forEach (lib) ->
+  manifest.libraries.forEach (lib) ->
     imports.gi[lib]
     infos = repo.get_n_infos lib
     for item in [0..infos]
