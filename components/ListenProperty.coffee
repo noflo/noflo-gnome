@@ -29,12 +29,10 @@ class ListenProperty extends noflo.Component
         required: no
 
     @inPorts.readback.on 'data', (@readback) =>
-    noflo.helpers.WirePattern @,
-      in: ['object', 'property']
-      out: []
-      forwardGroups: false,
-      (data, groups, out) =>
-        @updateListener(data.object, data.property)
+    @inPorts.object.on 'data', (object) =>
+      @updateListener object, @property
+    @inPorts.property.on 'data', (property) =>
+      @updateListener @object, property
 
   updateListener: (object, property) ->
     @disconnectListener()
