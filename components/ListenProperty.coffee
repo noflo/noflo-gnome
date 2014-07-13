@@ -44,8 +44,8 @@ class ListenProperty extends noflo.Component
 
   sendOutputs: () ->
     @outPorts.object.send @object
-    @outPorts.object.disconnect()
     @outPorts.value.send @object[@property]
+    @outPorts.object.disconnect()
     @outPorts.value.disconnect()
 
   disconnectListener: () ->
