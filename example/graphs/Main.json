@@ -152,19 +152,6 @@
   },
   {
    "src": {
-    "process": "StartClicked",
-    "port": "object"
-   },
-   "tgt": {
-    "process": "Message",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 7
-   }
-  },
-  {
-   "src": {
     "process": "UI",
     "port": "button_window"
    },
@@ -231,16 +218,6 @@
   },
   {
    "src": {
-    "process": "ListenScale",
-    "port": "object"
-   },
-   "tgt": {
-    "process": "SpinButton",
-    "port": "in"
-   }
-  },
-  {
-   "src": {
     "process": "Slider",
     "port": "spinadjust"
    },
@@ -267,6 +244,32 @@
    "tgt": {
     "process": "StartClicked",
     "port": "object"
+   }
+  },
+  {
+   "src": {
+    "process": "ListenScale",
+    "port": "value"
+   },
+   "tgt": {
+    "process": "SpinButton",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "StartClicked",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "Message",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
    }
   },
   {
