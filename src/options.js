@@ -54,6 +54,21 @@ let parseArguments = function(options, args) {
     return result;
 };
 
+let printHelp = function(header, options) {
+    print(header + ':');
+    for (let i in options) {
+        let opt = options[i];
+        let line = '\t--' + opt.name;
+
+        if (opt.shortName)
+            line += ', -' + opt.shortName;
+        if (opt.requireArgument)
+            line += '=VALUE';
+        line += '\t' + opt.help
+        print(line);
+    }
+};
+
 // Test
 const TEST = false;
 
