@@ -1,0 +1,3 @@
+#!/bin/sh
+
+@GJS_CONSOLE@ -I @pkgdatadir@/js -c "imports.buildMain.start();" $@
