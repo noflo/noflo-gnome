@@ -5,7 +5,7 @@ const Utils = imports.utils;
 let nextMainFunc = null;
 
 
-let start = function() {
+let run = function() {
     Mainloop.run('noflo-gnome');
     while (nextMainFunc != null) {
         let mainFunc = nextMainFunc;

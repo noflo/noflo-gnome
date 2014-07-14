@@ -19,8 +19,8 @@ do_subst = sed  -e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g'		\
 
 js_filesdir = $(pkgdatadir)/js
 js_files_DATA = \
-	builderEdit.js \
 	builderInit.js \
+	builderRun.js \
 	buildMain.js \
 	codeLoader.js \
 	codeWriter.js \
@@ -47,12 +47,8 @@ path.js: path.js.in
 noflo-gnome: noflo-gnome.in
 	$(AM_V_GEN) $(do_subst) $< > $@
 
-noflo-gnome-runtime: noflo-gnome-runtime.in
-	$(AM_V_GEN) $(do_subst) $< > $@
-
-bin_SCRIPTS = noflo-gnome noflo-gnome-runtime
+bin_SCRIPTS = noflo-gnome
 CLEANFILES += \
 	noflo-gnome \
-	noflo-gnome-runtime \
 	path.js \
 	$(NULL)
