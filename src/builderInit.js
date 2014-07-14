@@ -9,22 +9,36 @@ const CmdOptions = [
         shortName: 'v',
         requireArgument: true,
         defaultValue: '0.0.1',
+        help: 'Version for application repository'
     },
     {
         name: 'name',
         shortName: 'n',
         requireArgument: true,
         defaultValue: 'MyApplication',
+        help: 'Name for application repository'
+    },
+    {
+        name: 'help',
+        shortName: 'h',
+        requireArgument: false,
+        defaultValue: false,
+        help: 'Print this screen'
     },
 ];
 
 //
 let exec = function(args) {
+    let options = Options.parseArguments(CmdOptions, args);
+
+    if (options.options.help) {
+        Options.printHelp('noflo-gnome init', CmdOptions);
+        return 0;
+    }
+
     let manifestPath = GLib.getenv('PWD') + '/manifest.json';
     if (GLib.file_test(manifestPath, GLib.FileTest.EXISTS))
         throw new Error('Cannot initialize repository, already initialized');
-
-    let options = Options.parseArguments(CmdOptions, args);
 
     let manifest = {
         name: options.options['name'],
