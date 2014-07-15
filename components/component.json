@@ -9,6 +9,7 @@
     "component.json"
   ],
   "noflo": {
+    "loader": "ComponentLoader.coffee",
     "components": {
       "GioFileMonitor": "GioFileMonitor.coffee",
       "GioFileLoadContent": "GioFileLoadContent.coffee",

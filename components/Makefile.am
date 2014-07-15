@@ -5,6 +5,11 @@ EXTRA_DIST =
 componentsdir = $(pkgdatadir)/components/noflo-gnome
 components_DATA = \
 	component.json \
+	\
+	ComponentLoader.coffee \
+	DbusComponentLoader.coffee \
+	DbusIfaceProperties.coffee \
+	\
 	GioFileLoadContent.coffee \
 	GioFileMonitor.coffee \
 	GioFileWrite.coffee \
