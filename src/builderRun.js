@@ -26,6 +26,13 @@ const CmdOptions = [
             + 'connection with the UI',
     },
     {
+        name: 'ui',
+        shortName: 'u',
+        requireArgument: false,
+        defaultValue: false,
+        help: 'Whether to start the UI automatically',
+    },
+    {
         name: 'help',
         shortName: 'h',
         requireArgument: false,
@@ -82,10 +89,12 @@ let exec = function(args) {
     }
 
     if (options.options.debug) {
-        // Start webbrowser with address
-        Gio.AppInfo.launch_default_for_uri(
-            generateBrowserUrl(options.options.port, manifest),
-            null);
+        if (options.options.ui) {
+            // Start webbrowser with address
+            Gio.AppInfo.launch_default_for_uri(
+                generateBrowserUrl(options.options.port, manifest),
+                null);
+        }
         let server = new WebProtoServer.WebProtoServer({
             port: options.options.port,
         });
