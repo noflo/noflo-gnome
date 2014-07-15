@@ -3,17 +3,6 @@ Gio = imports.gi.Gio
 Runtime = imports.runtime
 Utils = imports.utils
 
-loadInterface = (loader, ifaceInfo) ->
-  log "iface->#{ifaceInfo}"
-  log "iface: #{ifaceInfo.name}"
-
-loadNode = (load, nodeInfo) ->
-
-loadNodes = (loader, fileInfo) ->
-  for node in fileInfo.nodes
-    log node
-    loadInterface loader, iface
-
 loadInterface = (loader, iface) ->
   log "iface name=#{iface.name}"
   if iface.properties
