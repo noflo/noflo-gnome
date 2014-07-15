@@ -84,15 +84,13 @@ let exec = function(args) {
         return;
     }
 
-    log(JSON.stringify(options));
-
     let manifest;
     try {
         manifest = Utils.parseJSON(
             Utils.loadTextFileContent(
                 Utils.resolvePath('local://manifest.json')));
-        log('loaded manifest : ' + manifest.name);
     } catch (e) {
+        log('Cannot load manifest : ' + manifest.name + ' : ' + e.message);
     }
 
     if (options.options.debug) {
