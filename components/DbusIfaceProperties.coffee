@@ -74,10 +74,6 @@ exports.getComponentForOutputProperties = (iface) ->
         c.path = payload
         c.updateProxy()
 
-    c.outPorts.add 'error',
-      datatype: 'object'
-      required: no
-
     # helper function to add ports
     addOutPort = (component, prop) ->
       portName = prop.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
