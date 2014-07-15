@@ -1,6 +1,11 @@
 {
   "name": "MyApplication",
   "version": "0.0.1",
+  "dbus": [
+    {
+      "file": "dbus/org.mpris.MediaPlayer2.Player.xml"
+    }
+  ],
   "ui": [
     {
       "file": "ui/basic-ui.glade"
@@ -9,6 +14,7 @@
       "file": "ui/slider.ui",
       "additionals": [
         "scaleadjust",
+        "soundadjust",
         "spinadjust"
       ]
     }

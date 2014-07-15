@@ -47,24 +47,24 @@
    "component": "gnome/ListenSignal",
    "metadata": {
     "label": "StartClicked",
-    "x": 540,
-    "y": -36
+    "x": 792,
+    "y": -144
    }
   },
   "gnome/Log_7m3j2": {
    "component": "gnome/Log",
    "metadata": {
     "label": "gnome/Log",
-    "x": 828,
-    "y": -72
+    "x": 1080,
+    "y": -144
    }
   },
   "Message": {
    "component": "core/Kick",
    "metadata": {
     "label": "Message",
-    "x": 684,
-    "y": -36
+    "x": 936,
+    "y": -144
    }
   },
   "core/Repeat_u1nsj": {
@@ -113,6 +113,46 @@
     "label": "SpinButton",
     "x": 684,
     "y": 288
+   }
+  },
+  "Player": {
+   "component": "dbus/org.mpris.MediaPlayer2.Player-props",
+   "metadata": {
+    "label": "Player",
+    "x": 288,
+    "y": 396
+   }
+  },
+  "Percent": {
+   "component": "math/Multiply",
+   "metadata": {
+    "label": "Percent",
+    "x": 432,
+    "y": 396
+   }
+  },
+  "SetSoundValue": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "SetSoundValue",
+    "x": 612,
+    "y": 396
+   }
+  },
+  "gnome/Log_nh6bw": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "gnome/Log",
+    "x": 792,
+    "y": 432
+   }
+  },
+  "core/Kick_lji4i": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "core/Kick",
+    "x": 504,
+    "y": 324
    }
   }
  },
@@ -273,6 +313,72 @@
    }
   },
   {
+   "src": {
+    "process": "Player",
+    "port": "volume"
+   },
+   "tgt": {
+    "process": "Percent",
+    "port": "multiplicand"
+   }
+  },
+  {
+   "src": {
+    "process": "Percent",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "SetSoundValue",
+    "port": "value"
+   }
+  },
+  {
+   "src": {
+    "process": "SetSoundValue",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gnome/Log_nh6bw",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Percent",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "core/Kick_lji4i",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Slider",
+    "port": "soundadjust"
+   },
+   "tgt": {
+    "process": "core/Kick_lji4i",
+    "port": "data"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "core/Kick_lji4i",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetSoundValue",
+    "port": "in"
+   }
+  },
+  {
    "data": true,
    "tgt": {
     "process": "ShowAll",
@@ -311,6 +417,34 @@
    "data": "value",
    "tgt": {
     "process": "SetSpinnerVal",
+    "port": "property"
+   }
+  },
+  {
+   "data": "org.gnome.Rhythmbox3",
+   "tgt": {
+    "process": "Player",
+    "port": "bus"
+   }
+  },
+  {
+   "data": "/org/mpris/MediaPlayer2",
+   "tgt": {
+    "process": "Player",
+    "port": "path"
+   }
+  },
+  {
+   "data": 100,
+   "tgt": {
+    "process": "Percent",
+    "port": "multiplier"
+   }
+  },
+  {
+   "data": "value",
+   "tgt": {
+    "process": "SetSoundValue",
     "port": "property"
    }
   }
