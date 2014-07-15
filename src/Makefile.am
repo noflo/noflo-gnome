@@ -21,12 +21,11 @@ js_filesdir = $(pkgdatadir)/js
 js_files_DATA = \
 	builderInit.js \
 	builderRun.js \
-	buildMain.js \
 	codeLoader.js \
 	codeWriter.js \
 	componentLoader.js \
 	emulation.js \
-	runtimeMain.js \
+	main.js \
 	noflo.js \
 	options.js \
 	path.js \

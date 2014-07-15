@@ -6,7 +6,7 @@ test -z "$srcdir" && srcdir=.
 
 PKG_NAME="noflo-gnome"
 
-(test -f $srcdir/src/runtimeMain.js) || {
+(test -f $srcdir/src/main.js) || {
     echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
     echo " top-level $PKG_NAME directory"
     exit 1
