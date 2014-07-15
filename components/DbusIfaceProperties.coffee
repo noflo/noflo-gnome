@@ -106,36 +106,28 @@ exports.getComponentForInputProperties = (iface) ->
     c.getProxy = () ->
       return @proxy if @proxy
       @proxy = Gio.DBusProxy.new_sync @getConnection(), Gio.DBusProxyFlags.NONE, iface, @bus, @path, iface.name, null
-
-    c.signal = (proxy, propsValues, propsInvalidated) ->
-      keyVals = propsValues.deep_unpack()
-      ports = []
-      for k, v of keyVals
-        port = @propertyToPort[k]
-        continue unless port
-        port.send v.deep_unpack()
-        ports.push port
-      for port in ports
-        port.disconnect()
-
-    c.removeProxy = () ->
-      return unless @listener
-      @getProxy().disconnect @listener
-      delete @listener
-      delete @proxy
+      return @proxy
 
     c.updateProxy = () ->
-      return unless @bus and @path
-      @removeProxy() if @listener
-      @listener = @getProxy().connect 'g-properties-changed', Lang.bind(@, @signal)
-      log "subscribed : #{@listener} |#{@sender}| |#{@path}|"
+      return unless @proxy
+      delete @proxy
 
-    c.description = "Monitors properties a #{iface.name} object"
+    c.setProperty = (propName, value) ->
+      return unless @bus and @path
+      log "set #{propName} = #{value}"
+      @getProxy()[propName] = value
+      log @getProxy()
+
+    c.description = "Set properties on #{iface.name}"
     c.icon = 'book'
 
     c.inPorts.add 'system',
       datatype: 'boolean'
       description: 'Session bus (false), System bus (true)'
+      process: (event, payload) ->
+        return unless event is 'data'
+        c.system = payload
+        c.updateProxy()
     c.inPorts.add 'bus',
       datatype: 'string'
       description: 'Bus name of the sender'
@@ -151,22 +143,20 @@ exports.getComponentForInputProperties = (iface) ->
         c.path = payload
         c.updateProxy()
 
-    c.outPorts.add 'error',
-      datatype: 'object'
-      required: no
-
     # helper function to add ports
-    addInPort = (component, name, property) ->
-      component.outPorts.add name,
-        datatype: 'object'
+    addInPort = (component, prop) ->
+      portName = prop.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
+      component.inPorts.add portName,
+        datatype: signatureToDatatype prop.signature
         required: no
-      return component.outPorts[name]
+        process: (event, payload) ->
+          return unless event is 'data'
+          component.setProperty @propName, payload
+      component.inPorts[portName].propName = prop.name
 
     # Add all ports
-    c.propertyToPort = {}
     for i in [0...(iface.properties.length)]
       prop = iface.properties[i]
-      filteredName = prop.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
-      log "#{prop.name} -> #{filteredName} "
-      c.propertyToPort[prop.name] = addOutPort c, filteredName
+      continue unless prop.flags & Gio.DBusPropertyInfoFlags.WRITABLE
+      addInPort c, prop
     c

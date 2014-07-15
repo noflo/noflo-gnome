@@ -7,7 +7,9 @@ loadInterface = (loader, iface) ->
   log "iface name=#{iface.name}"
   if iface.properties
     cmp = DbusIfaceProperties.getComponentForOutputProperties iface
-    loader.registerComponent 'dbus', "#{iface.name}-props", cmp
+    loader.registerComponent 'dbus', "#{iface.name}-rprops", cmp
+    cmp = DbusIfaceProperties.getComponentForInputProperties iface
+    loader.registerComponent 'dbus', "#{iface.name}-wprops", cmp
 
 loadInterfaces = (loader, ifaces) ->
   for i in [0..(ifaces.length - 1)]
