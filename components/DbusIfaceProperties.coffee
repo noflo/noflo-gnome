@@ -2,6 +2,19 @@ noflo = require 'noflo'
 Gio = imports.gi.Gio
 Lang = imports.lang
 
+signatureToDatatype = (signature) ->
+  switch signature[0]
+    when 'y', 'n', 'q', 'i', 'u', 'x', 't'
+      return 'integer'
+    when 'd'
+      return 'number'
+    when 's'
+      return 'string'
+    when 'a'
+      return 'array'
+    else
+      return 'string'
+
 exports.getComponentForOutputProperties = (iface) ->
   (metadata) ->
     c = new noflo.Component
@@ -40,7 +53,7 @@ exports.getComponentForOutputProperties = (iface) ->
       @removeProxy() if @listener
       @listener = @getProxy().connect 'g-properties-changed', Lang.bind(@, @signal)
 
-    c.description = "Monitors properties a #{iface.name} object"
+    c.description = "Monitors properties from #{iface.name}"
     c.icon = 'book'
 
     c.inPorts.add 'system',
@@ -66,18 +79,19 @@ exports.getComponentForOutputProperties = (iface) ->
       required: no
 
     # helper function to add ports
-    addOutPort = (component, name) ->
-      component.outPorts.add name,
-        datatype: 'object'
+    addOutPort = (component, prop) ->
+      portName = prop.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
+      component.outPorts.add portName,
+        datatype: signatureToDatatype prop.signature
         required: no
-      return component.outPorts[name]
+      return component.outPorts[portName]
 
     # Add all ports
     c.propertyToPort = {}
     for i in [0...(iface.properties.length)]
       prop = iface.properties[i]
-      filteredName = prop.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
-      c.propertyToPort[prop.name] = addOutPort c, filteredName
+      continue unless prop.flags & Gio.DBusPropertyInfoFlags.READABLE
+      c.propertyToPort[prop.name] = addOutPort c, prop
     c
 
 
