@@ -58,7 +58,7 @@ let generateBrowserUrl = function(port, manifest) {
         type: 'noflo-gnome',
     };
 
-    let url = 'http://localhost:1080/live.html#';
+    let url = 'https://djdeath.github.io/live.html#';
     url += '?runtime=' + Soup.uri_encode(GLib.base64_encode(JSON.stringify(runtime)),
                                          null);
     url += '&project=' + Soup.uri_encode(GLib.base64_encode(JSON.stringify(project)),
