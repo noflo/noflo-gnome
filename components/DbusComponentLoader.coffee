@@ -5,10 +5,10 @@ Utils = imports.utils
 
 loadInterface = (loader, iface) ->
   log "iface name=#{iface.name}"
-  if iface.properties
-    cmp = DbusIfaceProperties.getComponentForOutputProperties iface
+  if iface.properties and iface.properties.length > 0
+    cmp = DbusIfaceProperties.getComponentOutputProperties iface
     loader.registerComponent 'dbus', "#{iface.name}-rprops", cmp
-    cmp = DbusIfaceProperties.getComponentForInputProperties iface
+    cmp = DbusIfaceProperties.getComponentInputProperties iface
     loader.registerComponent 'dbus', "#{iface.name}-wprops", cmp
 
 loadInterfaces = (loader, ifaces) ->

@@ -16,12 +16,12 @@ signatureToDatatype = (signature) ->
     else
       return 'string'
 
-exports.getComponentForOutputProperties = (iface) ->
+exports.getComponentOutputProperties = (iface) ->
   (metadata) ->
     c = new noflo.Component
 
     c.shutdown = () ->
-      @stopListener()
+      @destroyProxy()
 
     c.getConnection = () ->
       bus = if @system then Gio.BusType.SYSTEM else Gio.BusType.SESSION
@@ -29,10 +29,17 @@ exports.getComponentForOutputProperties = (iface) ->
       return connection
 
     c.getProxy = () ->
+      return null unless @bus and @path
       return @proxy if @proxy
       @proxy = Gio.DBusProxy.new_sync @getConnection(), Gio.DBusProxyFlags.NONE, iface, @bus, @path, iface.name, null
 
-    c.signal = (proxy, propsValues, propsInvalidated) ->
+    c.destroyProxy = () ->
+      return unless @proxy
+      @proxy.disconnect @listener
+      delete @listener
+      delete @proxy
+
+    c.propertiesChanged = (proxy, propsValues, propsInvalidated) ->
       keyVals = propsValues.deep_unpack()
       ports = []
       for k, v of keyVals
@@ -43,16 +50,10 @@ exports.getComponentForOutputProperties = (iface) ->
       for port in ports
         port.disconnect()
 
-    c.removeProxy = () ->
-      return unless @listener
-      @getProxy().disconnect @listener
-      delete @listener
-      delete @proxy
-
     c.updateProxy = () ->
       return unless @bus and @path
-      @removeProxy() if @listener
-      @listener = @getProxy().connect 'g-properties-changed', Lang.bind(@, @signal)
+      @destroyProxy()
+      @listener = @getProxy().connect 'g-properties-changed', Lang.bind(@, @propertiesChanged)
 
     c.description = "Monitors properties from #{iface.name}"
     c.icon = 'book'
@@ -92,12 +93,12 @@ exports.getComponentForOutputProperties = (iface) ->
     c
 
 
-exports.getComponentForInputProperties = (iface) ->
+exports.getComponentInputProperties = (iface) ->
   (metadata) ->
     c = new noflo.Component
 
     c.shutdown = () ->
-      @stopListener()
+      @destroyProxy()
 
     c.getConnection = () ->
       bus = if @system then Gio.BusType.SYSTEM else Gio.BusType.SESSION
@@ -109,14 +110,19 @@ exports.getComponentForInputProperties = (iface) ->
       @proxy = Gio.DBusProxy.new_sync @getConnection(), Gio.DBusProxyFlags.NONE, iface, @bus, @path, iface.name, null
       return @proxy
 
+    c.destroyProxy = () ->
+      return unless @proxy
+      delete @proxy
+
     c.updateProxy = () ->
       return unless @proxy
       delete @proxy
 
     # Callback from setting value through dbus
     c.propertySet = (proxy, result) ->
+      return unless @proxy == proxy
       try
-        @getProxy().call_finish(result)
+        @proxy.call_finish(result)
       catch e
         @outPorts.error.send e
         @outPorts.error.disconnect()
