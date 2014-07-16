@@ -211,7 +211,16 @@ exports.getComponentMethod = (iface, method) ->
       try
         outVariant = proxy.call_finish(result);
         succeeded = true;
-        log outVariant.deep_unpack()
+        ret = outVariant.deep_unpack()
+        ports = []
+        for i, value of ret
+          log "#{i} : #{typeof value}"
+          log "#{value} : #{typeof value}"
+          continue unless @outPortsArray[i]
+          @outPortsArray[i].send value
+          ports.push @outPortsArray[i]
+        for port in ports
+          port.disconnect()
       catch e
         @outPorts.error.send e
         @outPorts.error.disconnect()
@@ -259,24 +268,27 @@ exports.getComponentMethod = (iface, method) ->
         process: (event, payload) ->
           return unless event is 'data'
           component.inValues[position] = payload
+      return component.inPorts[portName]
     addOutPort = (component, arg) ->
       portName = arg.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
       component.outPorts.add portName,
         datatype: signatureToDatatype arg.signature
-        required: yes
-      component.outArgumentsToPort[arg.name] = component.outPorts[portName]
+        required: no
+      return component.outPorts[portName]
 
     # Add all ports
     c.inValues = []
-    c.outArgumentsToPort = []
     c.inSignature = ''
+    c.outPortsArray = []
     if method.in_args and method.in_args.length > 0
       for i in [0..(method.in_args.length - 1)]
         arg = method.in_args[i]
         c.inSignature += arg.signature
-        addInPort c, arg
+        #log "argin #{arg.name}/#{arg.signature} from #{method.name} (#{c.inSignature})"
+        addInPort c, arg, i
     if method.out_args and method.out_args.length > 0
       for i in [0..(method.out_args.length - 1)]
         arg = method.out_args[i]
-        addOutPort c, arg
+        #log "argout #{arg.name}/#{arg.signature} from #{method.name}"
+        c.outPortsArray.push addOutPort(c, arg)
     c
