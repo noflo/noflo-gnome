@@ -46,7 +46,7 @@ let generateBrowserUrl = function(port, manifest) {
         label: 'NoFlo Gnome',
         id: '516416d5-9d62-41a1-a901-7ac469455c03',
         protocol: 'websocket',
-        address: 'ws://localhost:5555',
+        address: 'ws://localhost:' + port,
         type: 'noflo-gnome',
     };
     let project = {
