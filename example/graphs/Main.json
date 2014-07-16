@@ -123,12 +123,12 @@
     "y": 504
    }
   },
-  "core/Kick_lji4i": {
+  "SoundSlider": {
    "component": "core/Kick",
    "metadata": {
-    "label": "core/Kick",
+    "label": "SoundSlider",
     "x": 504,
-    "y": 324
+    "y": 396
    }
   },
   "PlayerGet": {
@@ -155,12 +155,28 @@
     "y": 396
    }
   },
-  "gnome/Log_n2lgn": {
+  "PlayPause": {
+   "component": "dbus/org.mpris.MediaPlayer2.Player.PlayPause",
+   "metadata": {
+    "label": "PlayPause",
+    "x": 828,
+    "y": 108
+   }
+  },
+  "PlayClicked": {
+   "component": "gnome/ListenSignal",
+   "metadata": {
+    "label": "PlayClicked",
+    "x": 648,
+    "y": 36
+   }
+  },
+  "gnome/Log_flocs": {
    "component": "gnome/Log",
    "metadata": {
     "label": "gnome/Log",
-    "x": 828,
-    "y": 396
+    "x": 972,
+    "y": 108
    }
   }
  },
@@ -326,7 +342,7 @@
     "port": "product"
    },
    "tgt": {
-    "process": "core/Kick_lji4i",
+    "process": "SoundSlider",
     "port": "in"
    },
    "metadata": {
@@ -339,7 +355,7 @@
     "port": "soundadjust"
    },
    "tgt": {
-    "process": "core/Kick_lji4i",
+    "process": "SoundSlider",
     "port": "data"
    },
    "metadata": {
@@ -348,7 +364,7 @@
   },
   {
    "src": {
-    "process": "core/Kick_lji4i",
+    "process": "SoundSlider",
     "port": "out"
    },
    "tgt": {
@@ -385,21 +401,44 @@
     "port": "quotient"
    },
    "tgt": {
-    "process": "gnome/Log_n2lgn",
-    "port": "in"
-   }
-  },
-  {
-   "src": {
-    "process": "Ratio",
-    "port": "quotient"
-   },
-   "tgt": {
     "process": "PlayerSet",
     "port": "volume"
    },
    "metadata": {
     "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "UI",
+    "port": "start_button"
+   },
+   "tgt": {
+    "process": "PlayClicked",
+    "port": "object"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "PlayClicked",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "PlayPause",
+    "port": "call"
+   }
+  },
+  {
+   "src": {
+    "process": "PlayPause",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "gnome/Log_flocs",
+    "port": "in"
    }
   },
   {
@@ -491,6 +530,27 @@
    "tgt": {
     "process": "Ratio",
     "port": "divisor"
+   }
+  },
+  {
+   "data": "clicked",
+   "tgt": {
+    "process": "PlayClicked",
+    "port": "signal"
+   }
+  },
+  {
+   "data": "org.gnome.Rhythmbox3",
+   "tgt": {
+    "process": "PlayPause",
+    "port": "bus"
+   }
+  },
+  {
+   "data": "/org/mpris/MediaPlayer2",
+   "tgt": {
+    "process": "PlayPause",
+    "port": "path"
    }
   }
  ]
