@@ -24,6 +24,7 @@ exports.getComponentForFile = (file, additionals) ->
           object = builder.get_object(objectName)
           objects[objectName] = object if object
     catch e
+      log "Cannot load #{file.get_path()} : #{e.message}"
       error = e
 
     c.description = "Widgets from #{file.get_basename()}"
