@@ -1,4 +1,5 @@
 noflo = require 'noflo'
+GLib = imports.gi.GLib
 Gio = imports.gi.Gio
 Lang = imports.lang
 
@@ -112,11 +113,22 @@ exports.getComponentForInputProperties = (iface) ->
       return unless @proxy
       delete @proxy
 
-    c.setProperty = (propName, value) ->
+    # Callback from setting value through dbus
+    c.propertySet = (proxy, result) ->
+      try
+        @getProxy().call_finish(result)
+      catch e
+        @outPorts.error.send e
+        @outPorts.error.disconnect()
+
+    # Send property set through dbus
+    c.setProperty = (propName, signature, value) ->
       return unless @bus and @path
+
       log "set #{propName} = #{value}"
-      @getProxy()[propName] = value
-      log @getProxy()
+      variant = new GLib.Variant(signature, value)
+      wrappedVariant = new GLib.Variant('(ssv)',  [iface.name, propName, variant])
+      @getProxy().call('org.freedesktop.DBus.Properties.Set', wrappedVariant, Gio.DBusCallFlags.NONE, -1, null, Lang.bind(@, @propertySet))
 
     c.description = "Set properties on #{iface.name}"
     c.icon = 'book'
@@ -143,6 +155,9 @@ exports.getComponentForInputProperties = (iface) ->
         c.path = payload
         c.updateProxy()
 
+    c.outPorts.add 'error',
+      datatype: 'object'
+
     # helper function to add ports
     addInPort = (component, prop) ->
       portName = prop.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
@@ -151,7 +166,7 @@ exports.getComponentForInputProperties = (iface) ->
         required: no
         process: (event, payload) ->
           return unless event is 'data'
-          component.setProperty @propName, payload
+          component.setProperty @propName, prop.signature, payload
       component.inPorts[portName].propName = prop.name
 
     # Add all ports
