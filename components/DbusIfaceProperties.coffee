@@ -179,3 +179,104 @@ exports.getComponentInputProperties = (iface) ->
       continue unless prop.flags & Gio.DBusPropertyInfoFlags.WRITABLE
       addInPort c, prop
     c
+
+
+exports.getComponentMethod = (iface, method) ->
+  (metadata) ->
+    c = new noflo.Component
+
+    c.dbusIface = iface
+    c.dbusMethod = method
+
+    c.shutdown = () ->
+      @destroyProxy()
+
+    c.getConnection = () ->
+      bus = if @system then Gio.BusType.SYSTEM else Gio.BusType.SESSION
+      connection = Gio.bus_get_sync bus, null
+      return connection
+
+    c.getProxy = () ->
+      return null unless @bus and @path
+      return @proxy if @proxy
+      @proxy = Gio.DBusProxy.new_sync @getConnection(), Gio.DBusProxyFlags.NONE, @dbusIface, @bus, @path, @dbusIface.name, null
+      return @proxy
+
+    c.destroyProxy = () ->
+      return unless @proxy
+      delete @proxy
+
+    c.callReply = (proxy, result) ->
+      succeeded = false
+      try
+        outVariant = proxy.call_finish(result);
+        succeeded = true;
+        log outVariant.deep_unpack()
+      catch e
+        @outPorts.error.send e
+        @outPorts.error.disconnect()
+
+    c.call = () ->
+      inVariant = new GLib.Variant("(#{@inSignature})", @inValues)
+      @getProxy().call(method.name, inVariant,  Gio.DBusCallFlags.NONE, -1, null, Lang.bind(@, @callReply))
+
+    c.description = "Call #{method.name} on #{iface.name}"
+    c.icon = 'book'
+
+    c.inPorts.add 'system',
+      datatype: 'boolean'
+      description: 'Session bus (false), System bus (true)'
+    c.inPorts.add 'bus',
+      datatype: 'string'
+      description: 'Bus name of the sender'
+      process: (event, payload) ->
+        return unless event is 'data'
+        c.bus = payload
+        c.destroyProxy()
+    c.inPorts.add 'path',
+      datatype: 'string'
+      description: 'Path of the sender'
+      process: (event, payload) ->
+        return unless event is 'data'
+        c.path = payload
+        c.destroyProxy()
+    c.inPorts.add 'call',
+      datatype: 'bang'
+      description: 'Trigger function call through DBus'
+      process: (event, payload) ->
+        return unless event is 'data'
+        c.call()
+
+    c.outPorts.add 'error',
+      datatype: 'object'
+
+    # helper functions to add ports
+    addInPort = (component, arg, position) ->
+      portName = arg.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
+      component.inPorts.add portName,
+        datatype: signatureToDatatype arg.signature
+        required: yes
+        process: (event, payload) ->
+          return unless event is 'data'
+          component.inValues[position] = payload
+    addOutPort = (component, arg) ->
+      portName = arg.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
+      component.outPorts.add portName,
+        datatype: signatureToDatatype arg.signature
+        required: yes
+      component.outArgumentsToPort[arg.name] = component.outPorts[portName]
+
+    # Add all ports
+    c.inValues = []
+    c.outArgumentsToPort = []
+    c.inSignature = ''
+    if method.in_args and method.in_args.length > 0
+      for i in [0..(method.in_args.length - 1)]
+        arg = method.in_args[i]
+        c.inSignature += arg.signature
+        addInPort c, arg
+    if method.out_args and method.out_args.length > 0
+      for i in [0..(method.out_args.length - 1)]
+        arg = method.out_args[i]
+        addOutPort c, arg
+    c
