@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.1 -->
+<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">media-playback-stop</property>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">media-playback-pause</property>
+  </object>
+  <object class="GtkImage" id="image3">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">media-playback-start</property>
+  </object>
   <object class="GtkWindow" id="button-window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Control Window</property>
@@ -12,11 +27,11 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkButton" id="start-button">
-            <property name="label">gtk-media-play</property>
+            <property name="label">Play</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="use_stock">True</property>
+            <property name="image">image3</property>
             <property name="always_show_image">True</property>
           </object>
           <packing>
@@ -27,11 +42,11 @@
         </child>
         <child>
           <object class="GtkButton" id="pause-button">
-            <property name="label">gtk-media-pause</property>
+            <property name="label">Pause</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="use_stock">True</property>
+            <property name="image">image2</property>
             <property name="always_show_image">True</property>
           </object>
           <packing>
@@ -42,11 +57,11 @@
         </child>
         <child>
           <object class="GtkButton" id="stop-button">
-            <property name="label">gtk-stop</property>
+            <property name="label">Stop</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="use_stock">True</property>
+            <property name="image">image1</property>
             <property name="always_show_image">True</property>
           </object>
           <packing>
