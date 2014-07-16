@@ -1,19 +1,18 @@
-DbusIfaceProperties = require './DbusIfaceProperties'
+DbusComponentFactory = require './DbusComponentFactory'
 Gio = imports.gi.Gio
 Runtime = imports.runtime
 Utils = imports.utils
 
 loadInterface = (loader, iface) ->
-  log "iface name=#{iface.name}"
   if iface.properties and iface.properties.length > 0
-    cmp = DbusIfaceProperties.getComponentOutputProperties iface
+    cmp = DbusComponentFactory.getComponentOutputProperties iface
     loader.registerComponent 'dbus', "#{iface.name}-rprops", cmp
-    cmp = DbusIfaceProperties.getComponentInputProperties iface
+    cmp = DbusComponentFactory.getComponentInputProperties iface
     loader.registerComponent 'dbus', "#{iface.name}-wprops", cmp
   if iface.methods and iface.methods.length > 0
     for i in [0..(iface.methods.length - 1)]
       method = iface.methods[i]
-      cmp = DbusIfaceProperties.getComponentMethod iface, method
+      cmp = DbusComponentFactory.getComponentMethod iface, method
       loader.registerComponent 'dbus', "#{iface.name}.#{method.name}", cmp
 
 loadInterfaces = (loader, ifaces) ->

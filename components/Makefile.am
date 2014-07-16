@@ -8,7 +8,7 @@ components_DATA = \
 	\
 	ComponentLoader.coffee \
 	DbusComponentLoader.coffee \
-	DbusIfaceProperties.coffee \
+	DbusComponentFactory.coffee \
 	\
 	GioFileLoadContent.coffee \
 	GioFileMonitor.coffee \
