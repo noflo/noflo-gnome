@@ -124,8 +124,6 @@ exports.getComponentForInputProperties = (iface) ->
     # Send property set through dbus
     c.setProperty = (propName, signature, value) ->
       return unless @bus and @path
-
-      log "set #{propName} = #{value}"
       variant = new GLib.Variant(signature, value)
       wrappedVariant = new GLib.Variant('(ssv)',  [iface.name, propName, variant])
       @getProxy().call('org.freedesktop.DBus.Properties.Set', wrappedVariant, Gio.DBusCallFlags.NONE, -1, null, Lang.bind(@, @propertySet))
