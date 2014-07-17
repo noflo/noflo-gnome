@@ -6,19 +6,19 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="icon_name">media-skip-backward</property>
-    <property name="icon_size">6</property>
+    <property name="icon_size">5</property>
   </object>
   <object class="GtkImage" id="_nextimage">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="icon_name">media-skip-forward</property>
-    <property name="icon_size">6</property>
+    <property name="icon_size">5</property>
   </object>
   <object class="GtkImage" id="_playimage">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="icon_name">media-playback-start</property>
-    <property name="icon_size">6</property>
+    <property name="icon_size">5</property>
   </object>
   <object class="GtkAdjustment" id="scaleadjust">
     <property name="upper">100</property>
@@ -37,6 +37,7 @@
   </object>
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Remote Player</property>
     <child>
       <object class="GtkBox" id="_box1">
         <property name="visible">True</property>
@@ -174,9 +175,63 @@
                 <property name="position">2</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkBox" id="box1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <object class="GtkVolumeButton" id="volumebutton1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="relief">none</property>
+                    <property name="focus_on_click">False</property>
+                    <property name="orientation">vertical</property>
+                    <property name="size">dnd</property>
+                    <property name="icons">audio-volume-muted-symbolic
+audio-volume-high-symbolic
+audio-volume-low-symbolic
+audio-volume-medium-symbolic</property>
+                    <child internal-child="plus_button">
+                      <object class="GtkButton" id="volumebutton-plus_button">
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="relief">none</property>
+                      </object>
+                    </child>
+                    <child internal-child="minus_button">
+                      <object class="GtkButton" id="volumebutton-minus_button">
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="relief">none</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="pack_type">end</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">3</property>
           </packing>
