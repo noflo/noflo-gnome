@@ -17,7 +17,9 @@ exports.getComponentForFile = (file, additionals) ->
       builder.add_from_file(file.get_path())
       for object in builder.get_objects()
         try
-          objects[object.get_name()] = object
+          name = object.get_name()
+          continue if /^_.*$/.test name
+          objects[name] = object
         catch e
       if additionals
         for objectName in additionals
