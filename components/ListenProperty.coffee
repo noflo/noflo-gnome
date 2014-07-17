@@ -1,5 +1,4 @@
 noflo = require 'noflo'
-Lang = imports.lang
 
 class ListenProperty extends noflo.Component
   description: 'Listen to a signal on a given object'
@@ -38,7 +37,7 @@ class ListenProperty extends noflo.Component
     @disconnectListener()
     @object = object
     @property = property
-    @listener = @object.connect "notify::#{@property}", Lang.bind @, () =>
+    @listener = @object.connect "notify::#{@property}", () =>
       @sendOutputs()
     @sendOutputs() if @readback
 
