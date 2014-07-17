@@ -5,19 +5,7 @@
  },
  "inports": {},
  "outports": {},
- "groups": [
-  {
-   "name": "Print",
-   "nodes": [
-    "Message",
-    "StartClicked",
-    "gnome/Log_7m3j2"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  }
- ],
+ "groups": [],
  "processes": {
   "gtk/Init_ynmps": {
    "component": "gtk/Init",
@@ -41,30 +29,6 @@
     "label": "ShowAll",
     "x": 540,
     "y": -216
-   }
-  },
-  "StartClicked": {
-   "component": "gnome/ListenSignal",
-   "metadata": {
-    "label": "StartClicked",
-    "x": 792,
-    "y": -144
-   }
-  },
-  "gnome/Log_7m3j2": {
-   "component": "gnome/Log",
-   "metadata": {
-    "label": "gnome/Log",
-    "x": 1080,
-    "y": -144
-   }
-  },
-  "Message": {
-   "component": "core/Kick",
-   "metadata": {
-    "label": "Message",
-    "x": 936,
-    "y": -144
    }
   },
   "core/Repeat_u1nsj": {
@@ -193,19 +157,6 @@
   },
   {
    "src": {
-    "process": "Message",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "gnome/Log_7m3j2",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 7
-   }
-  },
-  {
-   "src": {
     "process": "core/Repeat_u1nsj",
     "port": "out"
    },
@@ -292,16 +243,6 @@
   },
   {
    "src": {
-    "process": "UI",
-    "port": "start_button"
-   },
-   "tgt": {
-    "process": "StartClicked",
-    "port": "object"
-   }
-  },
-  {
-   "src": {
     "process": "ListenScale",
     "port": "value"
    },
@@ -311,19 +252,6 @@
    },
    "metadata": {
     "route": 0
-   }
-  },
-  {
-   "src": {
-    "process": "StartClicked",
-    "port": "object"
-   },
-   "tgt": {
-    "process": "Message",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 7
    }
   },
   {
@@ -446,20 +374,6 @@
    "tgt": {
     "process": "ShowAll",
     "port": "all"
-   }
-  },
-  {
-   "data": "clicked",
-   "tgt": {
-    "process": "StartClicked",
-    "port": "signal"
-   }
-  },
-  {
-   "data": "\"Yooooo!\"",
-   "tgt": {
-    "process": "Message",
-    "port": "data"
    }
   },
   {
