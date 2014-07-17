@@ -646,7 +646,8 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
   _.max = function(obj, iterator, context) {
     var result = -Infinity, lastComputed = -Infinity,
         value, computed;
-    if (!iterator && _.isArray(obj)) {
+    if (iterator == null && obj != null) {
+      obj = obj.length === +obj.length ? obj : _.values(obj);
       for (var i = 0, length = obj.length; i < length; i++) {
         value = obj[i];
         if (value > result) {
@@ -670,7 +671,8 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
   _.min = function(obj, iterator, context) {
     var result = Infinity, lastComputed = Infinity,
         value, computed;
-    if (!iterator && _.isArray(obj)) {
+    if (iterator == null && obj != null) {
+      obj = obj.length === +obj.length ? obj : _.values(obj);
       for (var i = 0, length = obj.length; i < length; i++) {
         value = obj[i];
         if (value < result) {
@@ -690,17 +692,17 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
     return result;
   };
 
-  // Shuffle an array, using the modern version of the
+  // Shuffle a collection, using the modern version of the
   // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
   _.shuffle = function(obj) {
-    var rand;
-    var index = 0;
-    var shuffled = [];
-    _.each(obj, function(value) {
-      rand = _.random(index++);
-      shuffled[index - 1] = shuffled[rand];
-      shuffled[rand] = value;
-    });
+    var set = obj && obj.length === +obj.length ? obj : _.values(obj);
+    var length = set.length;
+    var shuffled = Array(length);
+    for (var index = 0, rand; index < length; index++) {
+      rand = _.random(0, index);
+      if (rand !== index) shuffled[index] = shuffled[rand];
+      shuffled[rand] = set[index];
+    }
     return shuffled;
   };
 
@@ -890,11 +892,17 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
     var seen = [];
     for (var i = 0, length = array.length; i < length; i++) {
       var value = array[i];
-      if (iterator) value = iterator(value, i, array);
-      if (isSorted ? !i || seen !== value : !_.contains(seen, value)) {
-        if (isSorted) seen = value;
-        else seen.push(value);
-        result.push(array[i]);
+      if (isSorted) {
+        if (!i || seen !== value) result.push(value);
+        seen = value;
+      } else if (iterator) {
+        var computed = iterator(value, i, array);
+        if (_.indexOf(seen, computed) < 0) {
+          seen.push(computed);
+          result.push(value);
+        }
+      } else if (_.indexOf(result, value) < 0) {
+        result.push(value);
       }
     }
     return result;
@@ -1070,7 +1078,7 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
       var cache = memoize.cache;
       var address = hasher ? hasher.apply(this, arguments) : key;
       if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
-      return cache[key];
+      return cache[address];
     };
     memoize.cache = {};
     return memoize;
@@ -1581,33 +1589,33 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
     return new Date().getTime();
   };
 
-  // List of HTML entities for escaping.
-  var entityMap = {
-    escape: {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#x27;'
-    }
+   // List of HTML entities for escaping.
+  var escapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '`': '&#x60;'
   };
-  entityMap.unescape = _.invert(entityMap.escape);
-
-  // Regexes containing the keys and values listed immediately above.
-  var entityRegexes = {
-    escape:   RegExp('[' + _.keys(entityMap.escape).join('') + ']', 'g'),
-    unescape: RegExp('(' + _.keys(entityMap.unescape).join('|') + ')', 'g')
-  };
+  var unescapeMap = _.invert(escapeMap);
 
   // Functions for escaping and unescaping strings to/from HTML interpolation.
-  _.each(['escape', 'unescape'], function(method) {
-    _[method] = function(string) {
-      if (string == null) return '';
-      return ('' + string).replace(entityRegexes[method], function(match) {
-        return entityMap[method][match];
-      });
+  var createEscaper = function(map) {
+    var escaper = function(match) {
+      return map[match];
     };
-  });
+    // Regexes for identifying a key that needs to be escaped
+    var source = '(?:' + _.keys(map).join('|') + ')';
+    var testRegexp = RegExp(source);
+    var replaceRegexp = RegExp(source, 'g');
+    return function(string) {
+      string = string == null ? '' : '' + string;
+      return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
+    };
+  };
+  _.escape = createEscaper(escapeMap);
+  _.unescape = createEscaper(unescapeMap);
 
   // If the value of the named `property` is a function then invoke it with the
   // `object` as context; otherwise, return it.
@@ -4675,6 +4683,7 @@ InternalSocket = (function(_super) {
   function InternalSocket() {
     this.connected = false;
     this.groups = [];
+    this.dataDelegate = null;
   }
 
   InternalSocket.prototype.connect = function() {
@@ -4701,6 +4710,9 @@ InternalSocket = (function(_super) {
     if (!this.connected) {
       this.connect();
     }
+    if (data === void 0 && typeof this.dataDelegate === 'function') {
+      data = this.dataDelegate();
+    }
     return this.emit('data', data);
   };
 
@@ -4714,6 +4726,13 @@ InternalSocket = (function(_super) {
       return;
     }
     return this.emit('endgroup', this.groups.pop());
+  };
+
+  InternalSocket.prototype.setDataDelegate = function(delegate) {
+    if (typeof delegate !== 'function') {
+      throw Error('A data delegate must be a function.');
+    }
+    return this.dataDelegate = delegate;
   };
 
   InternalSocket.prototype.getId = function() {
@@ -4959,6 +4978,13 @@ InPort = (function(_super) {
     if (localId == null) {
       localId = null;
     }
+    if (this.hasDefault()) {
+      socket.setDataDelegate((function(_this) {
+        return function() {
+          return _this.options["default"];
+        };
+      })(this));
+    }
     socket.on('connect', (function(_this) {
       return function() {
         return _this.handleSocketEvent('connect', socket, localId);
@@ -5022,19 +5048,6 @@ InPort = (function(_super) {
 
   InPort.prototype.hasDefault = function() {
     return this.options["default"] !== void 0;
-  };
-
-  InPort.prototype.sendDefault = function() {
-    var idx, socket, _i, _len, _ref, _results;
-    if (this.hasDefault()) {
-      _ref = this.sockets;
-      _results = [];
-      for (idx = _i = 0, _len = _ref.length; _i < _len; idx = ++_i) {
-        socket = _ref[idx];
-        _results.push(this.handleSocketEvent('data', this.options["default"], idx));
-      }
-      return _results;
-    }
   };
 
   InPort.prototype.prepareBuffer = function() {
@@ -5903,17 +5916,7 @@ Component = (function(_super) {
   };
 
   Component.prototype.start = function() {
-    var key, port, _ref;
-    if (!this.started) {
-      _ref = this.inPorts.ports;
-      for (key in _ref) {
-        port = _ref[key];
-        if (typeof port.sendDefault === 'function') {
-          port.sendDefault();
-        }
-      }
-      this.started = true;
-    }
+    this.started = true;
     return this.started;
   };
 
@@ -6645,6 +6648,8 @@ Network = (function(_super) {
 
   Network.prototype.initials = [];
 
+  Network.prototype.defaults = [];
+
   Network.prototype.graph = null;
 
   Network.prototype.startupDate = null;
@@ -6655,6 +6660,7 @@ Network = (function(_super) {
     this.processes = {};
     this.connections = [];
     this.initials = [];
+    this.defaults = [];
     this.graph = graph;
     this.started = false;
     if (typeof process !== 'undefined' && process.execPath && process.execPath.indexOf('node') !== -1) {
@@ -6729,7 +6735,7 @@ Network = (function(_super) {
     }
     return this.load(node.component, node.metadata, (function(_this) {
       return function(instance) {
-        var name, port, socket, _ref, _ref1;
+        var name, port, _ref, _ref1;
         instance.nodeId = node.id;
         process.component = instance;
         _ref = process.component.inPorts;
@@ -6741,11 +6747,6 @@ Network = (function(_super) {
           port.node = node.id;
           port.nodeInstance = instance;
           port.name = name;
-          if (typeof port.hasDefault === 'function' && port.hasDefault() && !port.isAttached()) {
-            socket = internalSocket.createSocket();
-            _this.subscribeSocket(socket);
-            port.attach(socket);
-          }
         }
         _ref1 = process.component.outPorts;
         for (name in _ref1) {
@@ -6809,7 +6810,7 @@ Network = (function(_super) {
   };
 
   Network.prototype.connect = function(done) {
-    var callStack, edges, initializers, nodes, serialize, subscribeGraph;
+    var callStack, edges, initializers, nodes, serialize, setDefaults, subscribeGraph;
     if (done == null) {
       done = function() {};
     }
@@ -6836,7 +6837,10 @@ Network = (function(_super) {
         return done();
       };
     })(this);
-    initializers = _.reduceRight(this.graph.initializers, serialize, subscribeGraph);
+    setDefaults = _.reduceRight(this.graph.nodes, serialize, subscribeGraph);
+    initializers = _.reduceRight(this.graph.initializers, serialize, function() {
+      return setDefaults("Defaults");
+    });
     edges = _.reduceRight(this.graph.edges, serialize, function() {
       return initializers("Initial");
     });
@@ -7150,6 +7154,34 @@ Network = (function(_super) {
     return _results;
   };
 
+  Network.prototype.addDefaults = function(node, callback) {
+    var key, port, process, socket, _ref;
+    process = this.processes[node.id];
+    if (!process.component.isReady()) {
+      process.component.setMaxListeners(0);
+      process.component.once("ready", (function(_this) {
+        return function() {
+          return _this.addDefaults(process, callback);
+        };
+      })(this));
+      return;
+    }
+    _ref = process.component.inPorts.ports;
+    for (key in _ref) {
+      port = _ref[key];
+      if (typeof port.hasDefault === 'function' && port.hasDefault() && !port.isAttached()) {
+        socket = internalSocket.createSocket();
+        this.subscribeSocket(socket);
+        this.connectPort(socket, process, key, void 0, true);
+        this.connections.push(socket);
+        this.defaults.push(socket);
+      }
+    }
+    if (callback) {
+      return callback();
+    }
+  };
+
   Network.prototype.addInitial = function(initializer, callback) {
     var socket, to;
     socket = internalSocket.createSocket();
@@ -7238,10 +7270,24 @@ Network = (function(_super) {
     return _results;
   };
 
+  Network.prototype.sendDefaults = function() {
+    var socket, _i, _len, _ref, _results;
+    _ref = this.defaults;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      socket = _ref[_i];
+      socket.connect();
+      socket.send();
+      _results.push(socket.disconnect());
+    }
+    return _results;
+  };
+
   Network.prototype.start = function() {
     this.started = true;
     this.startComponents();
-    return this.sendInitials();
+    this.sendInitials();
+    return this.sendDefaults();
   };
 
   Network.prototype.stop = function() {
@@ -7950,12 +7996,14 @@ exports.guessLanguageFromFilename = guessLanguageFromFilename;
 
 });
 require.register("noflo-noflo/src/lib/Helpers.js", function(exports, require, module){
-var StreamReceiver, StreamSender,
+var InternalSocket, StreamReceiver, StreamSender,
   __hasProp = {}.hasOwnProperty;
 
 StreamSender = require('./Streams').StreamSender;
 
 StreamReceiver = require('./Streams').StreamReceiver;
+
+InternalSocket = require('./InternalSocket');
 
 exports.MapComponent = function(component, func, config) {
   var groups, inPort, outPort;
@@ -7991,7 +8039,7 @@ exports.MapComponent = function(component, func, config) {
 };
 
 exports.WirePattern = function(component, config, proc) {
-  var collectGroups, completeParams, groupedData, groupedDataGroups, inPorts, name, outPorts, port, processQueue, q, requiredParams, resumeTaskQ, taskQ, _fn, _fn1, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1;
+  var baseShutdown, collectGroups, disconnectOuts, inPorts, name, outPorts, port, processQueue, resumeTaskQ, sendDefaultParams, _fn, _fn1, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1;
   inPorts = 'in' in config ? config["in"] : 'in';
   if (!(inPorts instanceof Array)) {
     inPorts = [inPorts];
@@ -8065,31 +8113,46 @@ exports.WirePattern = function(component, config, proc) {
       throw new Error("no outPort named '" + name + "'");
     }
   }
-  groupedData = {};
-  groupedDataGroups = {};
-  q = [];
-  processQueue = function() {
-    var flushed, key, stream, streams;
-    while (q.length > 0) {
-      streams = q[0];
-      flushed = false;
-      if (outPorts.length === 1) {
-        if (streams.resolved) {
-          flushed = streams.flush();
-          if (flushed) {
-            q.shift();
-          }
-        }
+  component.groupedData = {};
+  component.groupedGroups = {};
+  component.groupedDisconnects = {};
+  disconnectOuts = function() {
+    var p, _k, _len2, _results;
+    _results = [];
+    for (_k = 0, _len2 = outPorts.length; _k < _len2; _k++) {
+      p = outPorts[_k];
+      if (component.outPorts[p].isConnected()) {
+        _results.push(component.outPorts[p].disconnect());
       } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  };
+  component.outputQ = [];
+  processQueue = function() {
+    var flushed, key, stream, streams, tmp;
+    while (component.outputQ.length > 0) {
+      streams = component.outputQ[0];
+      flushed = false;
+      if (streams === null) {
+        disconnectOuts();
+        flushed = true;
+      } else {
+        if (outPorts.length === 1) {
+          tmp = {};
+          tmp[outPorts[0]] = streams;
+          streams = tmp;
+        }
         for (key in streams) {
           stream = streams[key];
           if (stream.resolved) {
-            flushed = stream.flush();
-            if (flushed) {
-              q.shift();
-            }
+            flushed = flushed || stream.flush();
           }
         }
+      }
+      if (flushed) {
+        component.outputQ.shift();
       }
       if (!flushed) {
         return;
@@ -8102,7 +8165,7 @@ exports.WirePattern = function(component, config, proc) {
     }
     component.beforeProcess = function(outs) {
       if (config.ordered) {
-        q.push(outs);
+        component.outputQ.push(outs);
       }
       component.load++;
       if ('load' in component.outPorts && component.outPorts.load.isAttached()) {
@@ -8119,15 +8182,35 @@ exports.WirePattern = function(component, config, proc) {
       }
     };
   }
-  taskQ = [];
+  component.taskQ = [];
   component.params = {};
-  requiredParams = [];
-  completeParams = [];
+  component.requiredParams = [];
+  component.completeParams = [];
+  component.receivedParams = [];
+  component.defaultedParams = [];
+  component.defaultsSent = false;
+  sendDefaultParams = function() {
+    var param, tempSocket, _k, _len2, _ref;
+    if (component.defaultedParams.length > 0) {
+      _ref = component.defaultedParams;
+      for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
+        param = _ref[_k];
+        if (component.receivedParams.indexOf(param) === -1) {
+          tempSocket = InternalSocket.createSocket();
+          component.inPorts[param].attach(tempSocket);
+          tempSocket.send();
+          tempSocket.disconnect();
+          component.inPorts[param].detach(tempSocket);
+        }
+      }
+    }
+    return component.defaultsSent = true;
+  };
   resumeTaskQ = function() {
     var task, temp, _results;
-    if (completeParams.length === requiredParams.length && taskQ.length > 0) {
-      temp = taskQ.slice(0);
-      taskQ = [];
+    if (component.completeParams.length === component.requiredParams.length && component.taskQ.length > 0) {
+      temp = component.taskQ.slice(0);
+      component.taskQ = [];
       _results = [];
       while (temp.length > 0) {
         task = temp.shift();
@@ -8143,7 +8226,10 @@ exports.WirePattern = function(component, config, proc) {
       throw new Error("no inPort named '" + port + "'");
     }
     if (component.inPorts[port].isRequired()) {
-      requiredParams.push(port);
+      component.requiredParams.push(port);
+    }
+    if (component.inPorts[port].hasDefault()) {
+      component.defaultedParams.push(port);
     }
   }
   _ref1 = config.params;
@@ -8155,9 +8241,10 @@ exports.WirePattern = function(component, config, proc) {
         return;
       }
       component.params[port] = payload;
-      if (completeParams.indexOf(port) === -1 && requiredParams.indexOf(port) > -1) {
-        completeParams.push(port);
+      if (component.completeParams.indexOf(port) === -1 && component.requiredParams.indexOf(port) > -1) {
+        component.completeParams.push(port);
       }
+      component.receivedParams.push(port);
       return resumeTaskQ();
     };
   };
@@ -8165,6 +8252,8 @@ exports.WirePattern = function(component, config, proc) {
     port = _ref1[_l];
     _fn(port);
   }
+  component.disconnectData = [];
+  component.disconnectQ = [];
   _fn1 = function(port) {
     var inPort;
     if (config.receiveStreams && config.receiveStreams.indexOf(port) !== -1) {
@@ -8174,162 +8263,227 @@ exports.WirePattern = function(component, config, proc) {
     }
     inPort.groups = [];
     return inPort.process = function(event, payload) {
-      var data, g, groups, grp, key, out, outs, p, postpone, postponedToQ, requiredLength, resume, task, whenDone, _len5, _len6, _len7, _len8, _len9, _n, _o, _p, _q, _r, _ref2;
+      var data, foundGroup, g, groupLength, groups, grp, i, key, needPortGroups, obj, out, outs, p, postpone, postponedToQ, requiredLength, resume, task, whenDone, _len5, _len6, _len7, _len8, _len9, _n, _o, _p, _q, _r, _ref2, _ref3, _ref4, _s, _t;
       switch (event) {
         case 'begingroup':
           return inPort.groups.push(payload);
         case 'endgroup':
           return inPort.groups.pop();
-        case 'data':
-          key = '';
-          if (config.group && inPort.groups.length > 0) {
-            key = inPort.groups.toString();
-            if (config.group instanceof RegExp) {
-              if (!config.group.test(key)) {
-                key = '';
-              }
-            }
-          } else if (config.field && typeof payload === 'object' && config.field in payload) {
-            key = payload[config.field];
-          }
-          if (!(key in groupedData)) {
-            groupedData[key] = {};
-          }
-          if (config.field) {
-            groupedData[key][config.field] = key;
-          }
+        case 'disconnect':
           if (inPorts.length === 1) {
-            groupedData[key] = payload;
-          } else {
-            groupedData[key][port] = payload;
-          }
-          if (collectGroups instanceof Array && collectGroups.indexOf(port) !== -1) {
-            if (!(key in groupedDataGroups)) {
-              groupedDataGroups[key] = [];
-            }
-            _ref2 = inPort.groups;
-            for (_n = 0, _len5 = _ref2.length; _n < _len5; _n++) {
-              grp = _ref2[_n];
-              if (groupedDataGroups[key].indexOf(grp) === -1) {
-                groupedDataGroups[key].push(grp);
-              }
-            }
-          }
-          requiredLength = inPorts.length;
-          if (config.field) {
-            ++requiredLength;
-          }
-          if (requiredLength === 1 || Object.keys(groupedData[key]).length === requiredLength) {
-            if (collectGroups === true) {
-              groups = inPort.groups;
-            } else {
-              groups = groupedDataGroups[key];
-            }
-            for (_o = 0, _len6 = inPorts.length; _o < _len6; _o++) {
-              p = inPorts[_o];
-              component.inPorts[p].groups = [];
-            }
-            outs = {};
-            for (_p = 0, _len7 = outPorts.length; _p < _len7; _p++) {
-              name = outPorts[_p];
-              if (config.async || config.sendStreams && config.sendStreams.indexOf(name) !== -1) {
-                outs[name] = new StreamSender(component.outPorts[name], config.ordered);
+            if (config.async || config.StreamSender) {
+              if (config.ordered) {
+                return component.outputQ.push(null);
               } else {
-                outs[name] = component.outPorts[name];
+                return component.disconnectQ.push(true);
               }
+            } else {
+              return disconnectOuts();
             }
-            if (outPorts.length === 1) {
-              outs = outs[outPorts[0]];
-            }
-            whenDone = function(err) {
-              var g, out, _len8, _len9, _q, _r;
-              if (err) {
-                component.error(err, groups);
-              }
-              if (typeof component.fail === 'function' && component.hasErrors) {
-                component.fail();
-              }
-              if (outPorts.length === 1) {
-                if (config.forwardGroups) {
-                  for (_q = 0, _len8 = groups.length; _q < _len8; _q++) {
-                    g = groups[_q];
-                    outs.endGroup();
+          } else {
+            foundGroup = false;
+            for (i = _n = 0, _ref2 = component.disconnectData.length; 0 <= _ref2 ? _n < _ref2 : _n > _ref2; i = 0 <= _ref2 ? ++_n : --_n) {
+              if (!(port in component.disconnectData[i])) {
+                foundGroup = true;
+                component.disconnectData[i][port] = true;
+                if (Object.keys(component.disconnectData[i]).length === inPorts.length) {
+                  component.disconnectData.shift();
+                  if (config.async || config.StreamSender) {
+                    if (config.ordered) {
+                      component.outputQ.push(null);
+                    } else {
+                      component.disconnectQ.push(true);
+                    }
+                  } else {
+                    disconnectOuts();
                   }
                 }
-                outs.disconnect();
-              } else {
-                for (name in outs) {
-                  out = outs[name];
-                  if (config.forwardGroups) {
-                    for (_r = 0, _len9 = groups.length; _r < _len9; _r++) {
-                      g = groups[_r];
-                      out.endGroup();
+                break;
+              }
+            }
+            if (!foundGroup) {
+              obj = {};
+              obj[port] = true;
+              return component.disconnectData.push(obj);
+            }
+          }
+          break;
+        case 'data':
+          if (inPorts.length === 1) {
+            data = payload;
+            groups = inPort.groups;
+          } else {
+            key = '';
+            if (config.group && inPort.groups.length > 0) {
+              key = inPort.groups.toString();
+              if (config.group instanceof RegExp) {
+                if (!config.group.test(key)) {
+                  key = '';
+                }
+              }
+            } else if (config.field && typeof payload === 'object' && config.field in payload) {
+              key = payload[config.field];
+            }
+            needPortGroups = collectGroups instanceof Array && collectGroups.indexOf(port) !== -1;
+            if (!(key in component.groupedData)) {
+              component.groupedData[key] = [];
+            }
+            if (!(key in component.groupedGroups)) {
+              component.groupedGroups[key] = [];
+            }
+            foundGroup = false;
+            requiredLength = inPorts.length;
+            if (config.field) {
+              ++requiredLength;
+            }
+            for (i = _o = 0, _ref3 = component.groupedData[key].length; 0 <= _ref3 ? _o < _ref3 : _o > _ref3; i = 0 <= _ref3 ? ++_o : --_o) {
+              if (!(port in component.groupedData[key][i])) {
+                foundGroup = true;
+                component.groupedData[key][i][port] = payload;
+                if (needPortGroups) {
+                  _ref4 = inPort.groups;
+                  for (_p = 0, _len5 = _ref4.length; _p < _len5; _p++) {
+                    grp = _ref4[_p];
+                    if (component.groupedGroups[key][i].indexOf(grp) === -1) {
+                      component.groupedGroups[key][i].push(grp);
                     }
                   }
-                  out.disconnect();
+                }
+                groupLength = Object.keys(component.groupedData[key][i]).length;
+                if (groupLength === requiredLength) {
+                  data = (component.groupedData[key].splice(i, 1))[0];
+                  groups = (component.groupedGroups[key].splice(i, 1))[0];
+                  break;
+                } else {
+                  return;
                 }
               }
-              if (typeof component.afterProcess === 'function') {
-                return component.afterProcess(err || component.hasErrors, outs);
+            }
+            if (!foundGroup) {
+              obj = {};
+              if (config.field) {
+                obj[config.field] = key;
+              }
+              obj[port] = payload;
+              component.groupedData[key].push(obj);
+              if (needPortGroups) {
+                component.groupedGroups[key].push(inPort.groups);
+              } else {
+                component.groupedGroups[key].push([]);
+              }
+              return;
+            }
+          }
+          if (collectGroups === true) {
+            groups = inPort.groups;
+          }
+          for (_q = 0, _len6 = inPorts.length; _q < _len6; _q++) {
+            p = inPorts[_q];
+            component.inPorts[p].groups = [];
+          }
+          outs = {};
+          for (_r = 0, _len7 = outPorts.length; _r < _len7; _r++) {
+            name = outPorts[_r];
+            if (config.async || config.sendStreams && config.sendStreams.indexOf(name) !== -1) {
+              outs[name] = new StreamSender(component.outPorts[name], config.ordered);
+            } else {
+              outs[name] = component.outPorts[name];
+            }
+          }
+          if (outPorts.length === 1) {
+            outs = outs[outPorts[0]];
+          }
+          whenDone = function(err) {
+            var disconnect, g, out, outputs, _len8, _s;
+            if (err) {
+              component.error(err, groups);
+            }
+            if (typeof component.fail === 'function' && component.hasErrors) {
+              component.fail();
+            }
+            outputs = outPorts.length === 1 ? {
+              port: outs
+            } : outs;
+            disconnect = false;
+            if (component.disconnectQ.length > 0) {
+              component.disconnectQ.shift();
+              disconnect = true;
+            }
+            for (name in outputs) {
+              out = outputs[name];
+              if (config.forwardGroups) {
+                for (_s = 0, _len8 = groups.length; _s < _len8; _s++) {
+                  g = groups[_s];
+                  out.endGroup();
+                }
+              }
+              if (disconnect) {
+                out.disconnect();
+              }
+              if (config.async || config.StreamSender) {
+                out.done();
+              }
+            }
+            if (typeof component.afterProcess === 'function') {
+              return component.afterProcess(err || component.hasErrors, outs);
+            }
+          };
+          if (typeof component.beforeProcess === 'function') {
+            component.beforeProcess(outs);
+          }
+          if (!component.defaultsSent) {
+            sendDefaultParams();
+          }
+          if (outPorts.length === 1) {
+            if (config.forwardGroups) {
+              for (_s = 0, _len8 = groups.length; _s < _len8; _s++) {
+                g = groups[_s];
+                outs.beginGroup(g);
+              }
+            }
+          } else {
+            for (name in outs) {
+              out = outs[name];
+              if (config.forwardGroups) {
+                for (_t = 0, _len9 = groups.length; _t < _len9; _t++) {
+                  g = groups[_t];
+                  out.beginGroup(g);
+                }
+              }
+            }
+          }
+          exports.MultiError(component, config.name, config.error, groups);
+          if (config.async) {
+            postpone = function() {};
+            resume = function() {};
+            postponedToQ = false;
+            task = function() {
+              return proc.call(component, data, groups, outs, whenDone, postpone, resume);
+            };
+            postpone = function(backToQueue) {
+              if (backToQueue == null) {
+                backToQueue = true;
+              }
+              postponedToQ = backToQueue;
+              if (backToQueue) {
+                return component.taskQ.push(task);
               }
             };
-            data = groupedData[key];
-            delete groupedData[key];
-            delete groupedDataGroups[key];
-            if (typeof component.beforeProcess === 'function') {
-              component.beforeProcess(outs);
-            }
-            if (outPorts.length === 1) {
-              if (config.forwardGroups) {
-                for (_q = 0, _len8 = groups.length; _q < _len8; _q++) {
-                  g = groups[_q];
-                  outs.beginGroup(g);
-                }
+            resume = function() {
+              if (postponedToQ) {
+                return resumeTaskQ();
+              } else {
+                return task();
               }
-            } else {
-              for (name in outs) {
-                out = outs[name];
-                if (config.forwardGroups) {
-                  for (_r = 0, _len9 = groups.length; _r < _len9; _r++) {
-                    g = groups[_r];
-                    out.beginGroup(g);
-                  }
-                }
-              }
-            }
-            exports.MultiError(component, config.name, config.error, groups);
-            if (config.async) {
-              postpone = function() {};
-              resume = function() {};
-              postponedToQ = false;
-              task = function() {
-                return proc.call(component, data, groups, outs, whenDone, postpone, resume);
-              };
-              postpone = function(backToQueue) {
-                if (backToQueue == null) {
-                  backToQueue = true;
-                }
-                postponedToQ = backToQueue;
-                if (backToQueue) {
-                  return taskQ.push(task);
-                }
-              };
-              resume = function() {
-                if (postponedToQ) {
-                  return resumeTaskQ();
-                } else {
-                  return task();
-                }
-              };
-            } else {
-              task = function() {
-                proc.call(component, data, groups, outs);
-                return whenDone();
-              };
-            }
-            taskQ.push(task);
-            return resumeTaskQ();
+            };
+          } else {
+            task = function() {
+              proc.call(component, data, groups, outs);
+              return whenDone();
+            };
           }
+          component.taskQ.push(task);
+          return resumeTaskQ();
       }
     };
   };
@@ -8337,6 +8491,20 @@ exports.WirePattern = function(component, config, proc) {
     port = inPorts[_m];
     _fn1(port);
   }
+  baseShutdown = component.shutdown;
+  component.shutdown = function() {
+    baseShutdown.call(component);
+    component.groupedData = {};
+    component.groupedGroups = {};
+    component.outputQ = [];
+    component.disconnectData = [];
+    component.disconnectQ = [];
+    component.taskQ = [];
+    component.params = {};
+    component.completeParams = [];
+    component.receivedParams = [];
+    return component.defaultsSent = false;
+  };
   return component;
 };
 
@@ -8359,6 +8527,7 @@ exports.CustomizeError = function(err, options) {
 };
 
 exports.MultiError = function(component, group, errorPort, forwardedGroups) {
+  var baseShutdown;
   if (group == null) {
     group = '';
   }
@@ -8422,6 +8591,12 @@ exports.MultiError = function(component, group, errorPort, forwardedGroups) {
       component.outPorts[errorPort].endGroup();
     }
     component.outPorts[errorPort].disconnect();
+    component.hasErrors = false;
+    return component.errors = [];
+  };
+  baseShutdown = component.shutdown;
+  component.shutdown = function() {
+    baseShutdown.call(component);
     component.hasErrors = false;
     return component.errors = [];
   };
@@ -8584,7 +8759,7 @@ StreamSender = (function() {
     return this;
   };
 
-  StreamSender.prototype.disconnect = function() {
+  StreamSender.prototype.done = function() {
     if (this.ordered) {
       this.resolved = true;
     } else {
@@ -8593,17 +8768,26 @@ StreamSender = (function() {
     return this;
   };
 
+  StreamSender.prototype.disconnect = function() {
+    this.q.push(null);
+    return this;
+  };
+
   StreamSender.prototype.flush = function() {
     var ip, res, _i, _len, _ref;
     res = false;
     if (this.q.length > 0) {
-      this.port.connect();
       _ref = this.q;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         ip = _ref[_i];
-        ip.sendTo(this.port);
+        if (ip === null) {
+          if (this.port.isConnected()) {
+            this.port.disconnect();
+          }
+        } else {
+          ip.sendTo(this.port);
+        }
       }
-      this.port.disconnect();
       res = true;
     }
     this.q = [];
@@ -9448,7 +9632,7 @@ GraphProtocol = (function() {
       this.send('error', new Error('No name or metadata supplied'), context);
       return;
     }
-    return graph.changeGroup(payload.name, payload.metadata);
+    return graph.setEdgeMetadata(payload.name, payload.metadata);
   };
 
   return GraphProtocol;
@@ -9459,7 +9643,7 @@ module.exports = GraphProtocol;
 
 });
 require.register("noflo-runtime-base/src/protocol/Network.js", function(exports, require, module){
-var NetworkProtocol, noflo, prepareSocketEvent;
+var NetworkProtocol, getConnectionSignature, getEdgeSignature, getPortSignature, getSocketSignature, noflo, prepareSocketEvent;
 
 noflo = require('noflo');
 
@@ -9513,6 +9697,28 @@ prepareSocketEvent = function(event, req) {
   return payload;
 };
 
+getPortSignature = function(item) {
+  if (!item) {
+    return '';
+  }
+  return item.process + '(' + item.port + ')';
+};
+
+getEdgeSignature = function(edge) {
+  return getPortSignature(edge.src) + ' -> ' + getPortSignature(edge.tgt);
+};
+
+getConnectionSignature = function(connection) {
+  if (!connection) {
+    return '';
+  }
+  return connection.process.id + '(' + connection.port + ')';
+};
+
+getSocketSignature = function(socket) {
+  return getConnectionSignature(socket.from) + ' -> ' + getConnectionSignature(socket.to);
+};
+
 NetworkProtocol = (function() {
   function NetworkProtocol(transport) {
     this.transport = transport;
@@ -9532,12 +9738,14 @@ NetworkProtocol = (function() {
       }
     }
     switch (topic) {
+      case 'list':
+        return this.listNetworks(payload, context);
       case 'start':
         return this.initNetwork(graph, payload, context);
       case 'stop':
         return this.stopNetwork(graph, payload, context);
-      case 'list':
-        return this.listNetworks(payload, context);
+      case 'edges':
+        return this.updateEdgesFilter(graph, payload, context);
     }
   };
 
@@ -9553,6 +9761,37 @@ NetworkProtocol = (function() {
     return this.transport.graph.graphs[payload.graph];
   };
 
+  NetworkProtocol.prototype.updateEdgesFilter = function(graph, payload, context) {
+    var edge, network, signature, _i, _len, _ref, _results;
+    network = this.networks[payload.graph];
+    if (network) {
+      network.filters = {};
+    } else {
+      network = {
+        network: null,
+        filters: {}
+      };
+      this.networks[payload.graph] = network;
+    }
+    _ref = payload.edges;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      edge = _ref[_i];
+      signature = getEdgeSignature(edge);
+      _results.push(network.filters[signature] = true);
+    }
+    return _results;
+  };
+
+  NetworkProtocol.prototype.eventFiltered = function(graph, event) {
+    var sign;
+    if (!this.transport.options.filterData) {
+      return true;
+    }
+    sign = getSocketSignature(event.socket);
+    return this.networks[graph].filters[sign];
+  };
+
   NetworkProtocol.prototype.initNetwork = function(graph, payload, context) {
     if (this.networks[payload.graph]) {
       this.networks[payload.graph].stop();
@@ -9561,7 +9800,14 @@ NetworkProtocol = (function() {
     graph.componentLoader = this.transport.component.getLoader(graph.baseDir);
     return noflo.createNetwork(graph, (function(_this) {
       return function(network) {
-        _this.networks[payload.graph] = network;
+        if (_this.networks[payload.graph]) {
+          _this.networks[payload.graph].network = network;
+        } else {
+          _this.networks[payload.graph] = {
+            network: network,
+            filters: {}
+          };
+        }
         _this.subscribeNetwork(network, payload, context);
         return network.connect(function() {
           network.start();
@@ -9600,6 +9846,9 @@ NetworkProtocol = (function() {
     })(this));
     network.on('data', (function(_this) {
       return function(event) {
+        if (!_this.eventFiltered(payload.graph, event)) {
+          return;
+        }
         return _this.send('data', prepareSocketEvent(event, payload), context);
       };
     })(this));
@@ -9628,7 +9877,7 @@ NetworkProtocol = (function() {
     if (!this.networks[payload.graph]) {
       return;
     }
-    return this.networks[payload.graph].stop();
+    return this.networks[payload.graph].network.stop();
   };
 
   NetworkProtocol.prototype.listNetworks = function(payload, context) {
@@ -9638,7 +9887,7 @@ NetworkProtocol = (function() {
       network = _ref[graph];
       this.send('network', {
         graph: graph,
-        started: network.isStarted()
+        started: network.network.isStarted()
       }, context);
     }
     return this.send('networksdone', {}, context);
