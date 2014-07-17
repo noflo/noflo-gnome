@@ -1,11 +1,5 @@
 const Lang = imports.lang;
-
-const GLib = imports.gi.GLib;
-const Gio = imports.gi.Gio;
 const Soup = imports.gi.Soup;
-const CodeWriter = imports.codeWriter;
-const Path = imports.path;
-const Utils = imports.utils;
 
 const NoFlo = imports.noflo;
 
@@ -50,16 +44,19 @@ const WebProtoServer = new Lang.Class({
         this.runtime = new WebProtoRuntime({ connection: this,
                                              baseDir: '/noflo-runtime-base',
                                              type: 'noflo-nodejs', });
+        this.autosave = args.autosave;
 
-        let loader = new ComponentLoader({
+        this.loader = new ComponentLoader({
             baseDir: '/noflo-runtime-base',
             paths: [ 'library://components',
                      'local://components', ],
         });
         this.runtime.component.loaders = {
-            '/noflo-runtime-base': loader,
+            '/noflo-runtime-base': this.loader,
         };
-        loader.install(this.runtime);
+        this.loader.install(this.runtime);
+        if (this.autosave)
+            this.loader.autosave(this.runtime);
 
         this.signals = [];
 
@@ -112,10 +109,8 @@ const WebProtoServer = new Lang.Class({
         this.signals = [];
         this.connection = null;
 
-        for (let i in this.runtime.graph.graphs) {
-            let graph = this.runtime.graph.graphs[i];
-            CodeWriter.writeGraph(graph);
-        }
+        if (this.autosave)
+            this.loader.save(this.runtime);
     },
 
     sendMessage: function(message) {

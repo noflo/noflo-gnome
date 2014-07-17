@@ -2,6 +2,7 @@ const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
+const CodeWriter = imports.codeWriter;
 const Utils = imports.utils;
 const NoFlo = imports.noflo;
 const Fbp = require('fbp');
@@ -340,6 +341,39 @@ let ComponentLoader = function(options) {
             callback(new Error('Unknown graph ' + name));
         }
     };
+
+    /**/
+
+    self.save = function(runtime) {
+        log('Saving graphs!');
+        for (let i in runtime.graph.graphs) {
+            let graph = runtime.graph.graphs[i];
+            CodeWriter.writeGraph(graph);
+        }
+    };
+
+    self._saveCb = function() {
+        self.save(self._runtime);
+        self._saveTimeout = null;
+        return false;
+    };
+
+    self._graphUpdate = function() {
+        if (self._saveTimeout)
+            Mainloop.source_remove(self._saveTimeout);
+        self._saveTimeout =
+            Mainloop.timeout_add(1000, Lang.bind(self, self._saveCb));
+    };
+
+    self.autosave = function(runtime) {
+        log('autosave!');
+        self._runtime = runtime;
+        for (let i in runtime.graph.graphs) {
+            let graph = runtime.graph.graphs[i];
+            log('listening on ' + graph.name);
+            graph.on('endTransaction', Lang.bind(self, self._graphUpdate));
+        }
+   };
 
     /**/
 

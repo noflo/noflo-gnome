@@ -11,6 +11,13 @@ const WebProtoServer = imports.websocketServer;
 
 const CmdOptions = [
     {
+        name: 'no-autosave',
+        shortName: 'n',
+        requireArgument: false,
+        defaultValue: false,
+        help: 'Disable autosaving mode when debugging',
+    },
+    {
         name: 'debug',
         shortName: 'd',
         requireArgument: false,
@@ -97,6 +104,7 @@ let exec = function(args) {
         }
         let server = new WebProtoServer.WebProtoServer({
             port: options.options.port,
+            autosave: !options.options['no-autosave']
         });
         server.start();
         Runtime.run();
