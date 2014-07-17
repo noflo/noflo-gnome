@@ -30,7 +30,7 @@ class ListenSignal extends noflo.Component
   updateListener: () ->
     return unless @object? and @signal?
     @disconnectListener()
-    @listener = @object.connect @signal, Lang.bind @, () =>
+    @listener = @object.connect @signal, () =>
       @outPorts.object.send true
       @outPorts.object.disconnect()
 
