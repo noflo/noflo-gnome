@@ -14,6 +14,7 @@ loadInterface = (loader, iface) ->
       method = iface.methods[i]
       cmp = DbusComponentFactory.getComponentMethod iface, method
       loader.registerComponent 'dbus', "#{iface.name}.#{method.name}", cmp
+  return
 
 loadInterfaces = (loader, ifaces) ->
   for i in [0..(ifaces.length - 1)]
@@ -29,3 +30,4 @@ exports.load = (loader, manifest) ->
       loadInterfaces loader, info.interfaces
     catch e
       log "Cannot load #{vpath} : #{e.message}"
+  return

@@ -6,7 +6,9 @@ exports = (loader, done) ->
   repo = GI.Repository.get_default()
   manifest = Runtime.getApplicationManifest()
 
-  do done unless manifest and manifest.libraries
+  unless manifest and manifest.libraries
+    do done if done
+    return
 
   # List the constructors
   manifest.libraries.forEach (lib) ->
@@ -20,4 +22,4 @@ exports = (loader, done) ->
       loader.registerComponent lib.toLowerCase(), "Create#{name}", component
 
   do done if done
-  null
+  return

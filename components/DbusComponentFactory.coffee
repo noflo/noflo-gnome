@@ -26,7 +26,6 @@ exports.getComponentOutputProperties = (iface) ->
     c.getConnection = () ->
       bus = if @system then Gio.BusType.SYSTEM else Gio.BusType.SESSION
       connection = Gio.bus_get_sync bus, null
-      return connection
 
     c.getProxy = () ->
       return null unless @bus and @path
@@ -38,6 +37,7 @@ exports.getComponentOutputProperties = (iface) ->
       @proxy.disconnect @listener
       delete @listener
       delete @proxy
+      return
 
     c.propertiesChanged = (proxy, propsValues, propsInvalidated) ->
       keyVals = propsValues.deep_unpack()
@@ -54,6 +54,7 @@ exports.getComponentOutputProperties = (iface) ->
       return unless @bus and @path
       @destroyProxy()
       @listener = @getProxy().connect 'g-properties-changed', Lang.bind(@, @propertiesChanged)
+      return
 
     c.description = "Monitors properties from #{iface.name}"
     c.icon = 'book'
@@ -68,6 +69,7 @@ exports.getComponentOutputProperties = (iface) ->
         return unless event is 'data'
         c.bus = payload
         c.updateProxy()
+        return
     c.inPorts.add 'path',
       datatype: 'string'
       description: 'Path of the sender'
@@ -75,6 +77,7 @@ exports.getComponentOutputProperties = (iface) ->
         return unless event is 'data'
         c.path = payload
         c.updateProxy()
+        return
 
     # helper function to add ports
     addOutPort = (component, prop) ->
@@ -103,20 +106,20 @@ exports.getComponentInputProperties = (iface) ->
     c.getConnection = () ->
       bus = if @system then Gio.BusType.SYSTEM else Gio.BusType.SESSION
       connection = Gio.bus_get_sync bus, null
-      return connection
 
     c.getProxy = () ->
       return @proxy if @proxy
       @proxy = Gio.DBusProxy.new_sync @getConnection(), Gio.DBusProxyFlags.NONE, iface, @bus, @path, iface.name, null
-      return @proxy
 
     c.destroyProxy = () ->
       return unless @proxy
       delete @proxy
+      return
 
     c.updateProxy = () ->
       return unless @proxy
       delete @proxy
+      return
 
     # Callback from setting value through dbus
     c.propertySet = (proxy, result) ->
@@ -126,6 +129,7 @@ exports.getComponentInputProperties = (iface) ->
       catch e
         @outPorts.error.send e
         @outPorts.error.disconnect()
+      return
 
     # Send property set through dbus
     c.setProperty = (propName, signature, value) ->
@@ -133,6 +137,7 @@ exports.getComponentInputProperties = (iface) ->
       variant = new GLib.Variant(signature, value)
       wrappedVariant = new GLib.Variant('(ssv)',  [iface.name, propName, variant])
       @getProxy().call('org.freedesktop.DBus.Properties.Set', wrappedVariant, Gio.DBusCallFlags.NONE, -1, null, Lang.bind(@, @propertySet))
+      return
 
     c.description = "Set properties on #{iface.name}"
     c.icon = 'book'
@@ -144,6 +149,7 @@ exports.getComponentInputProperties = (iface) ->
         return unless event is 'data'
         c.system = payload
         c.updateProxy()
+        return
     c.inPorts.add 'bus',
       datatype: 'string'
       description: 'Bus name of the sender'
@@ -151,6 +157,7 @@ exports.getComponentInputProperties = (iface) ->
         return unless event is 'data'
         c.bus = payload
         c.updateProxy()
+        return
     c.inPorts.add 'path',
       datatype: 'string'
       description: 'Path of the sender'
@@ -158,6 +165,7 @@ exports.getComponentInputProperties = (iface) ->
         return unless event is 'data'
         c.path = payload
         c.updateProxy()
+        return
 
     c.outPorts.add 'error',
       datatype: 'object'
@@ -171,6 +179,7 @@ exports.getComponentInputProperties = (iface) ->
         process: (event, payload) ->
           return unless event is 'data'
           component.setProperty @propName, prop.signature, payload
+          return
       component.inPorts[portName].propName = prop.name
 
     # Add all ports
@@ -200,11 +209,11 @@ exports.getComponentMethod = (iface, method) ->
       return null unless @bus and @path
       return @proxy if @proxy
       @proxy = Gio.DBusProxy.new_sync @getConnection(), Gio.DBusProxyFlags.NONE, @dbusIface, @bus, @path, @dbusIface.name, null
-      return @proxy
 
     c.destroyProxy = () ->
       return unless @proxy
       delete @proxy
+      return
 
     c.callReply = (proxy, result) ->
       succeeded = false
@@ -242,6 +251,7 @@ exports.getComponentMethod = (iface, method) ->
         return unless event is 'data'
         c.bus = payload
         c.destroyProxy()
+        return
     c.inPorts.add 'path',
       datatype: 'string'
       description: 'Path of the sender'
@@ -249,12 +259,14 @@ exports.getComponentMethod = (iface, method) ->
         return unless event is 'data'
         c.path = payload
         c.destroyProxy()
+        return
     c.inPorts.add 'call',
       datatype: 'bang'
       description: 'Trigger function call through DBus'
       process: (event, payload) ->
         return unless event is 'data'
         c.call()
+        return
 
     c.outPorts.add 'error',
       datatype: 'object'
@@ -268,6 +280,7 @@ exports.getComponentMethod = (iface, method) ->
         process: (event, payload) ->
           return unless event is 'data'
           component.inValues[position] = payload
+          return
       return component.inPorts[portName]
     addOutPort = (component, arg) ->
       portName = arg.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()

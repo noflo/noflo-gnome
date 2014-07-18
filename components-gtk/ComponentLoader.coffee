@@ -5,7 +5,9 @@ Utils = imports.utils
 
 exports = (loader, done) ->
   manifest = Runtime.getApplicationManifest()
-  do done unless manifest.ui
+  unless manifest.ui
+    do done
+    return
   for ui in manifest.ui
     try
       path = Utils.resolvePath('local://' + ui.file)
@@ -16,3 +18,4 @@ exports = (loader, done) ->
     catch e
       log "Fail to load UI file: #{e.message}"
   do done if done
+  return

@@ -16,6 +16,7 @@ exports.getComponentForConstructor = (type, cons) ->
           return
         c.outPorts.instance.send instance
         c.outPorts.instance.disconnect()
+        return
 
     c.outPorts.add 'instance',
       datatype: 'object'

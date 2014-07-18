@@ -49,6 +49,7 @@ exports.getComponentForFile = (file, additionals) ->
             ports.push port
           for port in ports
             port.disconnect()
+        return
 
     c.outPorts.add 'error',
       datatype: 'object'
@@ -64,6 +65,7 @@ exports.getComponentForFile = (file, additionals) ->
         return unless component.started
         socket.send object
         socket.disconnect()
+        return
 
     # Add all ports
     for name, obj of objects

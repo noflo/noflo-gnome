@@ -81,7 +81,7 @@ let exec = function(args) {
 
     if (options.options.help) {
         Options.printHelp('noflo-gnome run', CmdOptions);
-        return;
+        return -1;
     }
 
     let manifest;
