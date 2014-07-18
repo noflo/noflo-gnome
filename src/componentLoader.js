@@ -97,15 +97,10 @@ let ComponentLoader = function(options) {
 
     let generateComponentInstance = function(vpath) {
         return function(metadata) {
-            try {
-                if (!this.implementation)
-                    this.implementation = require(vpath);
-                let instance = this.implementation.getComponent(metadata);
-                return instance;
-            } catch (e) {
-                log('Failed to load component : ' + vpath + ' : ' + e.message);
-                throw e;
-            }
+            if (!this.implementation)
+                this.implementation = require(vpath);
+            let instance = this.implementation.getComponent(metadata);
+            return instance;
         };
     };
 
@@ -188,6 +183,7 @@ let ComponentLoader = function(options) {
                 let fullPath = getComponentFullPath(module, componentName);
                 let requirePath = removeExtension(fullPath);
                 self.components[path] = {
+                    path: fullPath,
                     isGraph: false,
                     module: module,
                     moduleName: normalizeName(moduleName),
@@ -203,6 +199,7 @@ let ComponentLoader = function(options) {
                 let path = normalizeName(moduleName + '/' + graphName);
                 let fullPath = getGraphFullPath(module, graphName);
                 let component = {
+                    path: fullPath,
                     isGraph: true,
                     module: module,
                     moduleName: normalizeName(moduleName),
@@ -249,7 +246,12 @@ let ComponentLoader = function(options) {
     self._loadComponent = function(item, metadata, callback) {
 
         Mainloop.timeout_add(0, Lang.bind(this, function() {
-            callback(item.create(metadata));
+            try {
+                callback(item.create(metadata));
+            } catch (e) {
+                log('Cannot load component ' + item.name +
+                    ' ' + item.path + ' : ' + e.message);
+            }
             return false;
         }));
     }
@@ -267,12 +269,18 @@ let ComponentLoader = function(options) {
         }
 
         graph.inPorts.graph.attach(graphSocket);
-        graphSocket.send(item.create(metadata));
-        graphSocket.disconnect();
-        graph.inPorts.remove('graph');
-        graph.inPorts.remove('start');
-        graph.setIcon('sitemap');
-        callback(graph);
+
+        try {
+            graphSocket.send(item.create(metadata));
+            graphSocket.disconnect();
+            graph.inPorts.remove('graph');
+            graph.inPorts.remove('start');
+            graph.setIcon('sitemap');
+            callback(graph);
+        } catch (e) {
+            log('Cannot load graph ' + item.name +
+                ' ' + item.path + ' : ' + e.message);
+        }
     };
 
     self.registerComponent = function(packageId, name, constructor) {
@@ -284,6 +292,7 @@ let ComponentLoader = function(options) {
         }
 
         self.components[path] = {
+            path: 'unknown',
             module: null,
             name: name,
             create: constructor,
