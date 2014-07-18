@@ -105,6 +105,10 @@ let loadTextFileContent = function(path) {
 
 let saveTextFileContent = function(path, content) {
     let file = Gio.File.new_for_path(path);
+    let parent = file.get_parent();
+
+    if (!parent.query_exists(null))
+        parent.make_directory_with_parents(null);
 
     file.replace_contents(content,
                           null,
