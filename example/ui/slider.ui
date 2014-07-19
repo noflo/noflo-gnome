@@ -25,16 +25,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="soundadjust">
-    <property name="upper">100</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
-  <object class="GtkAdjustment" id="spinadjust">
-    <property name="upper">100</property>
-    <property name="step_increment">0.10000000000000001</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Remote Player</property>
@@ -61,17 +51,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="spinbutton1">
+              <object class="GtkLabel" id="titlelabel">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="text" translatable="yes">0.0</property>
-                <property name="adjustment">spinadjust</property>
-                <property name="digits">1</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">label</property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">5</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -96,43 +83,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="_box2">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkLabel" id="label1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Sound:</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScale" id="soundscale">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="adjustment">soundadjust</property>
-                <property name="round_digits">1</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="box2">
+          <object class="GtkBox" id="_box4">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
@@ -176,7 +127,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="box1">
+              <object class="GtkBox" id="_box5">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
@@ -238,5 +189,15 @@ audio-volume-medium-symbolic</property>
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkAdjustment" id="soundadjust">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="spinadjust">
+    <property name="upper">100</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">10</property>
   </object>
 </interface>

@@ -23,7 +23,9 @@
     "Gtk"
   ],
   "noflo": {
-    "components": {},
+    "components": {
+        "Title": "components/Title.coffee"
+    },
     "graphs": {
       "Main": "graphs/Main.json"
     },

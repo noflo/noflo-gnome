@@ -3,6 +3,7 @@ CLEANFILES =
 
 noinst_DATA = \
 	manifest.json \
+	dbus/iface.xml \
 	ui/basic-ui.glade \
 	ui/slider.ui \
 	graphs/Main.json \

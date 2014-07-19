@@ -17,17 +17,6 @@
    }
   },
   {
-   "name": "Volume",
-   "nodes": [
-    "Percent",
-    "SetSoundValue",
-    "SoundSlider"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
    "name": "Init",
    "nodes": [
     "ShowAll",
@@ -78,6 +67,41 @@
    "metadata": {
     "description": ""
    }
+  },
+  {
+   "name": "Title",
+   "nodes": [
+    "Album",
+    "Artist",
+    "BuildTitle",
+    "Title",
+    "SetLabel"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "SetVolume",
+   "nodes": [
+    "PlayerSet",
+    "core/RunTimeout_pfpen",
+    "gnome/ListenProperty_yh2j2"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "UpdateVolume",
+   "nodes": [
+    "SetSoundValue",
+    "SoundSlider",
+    "flow/Gate_xioou"
+   ],
+   "metadata": {
+    "description": ""
+   }
   }
  ],
  "processes": {
@@ -101,7 +125,7 @@
    "component": "core/Repeat",
    "metadata": {
     "label": "core/Repeat",
-    "x": -360,
+    "x": -540,
     "y": -108
    }
   },
@@ -113,43 +137,11 @@
     "y": 36
    }
   },
-  "ListenScale": {
-   "component": "gnome/ListenProperty",
-   "metadata": {
-    "label": "ListenScale",
-    "x": 540,
-    "y": 144
-   }
-  },
-  "SetSpinnerVal": {
-   "component": "objects/SetPropertyValue",
-   "metadata": {
-    "label": "SetSpinnerVal",
-    "x": 864,
-    "y": 288
-   }
-  },
-  "SpinButton": {
-   "component": "core/Kick",
-   "metadata": {
-    "label": "SpinButton",
-    "x": 684,
-    "y": 288
-   }
-  },
-  "Percent": {
-   "component": "math/Multiply",
-   "metadata": {
-    "label": "Percent",
-    "x": 540,
-    "y": 684
-   }
-  },
   "SetSoundValue": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetSoundValue",
-    "x": 828,
+    "x": 1080,
     "y": 684
    }
   },
@@ -157,32 +149,24 @@
    "component": "core/Kick",
    "metadata": {
     "label": "SoundSlider",
-    "x": 684,
-    "y": 576
+    "x": 936,
+    "y": 612
    }
   },
   "PlayerGet": {
    "component": "dbus/org.mpris.MediaPlayer2.Player-rprops",
    "metadata": {
     "label": "PlayerGet",
-    "x": -36,
-    "y": 684
+    "x": -288,
+    "y": 936
    }
   },
   "PlayerSet": {
    "component": "dbus/org.mpris.MediaPlayer2.Player-wprops",
    "metadata": {
     "label": "PlayerSet",
-    "x": 864,
-    "y": 396
-   }
-  },
-  "Ratio": {
-   "component": "math/Divide",
-   "metadata": {
-    "label": "Ratio",
-    "x": 684,
-    "y": 396
+    "x": 972,
+    "y": 216
    }
   },
   "PlayPause": {
@@ -197,16 +181,16 @@
    "component": "core/Kick",
    "metadata": {
     "label": "StatusLabel",
-    "x": 540,
-    "y": 864
+    "x": 360,
+    "y": 540
    }
   },
   "SetStatus": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetStatus",
-    "x": 720,
-    "y": 864
+    "x": 540,
+    "y": 540
    }
   },
   "PlayClicked": {
@@ -215,14 +199,6 @@
     "label": "PlayClicked",
     "x": 540,
     "y": 0
-   }
-  },
-  "gnome/Log_ba7n0": {
-   "component": "gnome/Log",
-   "metadata": {
-    "label": "gnome/Log",
-    "x": 180,
-    "y": 576
    }
   },
   "gtk/Quit_p6dkl": {
@@ -280,19 +256,105 @@
     "x": 540,
     "y": -180
    }
+  },
+  "volumeadj": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "volumeadj",
+    "x": 324,
+    "y": 144
+   }
+  },
+  "gnome/ListenProperty_yh2j2": {
+   "component": "gnome/ListenProperty",
+   "metadata": {
+    "label": "gnome/ListenProperty",
+    "x": 540,
+    "y": 360
+   }
+  },
+  "flow/Gate_xioou": {
+   "component": "flow/Gate",
+   "metadata": {
+    "label": "flow/Gate",
+    "x": 936,
+    "y": 720
+   }
+  },
+  "core/RunTimeout_pfpen": {
+   "component": "core/RunTimeout",
+   "metadata": {
+    "label": "core/RunTimeout",
+    "x": 756,
+    "y": 360
+   }
+  },
+  "core/RunTimeout_ovt26": {
+   "component": "core/RunTimeout",
+   "metadata": {
+    "label": "core/RunTimeout",
+    "x": -360,
+    "y": -108
+   }
+  },
+  "BuildTitle": {
+   "component": "MyApplication/Title",
+   "metadata": {
+    "label": "BuildTitle",
+    "x": 360,
+    "y": 1368
+   }
+  },
+  "Artist": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "Artist",
+    "x": 144,
+    "y": 1260
+   }
+  },
+  "Album": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "Album",
+    "x": 144,
+    "y": 1368
+   }
+  },
+  "Title": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "Title",
+    "x": 144,
+    "y": 1476
+   }
+  },
+  "objects/SetPropertyValue_2q67x": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "objects/SetPropertyValue",
+    "x": 570.5853747475687,
+    "y": -148.8341822707181
+   }
+  },
+  "SetLabel": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "SetLabel",
+    "x": 648,
+    "y": 1368
+   }
+  },
+  "Label": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "Label",
+    "x": 504,
+    "y": 1260
+   }
   }
  },
  "connections": [
-  {
-   "src": {
-    "process": "core/Repeat_u1nsj",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "gtk/Init_ynmps",
-    "port": "in"
-   }
-  },
   {
    "src": {
     "process": "Slider",
@@ -308,98 +370,6 @@
   },
   {
    "src": {
-    "process": "Slider",
-    "port": "scaleadjust"
-   },
-   "tgt": {
-    "process": "ListenScale",
-    "port": "object"
-   }
-  },
-  {
-   "src": {
-    "process": "ListenScale",
-    "port": "value"
-   },
-   "tgt": {
-    "process": "SetSpinnerVal",
-    "port": "value"
-   },
-   "metadata": {
-    "route": 0
-   }
-  },
-  {
-   "src": {
-    "process": "Slider",
-    "port": "spinadjust"
-   },
-   "tgt": {
-    "process": "SpinButton",
-    "port": "data"
-   }
-  },
-  {
-   "src": {
-    "process": "SpinButton",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "SetSpinnerVal",
-    "port": "in"
-   }
-  },
-  {
-   "src": {
-    "process": "ListenScale",
-    "port": "value"
-   },
-   "tgt": {
-    "process": "SpinButton",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 0
-   }
-  },
-  {
-   "src": {
-    "process": "Percent",
-    "port": "product"
-   },
-   "tgt": {
-    "process": "SetSoundValue",
-    "port": "value"
-   }
-  },
-  {
-   "src": {
-    "process": "Percent",
-    "port": "product"
-   },
-   "tgt": {
-    "process": "SoundSlider",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 0
-   }
-  },
-  {
-   "src": {
-    "process": "Slider",
-    "port": "soundadjust"
-   },
-   "tgt": {
-    "process": "SoundSlider",
-    "port": "data"
-   },
-   "metadata": {
-    "route": 7
-   }
-  },
-  {
-   "src": {
     "process": "SoundSlider",
     "port": "out"
    },
@@ -409,42 +379,6 @@
    },
    "metadata": {
     "route": 7
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
-    "port": "volume"
-   },
-   "tgt": {
-    "process": "Percent",
-    "port": "multiplicand"
-   }
-  },
-  {
-   "src": {
-    "process": "ListenScale",
-    "port": "value"
-   },
-   "tgt": {
-    "process": "Ratio",
-    "port": "dividend"
-   },
-   "metadata": {
-    "route": 0
-   }
-  },
-  {
-   "src": {
-    "process": "Ratio",
-    "port": "quotient"
-   },
-   "tgt": {
-    "process": "PlayerSet",
-    "port": "volume"
-   },
-   "metadata": {
-    "route": 0
    }
   },
   {
@@ -520,29 +454,6 @@
    "tgt": {
     "process": "PlayPause",
     "port": "call"
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
-    "port": "position"
-   },
-   "tgt": {
-    "process": "gnome/Log_ba7n0",
-    "port": "in"
-   },
-   "metadata": {
-    "route": null
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
-    "port": "rate"
-   },
-   "tgt": {
-    "process": "gnome/Log_ba7n0",
-    "port": "in"
    }
   },
   {
@@ -638,6 +549,271 @@
    }
   },
   {
+   "src": {
+    "process": "volumeadj",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SoundSlider",
+    "port": "data"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "Slider",
+    "port": "volumebutton1"
+   },
+   "tgt": {
+    "process": "volumeadj",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "volume"
+   },
+   "tgt": {
+    "process": "SoundSlider",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "volumeadj",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gnome/ListenProperty_yh2j2",
+    "port": "object"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "gnome/ListenProperty_yh2j2",
+    "port": "value"
+   },
+   "tgt": {
+    "process": "PlayerSet",
+    "port": "volume"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "flow/Gate_xioou",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetSoundValue",
+    "port": "value"
+   }
+  },
+  {
+   "src": {
+    "process": "gnome/ListenProperty_yh2j2",
+    "port": "value"
+   },
+   "tgt": {
+    "process": "core/RunTimeout_pfpen",
+    "port": "start"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "core/RunTimeout_pfpen",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "flow/Gate_xioou",
+    "port": "open"
+   }
+  },
+  {
+   "src": {
+    "process": "gnome/ListenProperty_yh2j2",
+    "port": "value"
+   },
+   "tgt": {
+    "process": "flow/Gate_xioou",
+    "port": "close"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "volume"
+   },
+   "tgt": {
+    "process": "flow/Gate_xioou",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "core/Repeat_u1nsj",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "core/RunTimeout_ovt26",
+    "port": "start"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "core/RunTimeout_ovt26",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gtk/Init_ynmps",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "Artist",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Artist",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "BuildTitle",
+    "port": "artist"
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "Album",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Album",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "BuildTitle",
+    "port": "album"
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "Title",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Title",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "BuildTitle",
+    "port": "title"
+   }
+  },
+  {
+   "src": {
+    "process": "BuildTitle",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetLabel",
+    "port": "value"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Label",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetLabel",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "BuildTitle",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Label",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Slider",
+    "port": "titlelabel"
+   },
+   "tgt": {
+    "process": "Label",
+    "port": "data"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
    "data": true,
    "tgt": {
     "process": "ShowAll",
@@ -649,27 +825,6 @@
    "tgt": {
     "process": "core/Repeat_u1nsj",
     "port": "in"
-   }
-  },
-  {
-   "data": "value",
-   "tgt": {
-    "process": "ListenScale",
-    "port": "property"
-   }
-  },
-  {
-   "data": "value",
-   "tgt": {
-    "process": "SetSpinnerVal",
-    "port": "property"
-   }
-  },
-  {
-   "data": 100,
-   "tgt": {
-    "process": "Percent",
-    "port": "multiplier"
    }
   },
   {
@@ -705,13 +860,6 @@
    "tgt": {
     "process": "PlayerSet",
     "port": "path"
-   }
-  },
-  {
-   "data": 100,
-   "tgt": {
-    "process": "Ratio",
-    "port": "divisor"
    }
   },
   {
@@ -789,6 +937,62 @@
    "tgt": {
     "process": "PrevClicked",
     "port": "signal"
+   }
+  },
+  {
+   "data": 80,
+   "tgt": {
+    "process": "core/RunTimeout_pfpen",
+    "port": "time"
+   }
+  },
+  {
+   "data": "adjustment",
+   "tgt": {
+    "process": "volumeadj",
+    "port": "key"
+   }
+  },
+  {
+   "data": "value",
+   "tgt": {
+    "process": "gnome/ListenProperty_yh2j2",
+    "port": "property"
+   }
+  },
+  {
+   "data": 100,
+   "tgt": {
+    "process": "core/RunTimeout_ovt26",
+    "port": "time"
+   }
+  },
+  {
+   "data": "xesam:artist",
+   "tgt": {
+    "process": "Artist",
+    "port": "key"
+   }
+  },
+  {
+   "data": "xesam:album",
+   "tgt": {
+    "process": "Album",
+    "port": "key"
+   }
+  },
+  {
+   "data": "xesam:title",
+   "tgt": {
+    "process": "Title",
+    "port": "key"
+   }
+  },
+  {
+   "data": "label",
+   "tgt": {
+    "process": "SetLabel",
+    "port": "property"
    }
   }
  ]
