@@ -28,6 +28,7 @@ class ListenProperty extends noflo.Component
         required: no
 
     @inPorts.readback.on 'data', (@readback) =>
+      @sendOutputs() if @readback
     @inPorts.object.on 'data', (object) =>
       @updateListener object, @property
     @inPorts.property.on 'data', (property) =>
@@ -37,11 +38,13 @@ class ListenProperty extends noflo.Component
     @disconnectListener()
     @object = object
     @property = property
+    return unless @object? and @property?
     @listener = @object.connect "notify::#{@property}", () =>
       @sendOutputs()
     @sendOutputs() if @readback
 
   sendOutputs: () ->
+    return unless @object? and @property?
     @outPorts.object.send @object
     @outPorts.value.send @object[@property]
     @outPorts.object.disconnect()
