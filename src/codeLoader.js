@@ -13,7 +13,7 @@ let compileFile = function(to, from) {
                       javascriptSource + '; return exports; })()');
 
     // Compilation cache
-    log('writing ' + to.get_path());
+    //log('writing ' + to.get_path());
     try {
         to.get_parent().make_directory_with_parents(null);
     } catch (e) {
