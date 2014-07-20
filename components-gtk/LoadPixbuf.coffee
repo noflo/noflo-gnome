@@ -22,11 +22,8 @@ exports.getComponent = ->
   , (data, groups, out) ->
     try
       loader = new GdkPixbuf.PixbufLoader
-      log "about to write bytes"
       loader.write_bytes data
-      log "done writing"
       loader.close()
-      log "done!"
       out.send loader.get_pixbuf()
     catch e
       c.error e, groups
