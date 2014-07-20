@@ -2,20 +2,29 @@ noflo = require 'noflo'
 
 Gio = imports.gi.Gio
 
-class GioFileLoadContent extends noflo.Component
-  description: 'Loads the content of a file'
-  constructor: ->
-    @inPorts =
-      filename: new noflo.Port 'string'
-    @outPorts =
-      content: new noflo.ArrayPort 'string'
+exports.getComponent = ->
+  c = new noflo.Component
+  c.description = 'Loads the content of a file'
 
-    @inPorts.filename.on 'data', (filename) =>
-      return unless @outPorts.content.isAttached()
-      file = Gio.File.new_for_path(filename)
-      [status, content, size, etag] = file.load_contents(null)
-      @outPorts.content.send('' + content)
-      @outPorts.content.disconnect()
+  c.inPorts.add 'uri',
+    datatype: 'string'
 
+  c.outPorts.add 'content',
+    datatype: 'object'
+  c.outPorts.add 'error',
+    datatype: 'object'
 
-exports.getComponent = -> new GioFileLoadContent
+  noflo.helpers.WirePattern c,
+    in: 'uri'
+    out: 'content'
+    forwardGroups: true
+  , (data, groups, out) ->
+    return unless out.isAttached()
+    try
+      file = Gio.File.new_for_uri data
+      [status, content, etag] = file.load_contents null
+      log "content type: #{typeof content}"
+      content.toString = -> ""
+      out.send content
+    catch e
+      c.error e, groups
