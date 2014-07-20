@@ -14,6 +14,11 @@ loadInterface = (loader, iface) ->
       method = iface.methods[i]
       cmp = DbusComponentFactory.getComponentMethod iface, method
       loader.registerComponent 'dbus', "#{iface.name}.#{method.name}", cmp
+  if iface.signals and iface.signals.length > 0
+    for i in [0..(iface.signals.length - 1)]
+      signal = iface.signals[i]
+      cmp = DbusComponentFactory.getComponentSignal iface, signal
+      loader.registerComponent 'dbus', "#{iface.name}.#{signal.name}", cmp
   return
 
 loadInterfaces = (loader, ifaces) ->

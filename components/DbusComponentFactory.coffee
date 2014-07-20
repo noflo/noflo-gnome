@@ -304,3 +304,89 @@ exports.getComponentMethod = (iface, method) ->
         #log "argout #{arg.name}/#{arg.signature} from #{method.name}"
         c.outPortsArray.push addOutPort(c, arg)
     c
+
+
+exports.getComponentSignal = (iface, signal) ->
+  (metadata) ->
+    c = new noflo.Component
+
+    c.dbusIface = iface
+    c.dbusSignal = signal
+
+    c.shutdown = () ->
+      @destroyProxy()
+
+    c.getConnection = () ->
+      bus = if @system then Gio.BusType.SYSTEM else Gio.BusType.SESSION
+      connection = Gio.bus_get_sync bus, null
+      return connection
+
+    c.getProxy = () ->
+      return null unless @bus and @path
+      return @proxy if @proxy
+      @proxy = Gio.DBusProxy.new_sync @getConnection(), Gio.DBusProxyFlags.NONE, @dbusIface, @bus, @path, @dbusIface.name, null
+
+    c.destroyProxy = () ->
+      return unless @proxy
+      @proxy.disconnect @listener
+      delete @listener
+      delete @proxy
+      return
+
+    c.processSignal = (proxy, senderName, signalName, parameters) ->
+      return unless signalName == @dbusSignal.name
+      args = parameters.deep_unpack()
+      ports = []
+      for i, arg of args
+        port = @outPortsArray[i]
+        port.send arg
+        ports.push port
+      for port in ports
+        port.disconnect()
+
+    c.updateProxy = () ->
+      @destroyProxy()
+      proxy = @getProxy()
+      return unless proxy?
+      @listener = proxy.connect 'g-signal', @processSignal.bind @
+      return
+
+    c.description = "Monitors signal #{signal.name} on #{iface.name}"
+    c.icon = 'book'
+
+    c.inPorts.add 'system',
+      datatype: 'boolean'
+      description: 'Session bus (false), System bus (true)'
+    c.inPorts.add 'bus',
+      datatype: 'string'
+      description: 'Bus name of the sender'
+      process: (event, payload) ->
+        return unless event is 'data'
+        c.bus = payload
+        c.updateProxy()
+        return
+    c.inPorts.add 'path',
+      datatype: 'string'
+      description: 'Path of the sender'
+      process: (event, payload) ->
+        return unless event is 'data'
+        c.path = payload
+        c.updateProxy()
+        return
+
+    # helper functions to add ports
+    addOutPort = (component, arg) ->
+      portName = arg.name.replace(/[^A-Za-z0-9_]/g, '_').toLowerCase()
+      component.outPorts.add portName,
+        datatype: signatureToDatatype arg.signature
+        required: no
+      return component.outPorts[portName]
+
+    # Add all ports
+    c.outPortsArray = []
+    if signal.args and signal.args.length > 0
+      for i in [0..(signal.args.length - 1)]
+        arg = signal.args[i]
+        #log "signal argout #{arg.name}/#{arg.signature} from #{signal.name}"
+        c.outPortsArray.push addOutPort(c, arg)
+    c
