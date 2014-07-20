@@ -20,8 +20,8 @@
    "name": "Init",
    "nodes": [
     "ShowAll",
-    "Slider",
-    "core/Repeat_u1nsj",
+    "UI",
+    "Start",
     "gtk/Init_ynmps"
    ],
    "metadata": {
@@ -69,19 +69,6 @@
    }
   },
   {
-   "name": "Title",
-   "nodes": [
-    "Album",
-    "Artist",
-    "BuildTitle",
-    "Title",
-    "SetLabel"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
    "name": "SetVolume",
    "nodes": [
     "PlayerSet",
@@ -98,6 +85,36 @@
     "SetSoundValue",
     "SoundSlider",
     "flow/Gate_xioou"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Title",
+   "nodes": [
+    "Album",
+    "Artist",
+    "BuildTitle",
+    "Label",
+    "SetLabel",
+    "Title"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Picture",
+   "nodes": [
+    "AlbumImage",
+    "LoadPicture",
+    "PictureUri",
+    "SetDefaultPicture",
+    "SetPicture",
+    "core/Kick_p3npt",
+    "gtk/LoadPixbuf_9zcbr",
+    "gtk/ScalePixbuf_tsmqf"
    ],
    "metadata": {
     "description": ""
@@ -121,18 +138,18 @@
     "y": -108
    }
   },
-  "core/Repeat_u1nsj": {
+  "Start": {
    "component": "core/Repeat",
    "metadata": {
-    "label": "core/Repeat",
-    "x": -540,
+    "label": "Start",
+    "x": -504,
     "y": -108
    }
   },
-  "Slider": {
+  "UI": {
    "component": "gtk-builder/sliderui",
    "metadata": {
-    "label": "Slider",
+    "label": "UI",
     "x": 36,
     "y": 36
    }
@@ -165,8 +182,8 @@
    "component": "dbus/org.mpris.MediaPlayer2.Player-wprops",
    "metadata": {
     "label": "PlayerSet",
-    "x": 972,
-    "y": 216
+    "x": 756,
+    "y": 252
    }
   },
   "PlayPause": {
@@ -262,7 +279,7 @@
    "metadata": {
     "label": "volumeadj",
     "x": 324,
-    "y": 144
+    "y": 180
    }
   },
   "gnome/ListenProperty_yh2j2": {
@@ -289,10 +306,10 @@
     "y": 360
    }
   },
-  "core/RunTimeout_ovt26": {
+  "100ms": {
    "component": "core/RunTimeout",
    "metadata": {
-    "label": "core/RunTimeout",
+    "label": "100ms",
     "x": -360,
     "y": -108
    }
@@ -301,63 +318,135 @@
    "component": "MyApplication/Title",
    "metadata": {
     "label": "BuildTitle",
-    "x": 360,
-    "y": 1368
+    "x": 720,
+    "y": 1080
    }
   },
   "Artist": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "Artist",
-    "x": 144,
-    "y": 1260
+    "x": 504,
+    "y": 972
    }
   },
   "Album": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "Album",
-    "x": 144,
-    "y": 1368
+    "x": 504,
+    "y": 1080
    }
   },
   "Title": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "Title",
-    "x": 144,
-    "y": 1476
-   }
-  },
-  "objects/SetPropertyValue_2q67x": {
-   "component": "objects/SetPropertyValue",
-   "metadata": {
-    "label": "objects/SetPropertyValue",
-    "x": 570.5853747475687,
-    "y": -148.8341822707181
+    "x": 504,
+    "y": 1188
    }
   },
   "SetLabel": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetLabel",
-    "x": 648,
-    "y": 1368
+    "x": 936,
+    "y": 1080
    }
   },
   "Label": {
    "component": "core/Kick",
    "metadata": {
     "label": "Label",
-    "x": 504,
-    "y": 1260
+    "x": 828,
+    "y": 972
+   }
+  },
+  "strings/Jsonify_aw2kd": {
+   "component": "strings/Jsonify",
+   "metadata": {
+    "label": "strings/Jsonify",
+    "x": -144,
+    "y": 1152
+   }
+  },
+  "gnome/Log_47lp9": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "gnome/Log",
+    "x": -36,
+    "y": 1368
+   }
+  },
+  "LoadPicture": {
+   "component": "gnome/GioFileLoadContent",
+   "metadata": {
+    "label": "LoadPicture",
+    "x": 432,
+    "y": 1548
+   }
+  },
+  "PictureUri": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "PictureUri",
+    "x": 252,
+    "y": 1404
+   }
+  },
+  "gtk/LoadPixbuf_9zcbr": {
+   "component": "gtk/LoadPixbuf",
+   "metadata": {
+    "label": "gtk/LoadPixbuf",
+    "x": 612,
+    "y": 1656
+   }
+  },
+  "AlbumImage": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "AlbumImage",
+    "x": 1008,
+    "y": 1404
+   }
+  },
+  "SetPicture": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "SetPicture",
+    "x": 1224,
+    "y": 1440
+   }
+  },
+  "gtk/ScalePixbuf_tsmqf": {
+   "component": "gtk/ScalePixbuf",
+   "metadata": {
+    "label": "gtk/ScalePixbuf",
+    "x": 864,
+    "y": 1548
+   }
+  },
+  "SetDefaultPicture": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "SetDefaultPicture",
+    "x": 1188,
+    "y": 1656
+   }
+  },
+  "core/Kick_p3npt": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "core/Kick",
+    "x": 1008,
+    "y": 1692
    }
   }
  },
  "connections": [
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "window1"
    },
    "tgt": {
@@ -383,7 +472,7 @@
   },
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "statuslabel"
    },
    "tgt": {
@@ -435,7 +524,7 @@
   },
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "playbutton"
    },
    "tgt": {
@@ -468,7 +557,7 @@
   },
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "window1"
    },
    "tgt": {
@@ -498,7 +587,7 @@
     "port": "out"
    },
    "tgt": {
-    "process": "Slider",
+    "process": "UI",
     "port": "start"
    }
   },
@@ -514,7 +603,7 @@
   },
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "nextbutton"
    },
    "tgt": {
@@ -537,7 +626,7 @@
   },
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "backbutton"
    },
    "tgt": {
@@ -563,7 +652,7 @@
   },
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "volumebutton1"
    },
    "tgt": {
@@ -584,7 +673,7 @@
     "port": "in"
    },
    "metadata": {
-    "route": 0
+    "route": 9
    }
   },
   {
@@ -669,16 +758,16 @@
     "port": "in"
    },
    "metadata": {
-    "route": 0
+    "route": 9
    }
   },
   {
    "src": {
-    "process": "core/Repeat_u1nsj",
+    "process": "Start",
     "port": "out"
    },
    "tgt": {
-    "process": "core/RunTimeout_ovt26",
+    "process": "100ms",
     "port": "start"
    },
    "metadata": {
@@ -687,7 +776,7 @@
   },
   {
    "src": {
-    "process": "core/RunTimeout_ovt26",
+    "process": "100ms",
     "port": "out"
    },
    "tgt": {
@@ -703,6 +792,9 @@
    "tgt": {
     "process": "Artist",
     "port": "in"
+   },
+   "metadata": {
+    "route": 5
    }
   },
   {
@@ -713,6 +805,9 @@
    "tgt": {
     "process": "BuildTitle",
     "port": "artist"
+   },
+   "metadata": {
+    "route": 5
    }
   },
   {
@@ -725,7 +820,7 @@
     "port": "in"
    },
    "metadata": {
-    "route": 0
+    "route": 5
    }
   },
   {
@@ -736,6 +831,9 @@
    "tgt": {
     "process": "BuildTitle",
     "port": "album"
+   },
+   "metadata": {
+    "route": 5
    }
   },
   {
@@ -748,7 +846,7 @@
     "port": "in"
    },
    "metadata": {
-    "route": 0
+    "route": 5
    }
   },
   {
@@ -759,6 +857,9 @@
    "tgt": {
     "process": "BuildTitle",
     "port": "title"
+   },
+   "metadata": {
+    "route": 5
    }
   },
   {
@@ -771,7 +872,7 @@
     "port": "value"
    },
    "metadata": {
-    "route": 0
+    "route": 5
    }
   },
   {
@@ -797,12 +898,12 @@
     "port": "in"
    },
    "metadata": {
-    "route": 0
+    "route": 5
    }
   },
   {
    "src": {
-    "process": "Slider",
+    "process": "UI",
     "port": "titlelabel"
    },
    "tgt": {
@@ -811,6 +912,231 @@
    },
    "metadata": {
     "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "strings/Jsonify_aw2kd",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gnome/Log_47lp9",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "strings/Jsonify_aw2kd",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "PictureUri",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "PictureUri",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "LoadPicture",
+    "port": "uri"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "LoadPicture",
+    "port": "content"
+   },
+   "tgt": {
+    "process": "gtk/LoadPixbuf_9zcbr",
+    "port": "data"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "UI",
+    "port": "albumimage"
+   },
+   "tgt": {
+    "process": "AlbumImage",
+    "port": "data"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "AlbumImage",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetPicture",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/LoadPixbuf_9zcbr",
+    "port": "pixbuf"
+   },
+   "tgt": {
+    "process": "gtk/ScalePixbuf_tsmqf",
+    "port": "pixbuf"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/ScalePixbuf_tsmqf",
+    "port": "pixbuf"
+   },
+   "tgt": {
+    "process": "AlbumImage",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/ScalePixbuf_tsmqf",
+    "port": "pixbuf"
+   },
+   "tgt": {
+    "process": "SetPicture",
+    "port": "value"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "AlbumImage",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetDefaultPicture",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "core/Kick_p3npt",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetDefaultPicture",
+    "port": "value"
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/ScalePixbuf_tsmqf",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "core/Kick_p3npt",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 1
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/LoadPixbuf_9zcbr",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "core/Kick_p3npt",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 1
+   }
+  },
+  {
+   "src": {
+    "process": "LoadPicture",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "core/Kick_p3npt",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 1
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/ScalePixbuf_tsmqf",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "AlbumImage",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 1
+   }
+  },
+  {
+   "src": {
+    "process": "gtk/LoadPixbuf_9zcbr",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "AlbumImage",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 1
+   }
+  },
+  {
+   "src": {
+    "process": "LoadPicture",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "AlbumImage",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 1
    }
   },
   {
@@ -823,7 +1149,7 @@
   {
    "data": "true",
    "tgt": {
-    "process": "core/Repeat_u1nsj",
+    "process": "Start",
     "port": "in"
    }
   },
@@ -963,7 +1289,7 @@
   {
    "data": 100,
    "tgt": {
-    "process": "core/RunTimeout_ovt26",
+    "process": "100ms",
     "port": "time"
    }
   },
@@ -992,6 +1318,55 @@
    "data": "label",
    "tgt": {
     "process": "SetLabel",
+    "port": "property"
+   }
+  },
+  {
+   "data": true,
+   "tgt": {
+    "process": "strings/Jsonify_aw2kd",
+    "port": "pretty"
+   }
+  },
+  {
+   "data": "mpris:artUrl",
+   "tgt": {
+    "process": "PictureUri",
+    "port": "key"
+   }
+  },
+  {
+   "data": "pixbuf",
+   "tgt": {
+    "process": "SetPicture",
+    "port": "property"
+   }
+  },
+  {
+   "data": 200,
+   "tgt": {
+    "process": "gtk/ScalePixbuf_tsmqf",
+    "port": "width"
+   }
+  },
+  {
+   "data": 200,
+   "tgt": {
+    "process": "gtk/ScalePixbuf_tsmqf",
+    "port": "height"
+   }
+  },
+  {
+   "data": "media-optical",
+   "tgt": {
+    "process": "core/Kick_p3npt",
+    "port": "data"
+   }
+  },
+  {
+   "data": "icon-name",
+   "tgt": {
+    "process": "SetDefaultPicture",
     "port": "property"
    }
   }
