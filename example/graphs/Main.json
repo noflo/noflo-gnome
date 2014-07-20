@@ -110,8 +110,8 @@
     "AlbumImage",
     "LoadPicture",
     "PictureUri",
-    "SetDefaultPicture",
-    "SetPicture",
+    "SetDefaultAlbumImage",
+    "SetAlbumImage",
     "core/Kick_p3npt",
     "gtk/LoadPixbuf_9zcbr",
     "gtk/ScalePixbuf_tsmqf"
@@ -191,7 +191,7 @@
    "metadata": {
     "label": "PlayPause",
     "x": 720,
-    "y": 0
+    "y": -360
    }
   },
   "StatusLabel": {
@@ -215,7 +215,7 @@
    "metadata": {
     "label": "PlayClicked",
     "x": 540,
-    "y": 0
+    "y": -360
    }
   },
   "gtk/Quit_p6dkl": {
@@ -223,7 +223,7 @@
    "metadata": {
     "label": "gtk/Quit",
     "x": 720,
-    "y": -540
+    "y": -900
    }
   },
   "WindowDestroy": {
@@ -231,7 +231,7 @@
    "metadata": {
     "label": "WindowDestroy",
     "x": 540,
-    "y": -540
+    "y": -900
    }
   },
   "gtk/Main_dq1md": {
@@ -247,7 +247,7 @@
    "metadata": {
     "label": "PlayerNext",
     "x": 720,
-    "y": -360
+    "y": -720
    }
   },
   "PlayerPrev": {
@@ -255,7 +255,7 @@
    "metadata": {
     "label": "PlayerPrev",
     "x": 720,
-    "y": -180
+    "y": -540
    }
   },
   "NextClicked": {
@@ -263,7 +263,7 @@
    "metadata": {
     "label": "NextClicked",
     "x": 540,
-    "y": -360
+    "y": -720
    }
   },
   "PrevClicked": {
@@ -271,13 +271,13 @@
    "metadata": {
     "label": "PrevClicked",
     "x": 540,
-    "y": -180
+    "y": -540
    }
   },
-  "volumeadj": {
+  "VolumeAdj": {
    "component": "objects/ExtractProperty",
    "metadata": {
-    "label": "volumeadj",
+    "label": "VolumeAdj",
     "x": 324,
     "y": 180
    }
@@ -382,7 +382,7 @@
    "component": "gnome/GioFileLoadContent",
    "metadata": {
     "label": "LoadPicture",
-    "x": 432,
+    "x": 684,
     "y": 1548
    }
   },
@@ -390,7 +390,7 @@
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "PictureUri",
-    "x": 252,
+    "x": 504,
     "y": 1404
    }
   },
@@ -398,7 +398,7 @@
    "component": "gtk/LoadPixbuf",
    "metadata": {
     "label": "gtk/LoadPixbuf",
-    "x": 612,
+    "x": 864,
     "y": 1656
    }
   },
@@ -406,15 +406,15 @@
    "component": "core/Kick",
    "metadata": {
     "label": "AlbumImage",
-    "x": 1008,
-    "y": 1404
+    "x": 1296,
+    "y": 1368
    }
   },
-  "SetPicture": {
+  "SetAlbumImage": {
    "component": "objects/SetPropertyValue",
    "metadata": {
-    "label": "SetPicture",
-    "x": 1224,
+    "label": "SetAlbumImage",
+    "x": 1476,
     "y": 1440
    }
   },
@@ -422,15 +422,15 @@
    "component": "gtk/ScalePixbuf",
    "metadata": {
     "label": "gtk/ScalePixbuf",
-    "x": 864,
+    "x": 1116,
     "y": 1548
    }
   },
-  "SetDefaultPicture": {
+  "SetDefaultAlbumImage": {
    "component": "objects/SetPropertyValue",
    "metadata": {
-    "label": "SetDefaultPicture",
-    "x": 1188,
+    "label": "SetDefaultAlbumImage",
+    "x": 1476,
     "y": 1656
    }
   },
@@ -438,8 +438,80 @@
    "component": "core/Kick",
    "metadata": {
     "label": "core/Kick",
-    "x": 1008,
+    "x": 1260,
     "y": 1692
+   }
+  },
+  "PositionSlider": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "PositionSlider",
+    "x": 1080,
+    "y": 1836
+   }
+  },
+  "gnome/Log_dy4z2": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "gnome/Log",
+    "x": -36,
+    "y": 612
+   }
+  },
+  "Seeked": {
+   "component": "dbus/org.mpris.MediaPlayer2.Player.Seeked",
+   "metadata": {
+    "label": "Seeked",
+    "x": 648,
+    "y": 1944
+   }
+  },
+  "gnome/Log_ykj3q": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "gnome/Log",
+    "x": 1116,
+    "y": 2052
+   }
+  },
+  "TrackLength": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "TrackLength",
+    "x": 504,
+    "y": 1836
+   }
+  },
+  "Ratio": {
+   "component": "math/Divide",
+   "metadata": {
+    "label": "Ratio",
+    "x": 792,
+    "y": 1872
+   }
+  },
+  "objects/SetPropertyValue_k0zie": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "objects/SetPropertyValue",
+    "x": 1224,
+    "y": 1908
+   }
+  },
+  "PositionAdj": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "PositionAdj",
+    "x": 324,
+    "y": 36
+   }
+  },
+  "Percent_jsqgs": {
+   "component": "math/Multiply",
+   "metadata": {
+    "label": "Percent",
+    "x": 936,
+    "y": 1908
    }
   }
  },
@@ -639,7 +711,7 @@
   },
   {
    "src": {
-    "process": "volumeadj",
+    "process": "VolumeAdj",
     "port": "out"
    },
    "tgt": {
@@ -656,7 +728,7 @@
     "port": "volumebutton1"
    },
    "tgt": {
-    "process": "volumeadj",
+    "process": "VolumeAdj",
     "port": "in"
    },
    "metadata": {
@@ -678,7 +750,7 @@
   },
   {
    "src": {
-    "process": "volumeadj",
+    "process": "VolumeAdj",
     "port": "out"
    },
    "tgt": {
@@ -960,7 +1032,7 @@
     "port": "uri"
    },
    "metadata": {
-    "route": 0
+    "route": 5
    }
   },
   {
@@ -973,7 +1045,7 @@
     "port": "data"
    },
    "metadata": {
-    "route": null
+    "route": 3
    }
   },
   {
@@ -995,7 +1067,7 @@
     "port": "out"
    },
    "tgt": {
-    "process": "SetPicture",
+    "process": "SetAlbumImage",
     "port": "in"
    },
    "metadata": {
@@ -1012,7 +1084,7 @@
     "port": "pixbuf"
    },
    "metadata": {
-    "route": 0
+    "route": 3
    }
   },
   {
@@ -1023,6 +1095,9 @@
    "tgt": {
     "process": "AlbumImage",
     "port": "in"
+   },
+   "metadata": {
+    "route": 3
    }
   },
   {
@@ -1031,11 +1106,11 @@
     "port": "pixbuf"
    },
    "tgt": {
-    "process": "SetPicture",
+    "process": "SetAlbumImage",
     "port": "value"
    },
    "metadata": {
-    "route": 0
+    "route": 3
    }
   },
   {
@@ -1044,7 +1119,7 @@
     "port": "out"
    },
    "tgt": {
-    "process": "SetDefaultPicture",
+    "process": "SetDefaultAlbumImage",
     "port": "in"
    },
    "metadata": {
@@ -1057,8 +1132,11 @@
     "port": "out"
    },
    "tgt": {
-    "process": "SetDefaultPicture",
+    "process": "SetDefaultAlbumImage",
     "port": "value"
+   },
+   "metadata": {
+    "route": 3
    }
   },
   {
@@ -1137,6 +1215,147 @@
    },
    "metadata": {
     "route": 1
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "position"
+   },
+   "tgt": {
+    "process": "gnome/Log_dy4z2",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Seeked",
+    "port": "position"
+   },
+   "tgt": {
+    "process": "gnome/Log_ykj3q",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerGet",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "TrackLength",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "TrackLength",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Ratio",
+    "port": "divisor"
+   }
+  },
+  {
+   "src": {
+    "process": "Seeked",
+    "port": "position"
+   },
+   "tgt": {
+    "process": "Ratio",
+    "port": "dividend"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "UI",
+    "port": "positionscale"
+   },
+   "tgt": {
+    "process": "PositionAdj",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "PositionAdj",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "PositionSlider",
+    "port": "data"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "PositionSlider",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "objects/SetPropertyValue_k0zie",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Ratio",
+    "port": "quotient"
+   },
+   "tgt": {
+    "process": "Percent_jsqgs",
+    "port": "multiplicand"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "Percent_jsqgs",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "PositionSlider",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Percent_jsqgs",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "objects/SetPropertyValue_k0zie",
+    "port": "value"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Percent_jsqgs",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "gnome/Log_ykj3q",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
    }
   },
   {
@@ -1275,7 +1494,7 @@
   {
    "data": "adjustment",
    "tgt": {
-    "process": "volumeadj",
+    "process": "VolumeAdj",
     "port": "key"
    }
   },
@@ -1338,7 +1557,7 @@
   {
    "data": "pixbuf",
    "tgt": {
-    "process": "SetPicture",
+    "process": "SetAlbumImage",
     "port": "property"
    }
   },
@@ -1366,8 +1585,50 @@
   {
    "data": "icon-name",
    "tgt": {
-    "process": "SetDefaultPicture",
+    "process": "SetDefaultAlbumImage",
     "port": "property"
+   }
+  },
+  {
+   "data": "org.gnome.Rhythmbox3",
+   "tgt": {
+    "process": "Seeked",
+    "port": "bus"
+   }
+  },
+  {
+   "data": "/org/mpris/MediaPlayer2",
+   "tgt": {
+    "process": "Seeked",
+    "port": "path"
+   }
+  },
+  {
+   "data": "mpris:length",
+   "tgt": {
+    "process": "TrackLength",
+    "port": "key"
+   }
+  },
+  {
+   "data": "adjustment",
+   "tgt": {
+    "process": "PositionAdj",
+    "port": "key"
+   }
+  },
+  {
+   "data": "value",
+   "tgt": {
+    "process": "objects/SetPropertyValue_k0zie",
+    "port": "property"
+   }
+  },
+  {
+   "data": 100,
+   "tgt": {
+    "process": "Percent_jsqgs",
+    "port": "multiplier"
    }
   }
  ]

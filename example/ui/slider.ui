@@ -54,6 +54,7 @@
           <object class="GtkImage" id="albumimage">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="pixel_size">200</property>
             <property name="icon_name">media-optical</property>
             <property name="icon_size">6</property>
           </object>
@@ -64,7 +65,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkScale" id="scale1">
+          <object class="GtkScale" id="positionscale">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="adjustment">scaleadjust</property>
