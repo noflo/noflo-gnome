@@ -15,6 +15,7 @@ components_DATA = \
 	GladeConstructorComponent.coffee \
 	Hide.coffee \
 	Init.coffee \
+	LoadPixbuf.coffee \
 	Main.coffee \
 	Pack.coffee \
 	Quit.coffee \

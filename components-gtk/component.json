@@ -19,6 +19,7 @@
       "GetStage": "GetStage.coffee",
       "GetWidget": "GetWidget.coffee",
       "Init": "Init.coffee",
+      "LoadPixbuf": "LoadPixbuf.coffee",
       "Main": "Main.coffee",
       "Pack": "Pack.coffee",
       "Quit": "Quit.coffee",
