@@ -1,3 +1,4 @@
+const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Path = imports.path;
 
@@ -129,4 +130,85 @@ let guessLanguageFromFilename = function(filename) {
     if (/.*\.coffee$/.test(filename))
         return 'coffeescript';
     return 'javascript';
+}
+
+// Copied from GJS with a slight modification :
+// https://bugzilla.gnome.org/show_bug.cgi?id=733389
+let unpackVariant = function(variant, deep) {
+    switch (String.fromCharCode(variant.classify())) {
+    case 'b':
+	return variant.get_boolean();
+    case 'y':
+	return variant.get_byte();
+    case 'n':
+	return variant.get_int16();
+    case 'q':
+	return variant.get_uint16();
+    case 'i':
+	return variant.get_int32();
+    case 'u':
+	return variant.get_uint32();
+    case 'x':
+	return variant.get_int64();
+    case 't':
+	return variant.get_uint64();
+    case 'h':
+	return variant.get_handle();
+    case 'd':
+	return variant.get_double();
+    case 'o':
+    case 'g':
+    case 's':
+	// g_variant_get_string has length as out argument
+	return variant.get_string()[0];
+    case 'v':
+        if (deep)
+            return unpackVariant(variant.get_variant(), deep);
+        else
+	    return variant.get_variant();
+    case 'm':
+	let val = variant.get_maybe();
+	if (deep && val)
+	    return unpackVariant(val, deep);
+	else
+	    return val;
+    case 'a':
+	if (variant.is_of_type(new GLib.VariantType('a{?*}'))) {
+	    // special case containers
+	    let ret = { };
+	    let nElements = variant.n_children();
+	    for (let i = 0; i < nElements; i++) {
+		// always unpack the dictionary entry, and always unpack
+		// the key (or it cannot be added as a key)
+		let val = unpackVariant(variant.get_child_value(i), deep);
+		let key;
+		if (!deep)
+		    key = unpackVariant(val[0], true);
+		else
+		    key = val[0];
+		ret[key] = val[1];
+	    }
+	    return ret;
+	}
+        if (variant.is_of_type(new GLib.VariantType('ay'))) {
+            // special case byte arrays
+            return variant.get_data_as_bytes().toArray();
+        }
+
+	// fall through
+    case '(':
+    case '{':
+	let ret = [ ];
+	let nElements = variant.n_children();
+	for (let i = 0; i < nElements; i++) {
+	    let val = variant.get_child_value(i);
+	    if (deep)
+		ret.push(unpackVariant(val, deep));
+	    else
+		ret.push(val);
+	}
+	return ret;
+    }
+
+    throw new Error('Assertion failure: this code should not be reached');
 }

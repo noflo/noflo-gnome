@@ -2,6 +2,7 @@ noflo = require 'noflo'
 GLib = imports.gi.GLib
 Gio = imports.gi.Gio
 Lang = imports.lang
+Utils = imports.utils
 
 signatureToDatatype = (signature) ->
   switch signature[0]
@@ -40,12 +41,12 @@ exports.getComponentOutputProperties = (iface) ->
       return
 
     c.propertiesChanged = (proxy, propsValues, propsInvalidated) ->
-      keyVals = propsValues.deep_unpack()
+      keyVals = Utils.unpackVariant(propsValues, true);
       ports = []
       for k, v of keyVals
         port = @propertyToPort[k]
         continue unless port
-        port.send v.deep_unpack()
+        port.send v
         ports.push port
       for port in ports
         port.disconnect()
@@ -223,8 +224,6 @@ exports.getComponentMethod = (iface, method) ->
         ret = outVariant.deep_unpack()
         ports = []
         for i, value of ret
-          log "#{i} : #{typeof value}"
-          log "#{value} : #{typeof value}"
           continue unless @outPortsArray[i]
           @outPortsArray[i].send value
           ports.push @outPortsArray[i]
