@@ -24,6 +24,7 @@
       "Pack": "Pack.coffee",
       "Quit": "Quit.coffee",
       "Resize": "Resize.coffee",
+      "ScalePixbuf": "ScalePixbuf.coffee",
       "Show": "Show.coffee"
     }
   }

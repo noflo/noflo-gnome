@@ -20,5 +20,6 @@ components_DATA = \
 	Pack.coffee \
 	Quit.coffee \
 	Resize.coffee \
+	ScalePixbuf.coffee \
 	Show.coffee \
 	$(NULL)
