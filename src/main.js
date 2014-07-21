@@ -2,6 +2,7 @@ const GLib = imports.gi.GLib;
 const Options = imports.options;
 
 const builderInit = imports.builderInit;
+const builderAdd = imports.builderAdd;
 const builderRun = imports.builderRun;
 
 /**/
@@ -23,6 +24,10 @@ let commands = {
     'init': {
         exec: builderInit.exec,
         help: 'Initialize a new application repository',
+    },
+    'add': {
+        exec: builderAdd.exec,
+        help: 'Add content to an application repository',
     },
     'run': {
         exec: builderRun.exec,
