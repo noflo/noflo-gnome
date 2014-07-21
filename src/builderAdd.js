@@ -1,5 +1,4 @@
 const GLib = imports.gi.GLib;
-const NoFlo = imports.noflo;
 const Options = imports.options;
 const Utils = imports.utils;
 
@@ -42,7 +41,7 @@ let exec = function(args) {
     let options = Options.parseArguments(CmdOptions, args);
 
     if (options.options.help) {
-        Options.printHelp('noflo-gnome init', CmdOptions);
+        Options.printHelp('noflo-gnome add', CmdOptions);
         return 0;
     }
 
