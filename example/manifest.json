@@ -24,6 +24,7 @@
   ],
   "noflo": {
     "components": {
+        "Count": "components/Count.coffee",
         "Title": "components/Title.coffee"
     },
     "graphs": {

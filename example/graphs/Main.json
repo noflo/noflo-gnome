@@ -7,31 +7,9 @@
  "outports": {},
  "groups": [
   {
-   "name": "Status",
-   "nodes": [
-    "SetStatus",
-    "StatusLabel"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
-   "name": "Init",
-   "nodes": [
-    "ShowAll",
-    "UI",
-    "Start",
-    "gtk/Init_ynmps"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
    "name": "Quit",
    "nodes": [
-    "WindowDestroy",
+    "WindowDestroyed",
     "gtk/Quit_p6dkl"
    ],
    "metadata": {
@@ -69,28 +47,6 @@
    }
   },
   {
-   "name": "SetVolume",
-   "nodes": [
-    "PlayerSet",
-    "core/RunTimeout_pfpen",
-    "gnome/ListenProperty_yh2j2"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
-   "name": "UpdateVolume",
-   "nodes": [
-    "SetSoundValue",
-    "SoundSlider",
-    "flow/Gate_xioou"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
    "name": "Title",
    "nodes": [
     "Album",
@@ -108,13 +64,117 @@
    "name": "Picture",
    "nodes": [
     "AlbumImage",
-    "LoadPicture",
+    "LoadFile",
     "PictureUri",
     "SetDefaultAlbumImage",
     "SetAlbumImage",
-    "core/Kick_p3npt",
-    "gtk/LoadPixbuf_9zcbr",
-    "gtk/ScalePixbuf_tsmqf"
+    "DefaultImage",
+    "LoadPicture",
+    "ScalePicture"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "RemoteSeek",
+   "nodes": [
+    "0",
+    "0_h1vvr",
+    "Ratio",
+    "Seeked",
+    "TrackLength",
+    "core/RepeatAsync_t0dxs"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "DisplayPosition",
+   "nodes": [
+    "Delay",
+    "Percent_jsqgs",
+    "PositionAdj_h63sm",
+    "objects/SetPropertyValue_k0zie"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "UserSeek",
+   "nodes": [
+    "Gate",
+    "PlayerSetPosition",
+    "PositionValue",
+    "Ratio_q94bc",
+    "TrackId",
+    "TrackOffset"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "AdvancePosition",
+   "nodes": [
+    "Clock",
+    "Disco",
+    "Increment",
+    "IncrementValue",
+    "IsPlaying",
+    "delay",
+    "math/Add_xuz75",
+    "math/Multiply_einka"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "UpdateVolume",
+   "nodes": [
+    "SetSoundValue",
+    "SoundSlider",
+    "Volume",
+    "flow/Gate_xioou"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "UserVolume",
+   "nodes": [
+    "PlayerSet",
+    "core/RunTimeout_pfpen",
+    "gnome/ListenProperty_yh2j2"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Status",
+   "nodes": [
+    "SetStatus",
+    "Status",
+    "StatusLabel"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Init",
+   "nodes": [
+    "100ms",
+    "ShowAll",
+    "Start",
+    "UI",
+    "gtk/Init_ynmps",
+    "gtk/Main_dq1md"
    ],
    "metadata": {
     "description": ""
@@ -122,58 +182,66 @@
   }
  ],
  "processes": {
+  "0": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "0",
+    "x": 360,
+    "y": 2196
+   }
+  },
   "gtk/Init_ynmps": {
    "component": "gtk/Init",
    "metadata": {
     "label": "gtk/Init",
-    "x": -216,
-    "y": -108
+    "x": -612,
+    "y": 396
    }
   },
   "ShowAll": {
    "component": "gtk/Show",
    "metadata": {
     "label": "ShowAll",
-    "x": 144,
-    "y": -108
+    "x": -216,
+    "y": 324
    }
   },
   "Start": {
    "component": "core/Repeat",
    "metadata": {
     "label": "Start",
-    "x": -504,
-    "y": -108
+    "x": -828,
+    "y": 396
    }
   },
   "UI": {
    "component": "gtk-builder/sliderui",
    "metadata": {
     "label": "UI",
-    "x": 36,
-    "y": 36
+    "x": -324,
+    "y": 540
    }
   },
   "SetSoundValue": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetSoundValue",
-    "x": 1080,
-    "y": 684
+    "x": 1260,
+    "y": 324
    }
   },
   "SoundSlider": {
    "component": "core/Kick",
    "metadata": {
     "label": "SoundSlider",
-    "x": 936,
-    "y": 612
+    "x": 1116,
+    "y": 252
    }
   },
-  "PlayerGet": {
+  "PlayerProperties": {
    "component": "dbus/org.mpris.MediaPlayer2.Player-rprops",
    "metadata": {
-    "label": "PlayerGet",
+    "label": "PlayerProperties",
     "x": -288,
     "y": 936
    }
@@ -182,8 +250,8 @@
    "component": "dbus/org.mpris.MediaPlayer2.Player-wprops",
    "metadata": {
     "label": "PlayerSet",
-    "x": 756,
-    "y": 252
+    "x": 936,
+    "y": -72
    }
   },
   "PlayPause": {
@@ -191,14 +259,14 @@
    "metadata": {
     "label": "PlayPause",
     "x": 720,
-    "y": -360
+    "y": -252
    }
   },
   "StatusLabel": {
    "component": "core/Kick",
    "metadata": {
     "label": "StatusLabel",
-    "x": 360,
+    "x": 1116,
     "y": 540
    }
   },
@@ -206,8 +274,8 @@
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetStatus",
-    "x": 540,
-    "y": 540
+    "x": 1260,
+    "y": 612
    }
   },
   "PlayClicked": {
@@ -215,7 +283,7 @@
    "metadata": {
     "label": "PlayClicked",
     "x": 540,
-    "y": -360
+    "y": -252
    }
   },
   "gtk/Quit_p6dkl": {
@@ -223,23 +291,23 @@
    "metadata": {
     "label": "gtk/Quit",
     "x": 720,
-    "y": -900
+    "y": -792
    }
   },
-  "WindowDestroy": {
+  "WindowDestroyed": {
    "component": "gnome/ListenSignal",
    "metadata": {
-    "label": "WindowDestroy",
+    "label": "WindowDestroyed",
     "x": 540,
-    "y": -900
+    "y": -792
    }
   },
   "gtk/Main_dq1md": {
    "component": "gtk/Main",
    "metadata": {
     "label": "gtk/Main",
-    "x": -108,
-    "y": -108
+    "x": -504,
+    "y": 396
    }
   },
   "PlayerNext": {
@@ -247,7 +315,7 @@
    "metadata": {
     "label": "PlayerNext",
     "x": 720,
-    "y": -720
+    "y": -612
    }
   },
   "PlayerPrev": {
@@ -255,7 +323,7 @@
    "metadata": {
     "label": "PlayerPrev",
     "x": 720,
-    "y": -540
+    "y": -432
    }
   },
   "NextClicked": {
@@ -263,7 +331,7 @@
    "metadata": {
     "label": "NextClicked",
     "x": 540,
-    "y": -720
+    "y": -612
    }
   },
   "PrevClicked": {
@@ -271,119 +339,103 @@
    "metadata": {
     "label": "PrevClicked",
     "x": 540,
-    "y": -540
+    "y": -432
    }
   },
   "VolumeAdj": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "VolumeAdj",
-    "x": 324,
-    "y": 180
+    "x": 432,
+    "y": 36
    }
   },
   "gnome/ListenProperty_yh2j2": {
    "component": "gnome/ListenProperty",
    "metadata": {
     "label": "gnome/ListenProperty",
-    "x": 540,
-    "y": 360
+    "x": 756,
+    "y": 36
    }
   },
   "flow/Gate_xioou": {
    "component": "flow/Gate",
    "metadata": {
     "label": "flow/Gate",
-    "x": 936,
-    "y": 720
+    "x": 1116,
+    "y": 360
    }
   },
   "core/RunTimeout_pfpen": {
    "component": "core/RunTimeout",
    "metadata": {
     "label": "core/RunTimeout",
-    "x": 756,
-    "y": 360
+    "x": 936,
+    "y": 36
    }
   },
   "100ms": {
    "component": "core/RunTimeout",
    "metadata": {
     "label": "100ms",
-    "x": -360,
-    "y": -108
+    "x": -720,
+    "y": 396
    }
   },
   "BuildTitle": {
    "component": "MyApplication/Title",
    "metadata": {
     "label": "BuildTitle",
-    "x": 720,
-    "y": 1080
+    "x": 1224,
+    "y": 972
    }
   },
   "Artist": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "Artist",
-    "x": 504,
-    "y": 972
+    "x": 1008,
+    "y": 864
    }
   },
   "Album": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "Album",
-    "x": 504,
-    "y": 1080
+    "x": 1008,
+    "y": 972
    }
   },
   "Title": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "Title",
-    "x": 504,
-    "y": 1188
+    "x": 1008,
+    "y": 1080
    }
   },
   "SetLabel": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetLabel",
-    "x": 936,
-    "y": 1080
+    "x": 1440,
+    "y": 972
    }
   },
   "Label": {
    "component": "core/Kick",
    "metadata": {
     "label": "Label",
-    "x": 828,
-    "y": 972
+    "x": 1332,
+    "y": 864
    }
   },
-  "strings/Jsonify_aw2kd": {
-   "component": "strings/Jsonify",
-   "metadata": {
-    "label": "strings/Jsonify",
-    "x": -144,
-    "y": 1152
-   }
-  },
-  "gnome/Log_47lp9": {
-   "component": "gnome/Log",
-   "metadata": {
-    "label": "gnome/Log",
-    "x": -36,
-    "y": 1368
-   }
-  },
-  "LoadPicture": {
+  "LoadFile": {
    "component": "gnome/GioFileLoadContent",
    "metadata": {
-    "label": "LoadPicture",
-    "x": 684,
-    "y": 1548
+    "label": "LoadFile",
+    "x": 648,
+    "y": 1440
    }
   },
   "PictureUri": {
@@ -391,95 +443,79 @@
    "metadata": {
     "label": "PictureUri",
     "x": 504,
-    "y": 1404
+    "y": 1440
    }
   },
-  "gtk/LoadPixbuf_9zcbr": {
+  "LoadPicture": {
    "component": "gtk/LoadPixbuf",
    "metadata": {
-    "label": "gtk/LoadPixbuf",
-    "x": 864,
-    "y": 1656
+    "label": "LoadPicture",
+    "x": 828,
+    "y": 1404
    }
   },
   "AlbumImage": {
    "component": "core/Kick",
    "metadata": {
     "label": "AlbumImage",
-    "x": 1296,
-    "y": 1368
+    "x": 1260,
+    "y": 1260
    }
   },
   "SetAlbumImage": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetAlbumImage",
-    "x": 1476,
-    "y": 1440
+    "x": 1440,
+    "y": 1332
    }
   },
-  "gtk/ScalePixbuf_tsmqf": {
+  "ScalePicture": {
    "component": "gtk/ScalePixbuf",
    "metadata": {
-    "label": "gtk/ScalePixbuf",
-    "x": 1116,
-    "y": 1548
+    "label": "ScalePicture",
+    "x": 1008,
+    "y": 1368
    }
   },
   "SetDefaultAlbumImage": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "SetDefaultAlbumImage",
-    "x": 1476,
-    "y": 1656
+    "x": 1440,
+    "y": 1548
    }
   },
-  "core/Kick_p3npt": {
+  "DefaultImage": {
    "component": "core/Kick",
    "metadata": {
-    "label": "core/Kick",
-    "x": 1260,
-    "y": 1692
+    "label": "DefaultImage",
+    "x": 1152,
+    "y": 1512
    }
   },
-  "PositionSlider": {
+  "PositionAdj_h63sm": {
    "component": "core/Kick",
    "metadata": {
-    "label": "PositionSlider",
-    "x": 1080,
-    "y": 1836
-   }
-  },
-  "gnome/Log_dy4z2": {
-   "component": "gnome/Log",
-   "metadata": {
-    "label": "gnome/Log",
-    "x": -36,
-    "y": 612
+    "label": "PositionAdj",
+    "x": 1332,
+    "y": 2268
    }
   },
   "Seeked": {
    "component": "dbus/org.mpris.MediaPlayer2.Player.Seeked",
    "metadata": {
     "label": "Seeked",
-    "x": 648,
-    "y": 1944
-   }
-  },
-  "gnome/Log_ykj3q": {
-   "component": "gnome/Log",
-   "metadata": {
-    "label": "gnome/Log",
-    "x": 1116,
-    "y": 2052
+    "x": 180,
+    "y": 2448
    }
   },
   "TrackLength": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "TrackLength",
-    "x": 504,
-    "y": 1836
+    "x": 360,
+    "y": 2340
    }
   },
   "Ratio": {
@@ -487,31 +523,191 @@
    "metadata": {
     "label": "Ratio",
     "x": 792,
-    "y": 1872
+    "y": 2412
    }
   },
   "objects/SetPropertyValue_k0zie": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "objects/SetPropertyValue",
-    "x": 1224,
-    "y": 1908
+    "x": 1476,
+    "y": 2340
    }
   },
   "PositionAdj": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "PositionAdj",
-    "x": 324,
-    "y": 36
+    "x": 144,
+    "y": 1872
    }
   },
   "Percent_jsqgs": {
    "component": "math/Multiply",
    "metadata": {
     "label": "Percent",
+    "x": 1116,
+    "y": 2376
+   }
+  },
+  "Clock": {
+   "component": "core/RunInterval",
+   "metadata": {
+    "label": "Clock",
+    "x": 504,
+    "y": 2844
+   }
+  },
+  "IsPlaying": {
+   "component": "strings/Filter",
+   "metadata": {
+    "label": "IsPlaying",
+    "x": 396,
+    "y": 2844
+   }
+  },
+  "math/Add_xuz75": {
+   "component": "math/Add",
+   "metadata": {
+    "label": "math/Add",
+    "x": 1044,
+    "y": 2664
+   }
+  },
+  "Increment": {
+   "component": "MyApplication/Count",
+   "metadata": {
+    "label": "Increment",
+    "x": 828,
+    "y": 2844
+   }
+  },
+  "IncrementValue": {
+   "component": "math/Divide",
+   "metadata": {
+    "label": "IncrementValue",
+    "x": 756,
+    "y": 2700
+   }
+  },
+  "math/Multiply_einka": {
+   "component": "math/Multiply",
+   "metadata": {
+    "label": "math/Multiply",
     "x": 936,
-    "y": 1908
+    "y": 2736
+   }
+  },
+  "0_h1vvr": {
+   "component": "strings/ParseInt",
+   "metadata": {
+    "label": "0",
+    "x": 540,
+    "y": 2196
+   }
+  },
+  "Disco": {
+   "component": "core/DisconnectAfterPacket",
+   "metadata": {
+    "label": "Disco",
+    "x": 612,
+    "y": 2844
+   }
+  },
+  "PositionValue": {
+   "component": "gnome/ListenProperty",
+   "metadata": {
+    "label": "PositionValue",
+    "x": 684,
+    "y": 1800
+   }
+  },
+  "TrackOffset": {
+   "component": "math/Multiply",
+   "metadata": {
+    "label": "TrackOffset",
+    "x": 1080,
+    "y": 1836
+   }
+  },
+  "PlayerProperties_6ce1y": {
+   "component": "dbus/org.mpris.MediaPlayer2.Player-rprops",
+   "metadata": {
+    "label": "PlayerProperties",
+    "x": -324,
+    "y": 2268
+   }
+  },
+  "Ratio_q94bc": {
+   "component": "math/Divide",
+   "metadata": {
+    "label": "Ratio",
+    "x": 864,
+    "y": 1800
+   }
+  },
+  "Gate": {
+   "component": "flow/Gate",
+   "metadata": {
+    "label": "Gate",
+    "x": 1332,
+    "y": 1944
+   }
+  },
+  "core/RepeatAsync_t0dxs": {
+   "component": "core/RepeatAsync",
+   "metadata": {
+    "label": "core/RepeatAsync",
+    "x": 180,
+    "y": 2232
+   }
+  },
+  "Volume": {
+   "component": "core/Repeat",
+   "metadata": {
+    "label": "Volume",
+    "x": 756,
+    "y": 288
+   }
+  },
+  "delay": {
+   "component": "core/RepeatAsync",
+   "metadata": {
+    "label": "delay",
+    "x": 720,
+    "y": 2844
+   }
+  },
+  "Delay": {
+   "component": "core/RepeatAsync",
+   "metadata": {
+    "label": "Delay",
+    "x": 1224,
+    "y": 2376
+   }
+  },
+  "PlayerSetPosition": {
+   "component": "dbus/org.mpris.MediaPlayer2.Player.SetPosition",
+   "metadata": {
+    "label": "PlayerSetPosition",
+    "x": 1548,
+    "y": 1872
+   }
+  },
+  "TrackId": {
+   "component": "objects/ExtractProperty",
+   "metadata": {
+    "label": "TrackId",
+    "x": 468,
+    "y": 2016
+   }
+  },
+  "Status": {
+   "component": "core/Repeat",
+   "metadata": {
+    "label": "Status",
+    "x": 972,
+    "y": 612
    }
   }
  },
@@ -570,32 +766,6 @@
   },
   {
    "src": {
-    "process": "PlayerGet",
-    "port": "playbackstatus"
-   },
-   "tgt": {
-    "process": "SetStatus",
-    "port": "value"
-   },
-   "metadata": {
-    "route": null
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
-    "port": "playbackstatus"
-   },
-   "tgt": {
-    "process": "StatusLabel",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 0
-   }
-  },
-  {
-   "src": {
     "process": "UI",
     "port": "playbutton"
    },
@@ -619,7 +789,7 @@
   },
   {
    "src": {
-    "process": "WindowDestroy",
+    "process": "WindowDestroyed",
     "port": "object"
    },
    "tgt": {
@@ -633,7 +803,7 @@
     "port": "window1"
    },
    "tgt": {
-    "process": "WindowDestroy",
+    "process": "WindowDestroyed",
     "port": "object"
    },
    "metadata": {
@@ -737,19 +907,6 @@
   },
   {
    "src": {
-    "process": "PlayerGet",
-    "port": "volume"
-   },
-   "tgt": {
-    "process": "SoundSlider",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 9
-   }
-  },
-  {
-   "src": {
     "process": "VolumeAdj",
     "port": "out"
    },
@@ -822,19 +979,6 @@
   },
   {
    "src": {
-    "process": "PlayerGet",
-    "port": "volume"
-   },
-   "tgt": {
-    "process": "flow/Gate_xioou",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 9
-   }
-  },
-  {
-   "src": {
     "process": "Start",
     "port": "out"
    },
@@ -858,7 +1002,7 @@
   },
   {
    "src": {
-    "process": "PlayerGet",
+    "process": "PlayerProperties",
     "port": "metadata"
    },
    "tgt": {
@@ -884,7 +1028,7 @@
   },
   {
    "src": {
-    "process": "PlayerGet",
+    "process": "PlayerProperties",
     "port": "metadata"
    },
    "tgt": {
@@ -910,7 +1054,7 @@
   },
   {
    "src": {
-    "process": "PlayerGet",
+    "process": "PlayerProperties",
     "port": "metadata"
    },
    "tgt": {
@@ -988,30 +1132,7 @@
   },
   {
    "src": {
-    "process": "strings/Jsonify_aw2kd",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "gnome/Log_47lp9",
-    "port": "in"
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
-    "port": "metadata"
-   },
-   "tgt": {
-    "process": "strings/Jsonify_aw2kd",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 5
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
+    "process": "PlayerProperties",
     "port": "metadata"
    },
    "tgt": {
@@ -1028,7 +1149,7 @@
     "port": "out"
    },
    "tgt": {
-    "process": "LoadPicture",
+    "process": "LoadFile",
     "port": "uri"
    },
    "metadata": {
@@ -1037,11 +1158,11 @@
   },
   {
    "src": {
-    "process": "LoadPicture",
+    "process": "LoadFile",
     "port": "content"
    },
    "tgt": {
-    "process": "gtk/LoadPixbuf_9zcbr",
+    "process": "LoadPicture",
     "port": "data"
    },
    "metadata": {
@@ -1076,11 +1197,11 @@
   },
   {
    "src": {
-    "process": "gtk/LoadPixbuf_9zcbr",
+    "process": "LoadPicture",
     "port": "pixbuf"
    },
    "tgt": {
-    "process": "gtk/ScalePixbuf_tsmqf",
+    "process": "ScalePicture",
     "port": "pixbuf"
    },
    "metadata": {
@@ -1089,7 +1210,7 @@
   },
   {
    "src": {
-    "process": "gtk/ScalePixbuf_tsmqf",
+    "process": "ScalePicture",
     "port": "pixbuf"
    },
    "tgt": {
@@ -1102,7 +1223,7 @@
   },
   {
    "src": {
-    "process": "gtk/ScalePixbuf_tsmqf",
+    "process": "ScalePicture",
     "port": "pixbuf"
    },
    "tgt": {
@@ -1128,7 +1249,7 @@
   },
   {
    "src": {
-    "process": "core/Kick_p3npt",
+    "process": "DefaultImage",
     "port": "out"
    },
    "tgt": {
@@ -1141,24 +1262,11 @@
   },
   {
    "src": {
-    "process": "gtk/ScalePixbuf_tsmqf",
+    "process": "ScalePicture",
     "port": "error"
    },
    "tgt": {
-    "process": "core/Kick_p3npt",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 1
-   }
-  },
-  {
-   "src": {
-    "process": "gtk/LoadPixbuf_9zcbr",
-    "port": "error"
-   },
-   "tgt": {
-    "process": "core/Kick_p3npt",
+    "process": "DefaultImage",
     "port": "in"
    },
    "metadata": {
@@ -1171,7 +1279,7 @@
     "port": "error"
    },
    "tgt": {
-    "process": "core/Kick_p3npt",
+    "process": "DefaultImage",
     "port": "in"
    },
    "metadata": {
@@ -1180,97 +1288,15 @@
   },
   {
    "src": {
-    "process": "gtk/ScalePixbuf_tsmqf",
+    "process": "LoadFile",
     "port": "error"
    },
    "tgt": {
-    "process": "AlbumImage",
+    "process": "DefaultImage",
     "port": "in"
    },
    "metadata": {
     "route": 1
-   }
-  },
-  {
-   "src": {
-    "process": "gtk/LoadPixbuf_9zcbr",
-    "port": "error"
-   },
-   "tgt": {
-    "process": "AlbumImage",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 1
-   }
-  },
-  {
-   "src": {
-    "process": "LoadPicture",
-    "port": "error"
-   },
-   "tgt": {
-    "process": "AlbumImage",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 1
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
-    "port": "position"
-   },
-   "tgt": {
-    "process": "gnome/Log_dy4z2",
-    "port": "in"
-   }
-  },
-  {
-   "src": {
-    "process": "Seeked",
-    "port": "position"
-   },
-   "tgt": {
-    "process": "gnome/Log_ykj3q",
-    "port": "in"
-   }
-  },
-  {
-   "src": {
-    "process": "PlayerGet",
-    "port": "metadata"
-   },
-   "tgt": {
-    "process": "TrackLength",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 5
-   }
-  },
-  {
-   "src": {
-    "process": "TrackLength",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "Ratio",
-    "port": "divisor"
-   }
-  },
-  {
-   "src": {
-    "process": "Seeked",
-    "port": "position"
-   },
-   "tgt": {
-    "process": "Ratio",
-    "port": "dividend"
-   },
-   "metadata": {
-    "route": 0
    }
   },
   {
@@ -1292,7 +1318,7 @@
     "port": "out"
    },
    "tgt": {
-    "process": "PositionSlider",
+    "process": "PositionAdj_h63sm",
     "port": "data"
    },
    "metadata": {
@@ -1301,12 +1327,527 @@
   },
   {
    "src": {
-    "process": "PositionSlider",
+    "process": "PositionAdj_h63sm",
     "port": "out"
    },
    "tgt": {
     "process": "objects/SetPropertyValue_k0zie",
     "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "IsPlaying",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Clock",
+    "port": "start"
+   }
+  },
+  {
+   "src": {
+    "process": "IsPlaying",
+    "port": "missed"
+   },
+   "tgt": {
+    "process": "Clock",
+    "port": "stop"
+   }
+  },
+  {
+   "src": {
+    "process": "IncrementValue",
+    "port": "quotient"
+   },
+   "tgt": {
+    "process": "math/Multiply_einka",
+    "port": "multiplier"
+   }
+  },
+  {
+   "src": {
+    "process": "Increment",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "math/Multiply_einka",
+    "port": "multiplicand"
+   }
+  },
+  {
+   "src": {
+    "process": "math/Multiply_einka",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "math/Add_xuz75",
+    "port": "augend"
+   }
+  },
+  {
+   "src": {
+    "process": "0",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "0_h1vvr",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "Ratio",
+    "port": "quotient"
+   },
+   "tgt": {
+    "process": "math/Add_xuz75",
+    "port": "addend"
+   },
+   "metadata": {
+    "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "TrackLength",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "IncrementValue",
+    "port": "divisor"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "Clock",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Disco",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "0",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Increment",
+    "port": "clear"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "PositionAdj",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "PositionValue",
+    "port": "object"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerProperties_6ce1y",
+    "port": "playbackstatus"
+   },
+   "tgt": {
+    "process": "IsPlaying",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 9
+   }
+  },
+  {
+   "src": {
+    "process": "PositionValue",
+    "port": "value"
+   },
+   "tgt": {
+    "process": "Ratio_q94bc",
+    "port": "dividend"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "TrackLength",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "TrackOffset",
+    "port": "multiplicand"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "TrackOffset",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "Gate",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerProperties_6ce1y",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "core/RepeatAsync_t0dxs",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "core/RepeatAsync_t0dxs",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "0",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "core/RepeatAsync_t0dxs",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "TrackLength",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "0_h1vvr",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Ratio",
+    "port": "dividend"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "TrackLength",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Ratio",
+    "port": "divisor"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "Volume",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SoundSlider",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 9
+   }
+  },
+  {
+   "src": {
+    "process": "Volume",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "flow/Gate_xioou",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 9
+   }
+  },
+  {
+   "src": {
+    "process": "Seeked",
+    "port": "position"
+   },
+   "tgt": {
+    "process": "Ratio",
+    "port": "dividend"
+   },
+   "metadata": {
+    "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerProperties",
+    "port": "volume"
+   },
+   "tgt": {
+    "process": "Volume",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 9
+   }
+  },
+  {
+   "src": {
+    "process": "Disco",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "delay",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "delay",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Increment",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "DefaultImage",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "AlbumImage",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "Delay",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "objects/SetPropertyValue_k0zie",
+    "port": "value"
+   },
+   "metadata": {
+    "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "Delay",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "PositionAdj_h63sm",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "Percent_jsqgs",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "Delay",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "Percent_jsqgs",
+    "port": "product"
+   },
+   "tgt": {
+    "process": "Gate",
+    "port": "close"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerProperties_6ce1y",
+    "port": "metadata"
+   },
+   "tgt": {
+    "process": "TrackId",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "TrackId",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "PlayerSetPosition",
+    "port": "trackid"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "Gate",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "PlayerSetPosition",
+    "port": "position"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "Gate",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "PlayerSetPosition",
+    "port": "call"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Ratio_q94bc",
+    "port": "quotient"
+   },
+   "tgt": {
+    "process": "TrackOffset",
+    "port": "multiplier"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "objects/SetPropertyValue_k0zie",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Gate",
+    "port": "open"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "Seeked",
+    "port": "position"
+   },
+   "tgt": {
+    "process": "Increment",
+    "port": "clear"
+   },
+   "metadata": {
+    "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "Status",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetStatus",
+    "port": "value"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "Status",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "StatusLabel",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "PlayerProperties",
+    "port": "playbackstatus"
+   },
+   "tgt": {
+    "process": "Status",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 3
    }
   },
   {
@@ -1319,43 +1860,20 @@
     "port": "multiplicand"
    },
    "metadata": {
-    "route": null
+    "route": 2
    }
   },
   {
    "src": {
-    "process": "Percent_jsqgs",
-    "port": "product"
+    "process": "math/Add_xuz75",
+    "port": "sum"
    },
    "tgt": {
-    "process": "PositionSlider",
-    "port": "in"
-   }
-  },
-  {
-   "src": {
     "process": "Percent_jsqgs",
-    "port": "product"
-   },
-   "tgt": {
-    "process": "objects/SetPropertyValue_k0zie",
-    "port": "value"
+    "port": "multiplicand"
    },
    "metadata": {
-    "route": 0
-   }
-  },
-  {
-   "src": {
-    "process": "Percent_jsqgs",
-    "port": "product"
-   },
-   "tgt": {
-    "process": "gnome/Log_ykj3q",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 0
+    "route": 2
    }
   },
   {
@@ -1382,14 +1900,14 @@
   {
    "data": "org.gnome.Rhythmbox3",
    "tgt": {
-    "process": "PlayerGet",
+    "process": "PlayerProperties",
     "port": "bus"
    }
   },
   {
    "data": "/org/mpris/MediaPlayer2",
    "tgt": {
-    "process": "PlayerGet",
+    "process": "PlayerProperties",
     "port": "path"
    }
   },
@@ -1438,7 +1956,7 @@
   {
    "data": "destroy",
    "tgt": {
-    "process": "WindowDestroy",
+    "process": "WindowDestroyed",
     "port": "signal"
    }
   },
@@ -1541,13 +2059,6 @@
    }
   },
   {
-   "data": true,
-   "tgt": {
-    "process": "strings/Jsonify_aw2kd",
-    "port": "pretty"
-   }
-  },
-  {
    "data": "mpris:artUrl",
    "tgt": {
     "process": "PictureUri",
@@ -1564,21 +2075,21 @@
   {
    "data": 200,
    "tgt": {
-    "process": "gtk/ScalePixbuf_tsmqf",
+    "process": "ScalePicture",
     "port": "width"
    }
   },
   {
    "data": 200,
    "tgt": {
-    "process": "gtk/ScalePixbuf_tsmqf",
+    "process": "ScalePicture",
     "port": "height"
    }
   },
   {
    "data": "media-optical",
    "tgt": {
-    "process": "core/Kick_p3npt",
+    "process": "DefaultImage",
     "port": "data"
    }
   },
@@ -1629,6 +2140,83 @@
    "tgt": {
     "process": "Percent_jsqgs",
     "port": "multiplier"
+   }
+  },
+  {
+   "data": 1000,
+   "tgt": {
+    "process": "Clock",
+    "port": "interval"
+   }
+  },
+  {
+   "data": "Playing",
+   "tgt": {
+    "process": "IsPlaying",
+    "port": "pattern"
+   }
+  },
+  {
+   "data": "0",
+   "tgt": {
+    "process": "0",
+    "port": "data"
+   }
+  },
+  {
+   "data": 1000000,
+   "tgt": {
+    "process": "IncrementValue",
+    "port": "dividend"
+   }
+  },
+  {
+   "data": "value",
+   "tgt": {
+    "process": "PositionValue",
+    "port": "property"
+   }
+  },
+  {
+   "data": "org.gnome.Rhythmbox3",
+   "tgt": {
+    "process": "PlayerProperties_6ce1y",
+    "port": "bus"
+   }
+  },
+  {
+   "data": "/org/mpris/MediaPlayer2",
+   "tgt": {
+    "process": "PlayerProperties_6ce1y",
+    "port": "path"
+   }
+  },
+  {
+   "data": 100,
+   "tgt": {
+    "process": "Ratio_q94bc",
+    "port": "divisor"
+   }
+  },
+  {
+   "data": "org.gnome.Rhythmbox3",
+   "tgt": {
+    "process": "PlayerSetPosition",
+    "port": "bus"
+   }
+  },
+  {
+   "data": "/org/mpris/MediaPlayer2",
+   "tgt": {
+    "process": "PlayerSetPosition",
+    "port": "path"
+   }
+  },
+  {
+   "data": "mpris:trackid",
+   "tgt": {
+    "process": "TrackId",
+    "port": "key"
    }
   }
  ]
