@@ -17,7 +17,12 @@ let parseArguments = function(options, args) {
     let isValue = false, lastOption = null;
     for (let i in args) {
         if (lastOption) {
-            result.options[lastOption.name] = args[i];
+            if (lastOption.allowMultiple) {
+                if (!result.options[lastOption.name])
+                    result.options[lastOption.name] = []
+                result.options[lastOption.name].push(args[i]);
+            } else
+                result.options[lastOption.name] = args[i];
             lastOption = null;
             continue;
         }
