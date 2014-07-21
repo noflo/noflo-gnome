@@ -8,15 +8,16 @@
   ],
   "ui": [
     {
-      "file": "ui/basic-ui.glade"
-    },
-    {
       "file": "ui/slider.ui",
       "additionals": [
         "scaleadjust",
         "soundadjust",
         "spinadjust"
       ]
+    },
+    {
+      "file": "./ui/basic-ui.glade",
+      "additionals": []
     }
   ],
   "libraries": [
@@ -24,8 +25,8 @@
   ],
   "noflo": {
     "components": {
-        "Count": "components/Count.coffee",
-        "Title": "components/Title.coffee"
+      "Count": "components/Count.coffee",
+      "Title": "components/Title.coffee"
     },
     "graphs": {
       "Main": "graphs/Main.json"
