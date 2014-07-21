@@ -37,8 +37,6 @@ let getModuleAtPath = function(vpath, alternativeFile) {
         !module.noflo)
         return null;
 
-    log('loaded: ' + module.name);
-
     return module;
 };
 
@@ -164,6 +162,73 @@ let ComponentLoader = function(options) {
 
     /**/
 
+    self._loadModule = function(module) {
+        // Avoid circular dependencies
+        if (module.loading || module.loaded)
+            return;
+        module.loading = true;
+
+        // Try to load dependencies first
+        if (module.dependencies) {
+            for (let depName in module.dependencies) {
+                let dep = /[^\/]+\/(.*)/.exec(depName);
+                if (dep && dep[1] && self.modules[dep[1]])
+                    self._loadModule(self.modules[dep[1]]);
+            }
+        }
+
+        // Components
+        for (let componentName in module.noflo.components) {
+            let path = normalizeName(module.name + '/' + componentName);
+            let fullPath = getComponentFullPath(module, componentName);
+            let requirePath = removeExtension(fullPath);
+            self.components[path] = {
+                path: fullPath,
+                isGraph: false,
+                module: module,
+                moduleName: normalizeName(module.name),
+                name: componentName,
+                create: generateComponentInstance(requirePath),
+                getCode: generateComponentCodeLoader(fullPath),
+                language: Utils.guessLanguageFromFilename(fullPath),
+            };
+        }
+
+        // Graphs
+        for (let graphName in module.noflo.graphs) {
+            let path = normalizeName(module.name + '/' + graphName);
+            let fullPath = getGraphFullPath(module, graphName);
+            let component = {
+                path: fullPath,
+                isGraph: true,
+                module: module,
+                moduleName: normalizeName(module.name),
+                name: graphName,
+                getDefinition: generateGraphDefinition(fullPath),
+                getCode: generateGraphDefinition(fullPath),
+                create: generateGraphLoader(path),
+                language: 'json',
+            };
+
+            if (module.name == self.applicationName &&
+                graphName == self.mainGraphName)
+                self.mainGraph = component;
+            else
+                self.components[path] = component;
+        }
+
+        // Loaders
+        if (module.noflo.loader) {
+            let path = module.vpath + '/' + module.noflo.loader;
+            path = removeExtension(path);
+            let loader = require(path);
+            loader(self);
+        }
+
+        delete module.loading;
+        module.loaded = true;
+    };
+
     self._loadModules = function() {
         // Load libray modules
         self.modules = getModules(self.options.paths);
@@ -174,56 +239,8 @@ let ComponentLoader = function(options) {
         self.modules[appModule.name] = appModule;
 
         for (let moduleName in self.modules) {
-            let module = self.modules[moduleName];
-
+            self._loadModule(self.modules[moduleName]);
             //log('loading ' + moduleName);
-            // Components
-            for (let componentName in module.noflo.components) {
-                let path = normalizeName(moduleName + '/' + componentName);
-                let fullPath = getComponentFullPath(module, componentName);
-                let requirePath = removeExtension(fullPath);
-                self.components[path] = {
-                    path: fullPath,
-                    isGraph: false,
-                    module: module,
-                    moduleName: normalizeName(moduleName),
-                    name: componentName,
-                    create: generateComponentInstance(requirePath),
-                    getCode: generateComponentCodeLoader(fullPath),
-                    language: Utils.guessLanguageFromFilename(fullPath),
-                };
-            }
-
-            // Graphs
-            for (let graphName in module.noflo.graphs) {
-                let path = normalizeName(moduleName + '/' + graphName);
-                let fullPath = getGraphFullPath(module, graphName);
-                let component = {
-                    path: fullPath,
-                    isGraph: true,
-                    module: module,
-                    moduleName: normalizeName(moduleName),
-                    name: graphName,
-                    getDefinition: generateGraphDefinition(fullPath),
-                    getCode: generateGraphDefinition(fullPath),
-                    create: generateGraphLoader(path),
-                    language: 'json',
-                };
-
-                if (module == appModule &&
-                    graphName == self.mainGraphName)
-                    self.mainGraph = component;
-                else
-                    self.components[path] = component;
-            }
-
-            // Loaders
-            if (module.noflo.loader) {
-                let path = module.vpath + '/' + module.noflo.loader;
-                path = removeExtension(path);
-                let loader = require(path);
-                loader(self);
-            }
         }
     };
 
