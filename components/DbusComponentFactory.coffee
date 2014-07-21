@@ -234,6 +234,7 @@ exports.getComponentMethod = (iface, method) ->
         @outPorts.error.disconnect()
 
     c.call = () ->
+      #log "(#{@inSignature}) #{@inValues}"
       inVariant = new GLib.Variant("(#{@inSignature})", @inValues)
       @getProxy().call(method.name, inVariant,  Gio.DBusCallFlags.NONE, -1, null, Lang.bind(@, @callReply))
 
@@ -263,7 +264,7 @@ exports.getComponentMethod = (iface, method) ->
       datatype: 'bang'
       description: 'Trigger function call through DBus'
       process: (event, payload) ->
-        return unless event is 'data'
+        return unless event is 'disconnect'
         c.call()
         return
 
