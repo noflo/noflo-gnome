@@ -5,6 +5,14 @@ const Utils = imports.utils;
 
 const CmdOptions = [
     {
+        name: 'component',
+        shortName: 'c',
+        requireArgument: true,
+        defaultValue: [],
+        allowMultiple: true,
+        help: 'Add a component to the manifest'
+    },
+    {
         name: 'dbus',
         shortName: 'd',
         requireArgument: true,
@@ -45,6 +53,14 @@ let exec = function(args) {
 
     // Parse content
     let manifest = Utils.parseJSON(Utils.loadTextFileContent(manifestPath));
+
+    // Add components
+    for (let i in options.options.component) {
+        if (!manifest.noflo.components)
+            manifest.noflo.components = {};
+        let path = options.options.component[i];
+        manifest.noflo.components[Utils.getFileName(path)] = path;
+    }
 
     // Add ui files
     for (let i in options.options.ui) {

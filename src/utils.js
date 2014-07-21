@@ -66,6 +66,16 @@ let forEachInDirectory = function(directory, callback) {
     enumerator.close(null);
 };
 
+let getFileName = function(path) {
+    let match = /.*\/([^\/]+)\.[^\/\.]*/.exec(path)
+    if (match)
+        return match[1];
+    match = /([^\/]+)\.[^\/\.]*/.exec(path)
+    if (match)
+        return match[1]
+    return null;
+}
+
 let buildPath = function(parent, child) {
     return parent + '/' + child;
 };
