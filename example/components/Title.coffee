@@ -21,7 +21,11 @@ exports.getComponent = () ->
     out: 'out'
     forwardGroups: true
   , (data, groups, out) ->
-    data = "#{data.title} by #{data.artist} from #{data.album}"
-    out.send data
+    if data.title? and data.artist? and data.album?
+      out.send "#{data.title} by #{data.artist} from #{data.album}"
+    else if data.title? and data.artist?
+      out.send "#{data.title} by #{data.artist}"
+    else
+      out.send ""
 
   c
