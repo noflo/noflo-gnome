@@ -3,6 +3,7 @@ const Options = imports.options;
 
 const builderInit = imports.builderInit;
 const builderAdd = imports.builderAdd;
+const builderBundle = imports.builderBundle;
 const builderRun = imports.builderRun;
 
 /**/
@@ -34,7 +35,7 @@ let commands = {
         help: 'Run an application repository',
     },
     'bundle': {
-        exec: function(args) {},
+        exec: builderBundle.exec,
         help: 'Create a bundle of an application repository',
     },
     'help': {

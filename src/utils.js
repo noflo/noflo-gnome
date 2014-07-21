@@ -128,6 +128,17 @@ let saveTextFileContent = function(path, content) {
                           null);
 };
 
+let copyFile = function(from, to) {
+    let fromFile = Gio.File.new_for_path(from);
+    let toFile = Gio.File.new_for_path(to);
+    let parent = toFile.get_parent();
+
+    if (!parent.query_exists(null))
+        parent.make_directory_with_parents(null);
+
+    fromFile.copy(toFile, Gio.FileCopyFlags.OVERWRITE, null, null);
+};
+
 let parseJSON = function(data) {
     try {
         return JSON.parse(data);

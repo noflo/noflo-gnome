@@ -21,6 +21,7 @@ js_filesdir = $(pkgdatadir)/js
 js_files_DATA = \
 	builderInit.js \
 	builderAdd.js \
+	builderBundle.js \
 	builderRun.js \
 	codeLoader.js \
 	codeWriter.js \
