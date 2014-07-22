@@ -113,6 +113,20 @@ let ComponentLoader = function(options) {
 
     /* Graphs */
 
+    let generateGraphCodeLoader = function(vpath) {
+        return function() {
+            try {
+                let path = Utils.resolvePath(vpath);
+                let source = Utils.loadTextFileContent(path);
+                return source;
+            } catch (e) {
+                log('Failed to load graph : ' + vpath);
+                throw e;
+            }
+            return null;
+        };
+    };
+
     let generateGraphDefinition = function(vpath) {
         return function() {
             try {
@@ -206,7 +220,7 @@ let ComponentLoader = function(options) {
                 moduleName: normalizeName(module.name),
                 name: graphName,
                 getDefinition: generateGraphDefinition(fullPath),
-                getCode: generateGraphDefinition(fullPath),
+                getCode: generateGraphCodeLoader(fullPath),
                 create: generateGraphLoader(path),
                 language: 'json',
             };
