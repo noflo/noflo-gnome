@@ -14,39 +14,48 @@ const CmdOptions = [
 ];
 
 //
-let addFile = function(path, tmpDir) {
-    Utils.copyFile(path, tmpDir + '/' + path);
+let addFile = function(path, directory) {
+    Utils.copyFile(path, directory + '/' + path);
     return path;
 };
 
-let addFileContent = function(path, content, tmpDir) {
-    Utils.saveTextFileContent(tmpDir + '/' + path, content);
+let addFileContent = function(path, content, directory) {
+    Utils.saveTextFileContent(directory + '/' + path, content);
     return path;
 };
 
-let addModule = function(path, index, tmpDir) {
+let addModule = function(loader, module, directory) {
     let files = [];
-
-    let manifestPath = path + '/' + index;
-    if (!GLib.file_test(manifestPath, GLib.FileTest.EXISTS))
-        throw new Error('Cannot find repository manifest');
-
-    // Parse manifest
-    let manifest = Utils.parseJSON(Utils.loadTextFileContent(manifestPath));
+    // strip vpath scheme to get relative directory
+    let dir = /[\w\d]+:\/\/(.*)/.exec(module.vpath)[1] + '/';
 
     // Add components
-    for (let i in manifest.noflo.components) {
-
-
-        files.push(addFile(path + '/' + manifest.noflo.components[i], tmpDir));
+    for (let componentName in module.noflo.components) {
+        let componentPath = module.noflo.components[componentName];
+        files.push(addFileContent(dir + componentPath,
+                                  loader.getComponentCode(module.normalizedName + '/' + componentName),
+                                  directory));
     }
 
     // Add graphs
-    for (let i in manifest.noflo.graphs)
-        files.push(addFile(path + '/' + manifest.noflo.graphs[i], tmpDir));
+    for (let graphName in module.noflo.graphs) {
+        let graphPath = module.noflo.graphs[graphName];
+        files.push(addFileContent(dir + graphPath,
+                                  loader.getComponentCode(module.normalizedName + '/' + graphName),
+                                  directory));
+    }
+
+    // Loader
+    if (module.noflo.loader) {
+        files.push(addFileContent(dir + module.noflo.loader,
+                                  Utils.loadTextFileContent(Utils.resolvePath(module.vpath + '/' + module.noflo.loader)),
+                                  directory));
+    }
 
     // index
-    files.push(addFileContent(path + '/' + index, JSON.stringify(manifest), tmpDir));
+    files.push(addFileContent(dir + 'component.json',
+                              Utils.loadTextFileContent(Utils.resolvePath(module.vpath + '/component.json')),
+                              directory));
 
     return files;
 };
@@ -58,7 +67,7 @@ let generateIndex = function(files) {
         ' <gresource prefix="/org/gnome/noflo-gnome">\n';
 
     for (let i in files)
-        data += '<file>' + files[i] + '</file>\n';
+        data += '  <file>' + files[i] + '</file>\n';
 
     data +=
         ' </gresource>\n' +
@@ -84,7 +93,7 @@ let exec = function(args) {
     });
     loader.loadModules();
 
-    // Load content
+    // Load manifest
     let manifestPath = GLib.getenv('PWD') + '/manifest.json';
     if (!GLib.file_test(manifestPath, GLib.FileTest.EXISTS))
         throw new Error('Cannot find repository manifest');
@@ -92,8 +101,10 @@ let exec = function(args) {
     // Parse manifest
     let manifest = Utils.parseJSON(Utils.loadTextFileContent(manifestPath));
 
+    // Create temporary directory
     let files = [];
     let tmpDir = GLib.dir_make_tmp('XXXXXX');
+    log('output dir : ' + tmpDir);
 
     // Add ui files
     for (let i in manifest.ui)
@@ -104,29 +115,39 @@ let exec = function(args) {
         files.push(addFile(manifest.dbus[i].file, tmpDir));
 
     // Add main module
-    //files = files.concat(addModule(GLib.getenv('PWD'), 'manifest.json', tmpDir));
-    let mainGraph = loader.mainGraph.getCode();
-    log('Got : ' + mainGraph.name + ' - ' + mainGraph.language);
     let components = {};
-    log(mainGraph.processes);
+    let modules = {};
+
+    let mainGraph = loader.mainGraph.getDefinition();
     for (let i in mainGraph.processes) {
         let cmp = mainGraph.processes[i].component;
         if (components[cmp])
             continue;
 
-        loader.getSource(cmp, function(error, compDesc) {
-            if (error)
-                throw error;
-            components[cmp] = compDesc;
-        });
-        log(' ' + cmp);
+        components[cmp] = true;
+
+        let module = loader.getComponentModule(cmp);
+        if (!module ||
+            modules[module.name] || // drop already loaded modules
+            module.name == loader.applicationName) // drop app components
+            continue;
+
+        modules[module.name] = module;
+        files = files.concat(addModule(loader, module, tmpDir));
     }
 
+    // TODO: add app components
+
     // GResource index
+    log('number of files: ' + files.length);
     Utils.saveTextFileContent(tmpDir + '/app.xml',
                               generateIndex(files));
 
     // Generate resource file
+    log('glib-compile-resources' +
+                                 ' --sourcedir ' + tmpDir +
+                                 ' --target app.gresource' +
+                                 ' ' + tmpDir + '/app.xml');
     GLib.spawn_command_line_sync('glib-compile-resources' +
                                  ' --sourcedir ' + tmpDir +
                                  ' --target app.gresource' +
