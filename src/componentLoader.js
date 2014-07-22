@@ -229,7 +229,7 @@ let ComponentLoader = function(options) {
         module.loaded = true;
     };
 
-    self._loadModules = function() {
+    self.loadModules = function() {
         // Load libray modules
         self.modules = getModules(self.options.paths);
         // Load application components/graphs
@@ -428,7 +428,7 @@ let ComponentLoader = function(options) {
     /**/
 
     self.install = function(runtime) {
-        self._loadModules();
+        self.loadModules();
         self._installGraphs(runtime);
         self._installNetwork(runtime);
     };
