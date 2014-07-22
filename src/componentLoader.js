@@ -386,6 +386,23 @@ let ComponentLoader = function(options) {
 
     /**/
 
+    self.getComponentModule = function(name) {
+        let item = self.components[name];
+        if (item)
+            return item.module;
+        return null;
+    };
+
+    self.getComponentCode = function(name) {
+        //log('Looking up component : ' + name);
+        let item = self.components[name];
+        if (item)
+            return item.getCode();
+        return null;
+    };
+
+    /**/
+
     self.save = function(runtime) {
         log('Saving graphs!');
         for (let i in runtime.graph.graphs) {
