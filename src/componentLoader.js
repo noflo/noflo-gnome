@@ -7,6 +7,10 @@ const Utils = imports.utils;
 const NoFlo = imports.noflo;
 const Fbp = require('fbp');
 
+let normalizeName = function(name) {
+    return name.replace('noflo-', '');
+};
+
 /* Module listing */
 
 let getModuleAtPath = function(vpath, alternativeFile) {
@@ -28,6 +32,7 @@ let getModuleAtPath = function(vpath, alternativeFile) {
         module = JSON.parse('' + manifestContent);
         module.vpath = vpath;
         module.path = path;
+        module.normalizedName = normalizeName(module.name);
     } catch (e) {
         return null;
     }
@@ -81,10 +86,6 @@ let ComponentLoader = function(options) {
     self.mainGraph = null;
     self.modules = {};
     self.components = {};
-
-    let normalizeName = function(name) {
-        return name.replace('noflo-', '');
-    };
 
     let removeExtension = function(path) {
         let ret = path.replace(/\.coffee$/, '');
