@@ -1,4 +1,5 @@
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Options = imports.options;
 const Utils = imports.utils;
 
@@ -36,6 +37,12 @@ const CmdOptions = [
     },
 ];
 
+// relative: GFile
+// path: string
+let normalizePath = function(relative, path) {
+    return relative.get_relative_path(Gio.File.new_for_path(path));
+};
+
 //
 let exec = function(args) {
     let options = Options.parseArguments(CmdOptions, args);
@@ -44,6 +51,8 @@ let exec = function(args) {
         Options.printHelp('noflo-gnome add', CmdOptions);
         return 0;
     }
+
+    let appDirectory = Gio.File.new_for_path(GLib.getenv('PWD'));
 
     // Load content
     let manifestPath = GLib.getenv('PWD') + '/manifest.json';
@@ -58,7 +67,8 @@ let exec = function(args) {
         if (!manifest.noflo.components)
             manifest.noflo.components = {};
         let path = options.options.component[i];
-        manifest.noflo.components[Utils.getFileName(path)] = path;
+        manifest.noflo.components[Utils.getFileName(path)] =
+            normalizePath(appDirectory, path);
     }
 
     // Add ui files
@@ -66,7 +76,7 @@ let exec = function(args) {
         if (!manifest.ui)
             manifest.ui = [];
         manifest.ui.push({
-            file: options.options.ui[i],
+            file: normalizePath(appDirectory, options.options.ui[i]),
             additionals: [],
         });
     }
@@ -76,7 +86,7 @@ let exec = function(args) {
         if (!manifest.dbus)
             manifest.dbus = [];
         manifest.dbus.push({
-            file: options.options.dbus[i],
+            file: normalizePath(appDirectory, options.options.dbus[i]),
         });
     }
 
