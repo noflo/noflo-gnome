@@ -16,7 +16,7 @@
       ]
     },
     {
-      "file": "./ui/basic-ui.glade",
+      "file": "ui/basic-ui.glade",
       "additionals": []
     }
   ],
