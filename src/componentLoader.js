@@ -128,7 +128,7 @@ let ComponentLoader = function(options) {
                 };
                 return def;
             } catch (e) {
-                log('Failed to load graph : ' + vpath + ' : ' + e.message);
+                log('Failed to load graph definition : ' + vpath + ' : ' + e.message);
                 throw e;
             }
             return null;
