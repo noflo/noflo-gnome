@@ -313,6 +313,7 @@ let ComponentLoader = function(options) {
             module: null,
             name: name,
             create: constructor,
+            getCode: function() { return ''; },
             language: 'javascript'
         };
         log('registerComponent ' + packageId + ' / ' + name);
