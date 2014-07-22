@@ -54,7 +54,7 @@ let levelToSpaces = function(level) {
     return ret;
 };
 
-let forEachInDirectory = function(directory, callback) {
+let forEachInDirectory = function(directory, recurse, callback) {
     let enumerator = directory.enumerate_children('*',
                                                   Gio.FileQueryInfoFlags.NONE,
                                                   null);

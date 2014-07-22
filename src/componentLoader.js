@@ -47,7 +47,7 @@ let getModulesInPath = function(vpath) {
     if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
         return modules;
 
-    Utils.forEachInDirectory(Gio.File.new_for_path(path), function(child) {
+    Utils.forEachInDirectory(Gio.File.new_for_path(path), false, function(child) {
         let module = getModuleAtPath(Utils.buildPath(vpath,
                                                      child.get_basename()));
 
