@@ -17,17 +17,32 @@ const CmdOptions = [
 
 //
 let addRuntimeFile = function(srcPath, dstPath, dest) {
-    Utils.copyFile(srcPath, dest + '/' + dstPath);
+    try {
+        Utils.copyFile(srcPath, dest + '/' + dstPath);
+    } catch (e) {
+        log('Cannot add ' + srcPath);
+        throw e;
+    }
     return dstPath;
 };
 
 let addFile = function(path, subdir, dest) {
-    Utils.copyFile(path, dest + '/' + subdir + '/' + path);
+    try {
+        Utils.copyFile(path, dest + '/' + subdir + '/' + path);
+    } catch (e) {
+        log('Cannot add ' + path);
+        throw e;
+    }
     return subdir + '/' + path;
 };
 
 let addFileContent = function(path, content, dest) {
-    Utils.saveTextFileContent(dest + '/' + path, content);
+    try {
+        Utils.saveTextFileContent(dest + '/' + path, content);
+    } catch (e) {
+        log('Cannot add ' + path);
+        throw e;
+    }
     return path;
 };
 
