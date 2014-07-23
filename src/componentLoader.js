@@ -331,7 +331,7 @@ let ComponentLoader = function(options) {
             getCode: function() { return ''; },
             language: 'javascript'
         };
-        log('registerComponent ' + packageId + ' / ' + name);
+        //log('registerComponent ' + packageId + ' / ' + name);
     };
 
     self.registerGraph = function(packageId, name, gPath, callback) {
