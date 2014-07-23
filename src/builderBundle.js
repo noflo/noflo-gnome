@@ -32,7 +32,7 @@ let addFileContent = function(path, content, dest) {
 };
 
 let addModule = function(loader, module, dest) {
-    log('add module ' + module.name);
+    //log('add module ' + module.name);
     let files = [];
     // strip vpath scheme to get relative directory
     let dir = /[\w\d]+:\/\/(.*)/.exec(module.vpath)[1] + '/';
@@ -115,7 +115,6 @@ let exec = function(args) {
     // Create temporary directory
     let files = [];
     let tmpDir = GLib.dir_make_tmp('XXXXXX');
-    log('output dir : ' + tmpDir);
 
     // Add runtime files
     let runtimeDirectory = Gio.File.new_for_path(Path.RESOURCE_DIR + '/js');
@@ -161,7 +160,6 @@ let exec = function(args) {
     let modules = {};
 
     let mainGraph = loader.mainGraph.getDefinition();
-    log('mainGraph : ' + mainGraph);
     for (let i in mainGraph.processes) {
         let cmp = mainGraph.processes[i].component;
         if (components[cmp])
@@ -189,6 +187,8 @@ let exec = function(args) {
                                  ' --target app.gresource' +
                                  ' ' + tmpDir + '/app.xml');
     log('Bundled ' + files.length + ' files');
+
+    // TODO: remove packaging directory
 
     // Compress resource file
     let compressed = Gio.MemoryOutputStream.new_resizable()
