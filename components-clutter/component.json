@@ -1,14 +1,5 @@
 {
   "name": "noflo-clutter",
-  "description": "User interaction components for NoFlo and Clutter/gjs",
-  "author": "Lionel Landwerlin <llandwerlin@gmail.com>",
-  "repo": "noflo/noflo-gnome",
-  "version": "0.0.1",
-  "keywords": [
-  ],
-  "dependencies": {
-    "noflo/noflo": "*"
-  },
   "json": [
     "component.json"
   ],

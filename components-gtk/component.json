@@ -1,10 +1,5 @@
 {
   "name": "noflo-gtk",
-  "description": "Basic Gtk components for NoFlo",
-  "author": "Lionel Landwerlin <lionel.g.landwerlin@linux.intel.com>",
-  "repo": "djdeath/noflo-gnome",
-  "version": "0.0.1",
-  "keywords": [],
   "json": [
     "component.json"
   ],
