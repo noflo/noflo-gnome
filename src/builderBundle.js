@@ -1,6 +1,8 @@
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const ComponentLoader = imports.componentLoader;
 const Options = imports.options;
+const Path = imports.path;
 const Utils = imports.utils;
 
 const CmdOptions = [
@@ -14,6 +16,11 @@ const CmdOptions = [
 ];
 
 //
+let addRuntimeFile = function(srcPath, dstPath, dest) {
+    Utils.copyFile(srcPath, dest + '/' + dstPath);
+    return dstPath;
+};
+
 let addFile = function(path, subdir, dest) {
     Utils.copyFile(path, dest + '/' + subdir + '/' + path);
     return subdir + '/' + path;
@@ -25,6 +32,7 @@ let addFileContent = function(path, content, dest) {
 };
 
 let addModule = function(loader, module, dest) {
+    log('add module ' + module.name);
     let files = [];
     // strip vpath scheme to get relative directory
     let dir = /[\w\d]+:\/\/(.*)/.exec(module.vpath)[1] + '/';
@@ -93,8 +101,11 @@ let exec = function(args) {
     });
     loader.loadModules();
 
+    //
+    currentDirectory = Gio.File.new_for_path(GLib.getenv('PWD'));
+
     // Load manifest
-    let manifestPath = GLib.getenv('PWD') + '/manifest.json';
+    let manifestPath = currentDirectory.get_path() + '/manifest.json';
     if (!GLib.file_test(manifestPath, GLib.FileTest.EXISTS))
         throw new Error('Cannot find repository manifest');
 
@@ -106,39 +117,28 @@ let exec = function(args) {
     let tmpDir = GLib.dir_make_tmp('XXXXXX');
     log('output dir : ' + tmpDir);
 
-    // Add ui files
+    // Add runtime files
+    let runtimeDirectory = Gio.File.new_for_path(Path.RESOURCE_DIR + '/js');
+    Utils.forEachInDirectory(runtimeDirectory, true, function(child) {
+        if (child.query_file_type(Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+                                  null) != Gio.FileType.REGULAR)
+            return;
+        files.push(addRuntimeFile(child.get_path(),
+                                  'runtime/' + runtimeDirectory.get_relative_path(child),
+                                  tmpDir));
+    });
+
+    // Add application ui files
     for (let i in manifest.ui)
         files.push(addFile(manifest.ui[i].file,
                            'application',
                            tmpDir));
 
-    // Add DBus files
+    // Add application DBus files
     for (let i in manifest.dbus)
         files.push(addFile(manifest.dbus[i].file,
                            'application',
                            tmpDir));
-
-    // Add main module
-    let components = {};
-    let modules = {};
-
-    let mainGraph = loader.mainGraph.getDefinition();
-    for (let i in mainGraph.processes) {
-        let cmp = mainGraph.processes[i].component;
-        if (components[cmp])
-            continue;
-
-        components[cmp] = true;
-
-        let module = loader.getComponentModule(cmp);
-        if (!module ||
-            modules[module.name] || // drop already loaded modules
-            module.name == loader.applicationName) // drop app components
-            continue;
-
-        modules[module.name] = module;
-        files = files.concat(addModule(loader, module, tmpDir));
-    }
 
     // Add application components
     for (let componentName in manifest.noflo.components) {
@@ -156,6 +156,29 @@ let exec = function(args) {
                            tmpDir));
     }
 
+    // Add dependency modules
+    let components = {};
+    let modules = {};
+
+    let mainGraph = loader.mainGraph.getDefinition();
+    log('mainGraph : ' + mainGraph);
+    for (let i in mainGraph.processes) {
+        let cmp = mainGraph.processes[i].component;
+        if (components[cmp])
+            continue;
+
+        components[cmp] = true;
+
+        let module = loader.getComponentModule(cmp);
+        if (!module ||
+            modules[module.name] || // drop already loaded modules
+            module.name == loader.applicationName) // drop app components
+            continue;
+
+        modules[module.name] = module;
+        files = files.concat(addModule(loader, module, tmpDir));
+    }
+
     // GResource index
     Utils.saveTextFileContent(tmpDir + '/app.xml',
                               generateIndex(files));
@@ -165,8 +188,39 @@ let exec = function(args) {
                                  ' --sourcedir ' + tmpDir +
                                  ' --target app.gresource' +
                                  ' ' + tmpDir + '/app.xml');
-
     log('Bundled ' + files.length + ' files');
+
+    // Compress resource file
+    let compressed = Gio.MemoryOutputStream.new_resizable()
+    let output = new Gio.ConverterOutputStream({
+        base_stream: compressed,
+        converter: new Gio.ZlibCompressor({
+            format: Gio.ZlibCompressorFormat.GZIP,
+        }),
+    });
+    let resourceFile = Gio.File.new_for_path('app.gresource');
+    output.splice(resourceFile.read(null),
+                  Gio.OutputStreamSpliceFlags.CLOSE_SOURCE,
+                  null);
+    output.flush(null);
+    output.close(null);
+
+    resourceFile.delete(null);
+
+    // Base64 content
+    let base64 = GLib.base64_encode(compressed.steal_as_bytes().get_data());
+
+    // Insert into bundle
+    let template = Utils.loadTextFileContent(Path.RESOURCE_DIR +
+                                             '/bundle/bundle.sh.in');
+    template = template.replace('@@APP_DATA@@', base64);
+    Utils.saveTextFileContent(manifest.name, template);
+
+    // Set executable
+    let executable = Gio.File.new_for_path(manifest.name);
+    executable.set_attribute_uint32('unix::mode',
+                                    parseInt('0755', 8),
+                                    Gio.FileQueryInfoFlags.NONE, null);
 
     return 0;
 };

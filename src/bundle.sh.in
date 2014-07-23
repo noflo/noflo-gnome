@@ -1,0 +1,32 @@
+#!/bin/sh
+
+SCRIPT=$( cat <<EOF
+const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
+
+log(imports.searchPath);
+
+const data = '@@APP_DATA@@';
+log('yo1');
+let zipped = GLib.base64_decode(data);
+log('yo2');
+let input = new Gio.ConverterInputStream({
+    base_stream: Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(zipped)),
+    converter: new Gio.ZlibDecompressor({
+        format: Gio.ZlibCompressorFormat.GZIP,
+    }),
+});
+let unzipped = input.read_bytes(2000000, null);
+let resource = Gio.Resource.new_from_data(unzipped);
+Gio.resources_register(resource);
+
+imports.main.start();
+EOF
+)
+
+# Not great, but hey...
+mkdir -p /tmp/$USER/noflo-gnome
+tmpfile=`mktemp /tmp/$USER/noflo-gnome/XXXXXX`
+echo $SCRIPT > $tmpfile
+gjs -I resource:///org/gnome/noflo-gnome/runtime $tmpfile run
+rm $tmpfile

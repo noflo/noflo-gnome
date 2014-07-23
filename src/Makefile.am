@@ -36,6 +36,11 @@ js_files_DATA = \
 	websocketServer.js \
 	$(NULL)
 
+bundledir = $(pkgdatadir)/bundle
+bundle_DATA = \
+	bundle.sh.in \
+	$(NULL)
+
 js_libsdir = $(pkgdatadir)/js/libs
 js_libs_DATA = \
 	libs/coffeescript.js \
