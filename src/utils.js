@@ -130,7 +130,8 @@ let saveTextFileContent = function(path, content) {
     file.replace_contents(content,
                           null,
                           false,
-                          Gio.FileCreateFlags.NONE, null,
+                          Gio.FileCreateFlags.REPLACE_DESTINATION,
+                          null,
                           null);
 };
 
