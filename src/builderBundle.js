@@ -14,17 +14,17 @@ const CmdOptions = [
 ];
 
 //
-let addFile = function(path, directory) {
-    Utils.copyFile(path, directory + '/' + path);
+let addFile = function(path, subdir, dest) {
+    Utils.copyFile(path, dest + '/' + subdir + '/' + path);
+    return subdir + '/' + path;
+};
+
+let addFileContent = function(path, content, dest) {
+    Utils.saveTextFileContent(dest + '/' + path, content);
     return path;
 };
 
-let addFileContent = function(path, content, directory) {
-    Utils.saveTextFileContent(directory + '/' + path, content);
-    return path;
-};
-
-let addModule = function(loader, module, directory) {
+let addModule = function(loader, module, dest) {
     let files = [];
     // strip vpath scheme to get relative directory
     let dir = /[\w\d]+:\/\/(.*)/.exec(module.vpath)[1] + '/';
@@ -34,7 +34,7 @@ let addModule = function(loader, module, directory) {
         let componentPath = module.noflo.components[componentName];
         files.push(addFileContent(dir + componentPath,
                                   loader.getComponentCode(module.normalizedName + '/' + componentName),
-                                  directory));
+                                  dest));
     }
 
     // Add graphs
@@ -42,20 +42,20 @@ let addModule = function(loader, module, directory) {
         let graphPath = module.noflo.graphs[graphName];
         files.push(addFileContent(dir + graphPath,
                                   loader.getComponentCode(module.normalizedName + '/' + graphName),
-                                  directory));
+                                  dest));
     }
 
     // Loader
     if (module.noflo.loader) {
         files.push(addFileContent(dir + module.noflo.loader,
                                   Utils.loadTextFileContent(Utils.resolvePath(module.vpath + '/' + module.noflo.loader)),
-                                  directory));
+                                  dest));
     }
 
     // index
     files.push(addFileContent(dir + 'component.json',
                               Utils.loadTextFileContent(Utils.resolvePath(module.vpath + '/component.json')),
-                              directory));
+                              dest));
 
     return files;
 };
@@ -108,11 +108,15 @@ let exec = function(args) {
 
     // Add ui files
     for (let i in manifest.ui)
-        files.push(addFile(manifest.ui[i].file, tmpDir));
+        files.push(addFile(manifest.ui[i].file,
+                           'application',
+                           tmpDir));
 
     // Add DBus files
     for (let i in manifest.dbus)
-        files.push(addFile(manifest.dbus[i].file, tmpDir));
+        files.push(addFile(manifest.dbus[i].file,
+                           'application',
+                           tmpDir));
 
     // Add main module
     let components = {};
@@ -136,22 +140,33 @@ let exec = function(args) {
         files = files.concat(addModule(loader, module, tmpDir));
     }
 
-    // TODO: add app components
+    // Add application components
+    for (let componentName in manifest.noflo.components) {
+        let componentPath = manifest.noflo.components[componentName];
+        files.push(addFile(componentPath,
+                           'application',
+                           tmpDir));
+    }
+
+    // Add application graphs
+    for (let graphName in manifest.noflo.graphs) {
+        let graphPath = manifest.noflo.graphs[graphName];
+        files.push(addFile(graphPath,
+                           'application',
+                           tmpDir));
+    }
 
     // GResource index
-    log('number of files: ' + files.length);
     Utils.saveTextFileContent(tmpDir + '/app.xml',
                               generateIndex(files));
 
     // Generate resource file
-    log('glib-compile-resources' +
-                                 ' --sourcedir ' + tmpDir +
-                                 ' --target app.gresource' +
-                                 ' ' + tmpDir + '/app.xml');
     GLib.spawn_command_line_sync('glib-compile-resources' +
                                  ' --sourcedir ' + tmpDir +
                                  ' --target app.gresource' +
                                  ' ' + tmpDir + '/app.xml');
+
+    log('Bundled ' + files.length + ' files');
 
     return 0;
 };
