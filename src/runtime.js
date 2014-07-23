@@ -32,16 +32,18 @@ let getArguments = function() {
 
 /**/
 
-let manifest = {};
+let _manifest = null;
 let getApplicationManifest = function() {
-    let content = Utils.loadTextFileContent(
-        Utils.resolvePath('local://manifest.json'));
+    if (_manifest)
+        return _manifest;
 
     try {
-        manifest = JSON.parse(content);
+        let content = Utils.loadTextFileContent(
+            Utils.resolvePath('local://manifest.json'));
+        _manifest = JSON.parse(content);
     } catch (e) {
         log('Cannot load application manifest: ' + e.message);
     }
 
-    return manifest;
+    return _manifest;
 }
