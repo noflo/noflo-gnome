@@ -10,6 +10,7 @@ components_DATA = \
 	DbusComponentLoader.coffee \
 	DbusComponentFactory.coffee \
 	\
+	Arguments.coffee \
 	GioFileLoadContent.coffee \
 	GioFileMonitor.coffee \
 	GioFileWrite.coffee \

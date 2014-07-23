@@ -11,6 +11,7 @@
   "noflo": {
     "loader": "ComponentLoader.coffee",
     "components": {
+      "Arguments": "Arguments.coffee",
       "GioFileMonitor": "GioFileMonitor.coffee",
       "GioFileLoadContent": "GioFileLoadContent.coffee",
       "GioFileWrite": "GioFileWrite.coffee",

@@ -93,6 +93,8 @@ let exec = function(args) {
         log('Cannot load manifest : ' + manifest.name + ' : ' + e.message);
     }
 
+    Runtime.setArguments(options.arguments);
+
     if (options.options.debug) {
         if (options.options.ui) {
             // Start webbrowser with address

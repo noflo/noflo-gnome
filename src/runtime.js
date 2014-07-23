@@ -21,6 +21,17 @@ let replaceMainloop = function(func) {
 
 /**/
 
+let _arguments = null;
+let setArguments = function(args) {
+    _arguments = args;
+};
+
+let getArguments = function() {
+    return _arguments;
+};
+
+/**/
+
 let manifest = {};
 let getApplicationManifest = function() {
     let content = Utils.loadTextFileContent(
