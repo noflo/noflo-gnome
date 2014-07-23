@@ -3,6 +3,7 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const CodeWriter = imports.codeWriter;
+const Runtime = imports.runtime;
 const Utils = imports.utils;
 const NoFlo = imports.noflo;
 const Fbp = require('fbp');
@@ -14,7 +15,7 @@ let normalizeName = function(name) {
 /* Module listing */
 
 let getModuleAtPath = function(vpath, alternativeFile) {
-    let path = Utils.resolvePath(vpath);
+    let path = Runtime.resolvePath(vpath);
 
     if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
         return null;
@@ -47,7 +48,7 @@ let getModuleAtPath = function(vpath, alternativeFile) {
 
 let getModulesInPath = function(vpath) {
     let modules = {};
-    let path = Utils.resolvePath(vpath);
+    let path = Runtime.resolvePath(vpath);
 
     if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
         return modules;
@@ -105,7 +106,7 @@ let ComponentLoader = function(options) {
 
     let generateComponentCodeLoader = function(path) {
         return function() {
-            let file = Gio.File.new_for_path(Utils.resolvePath(path));
+            let file = Gio.File.new_for_path(Runtime.resolvePath(path));
             try {
                 let [, code] = file.load_contents(null);
                 return '' + code;
@@ -122,7 +123,7 @@ let ComponentLoader = function(options) {
     let generateGraphCodeLoader = function(vpath) {
         return function() {
             try {
-                let path = Utils.resolvePath(vpath);
+                let path = Runtime.resolvePath(vpath);
                 let source = Utils.loadTextFileContent(path);
                 return source;
             } catch (e) {
@@ -136,7 +137,7 @@ let ComponentLoader = function(options) {
     let generateGraphDefinition = function(vpath) {
         return function() {
             try {
-                let path = Utils.resolvePath(vpath);
+                let path = Runtime.resolvePath(vpath);
                 let source = Utils.loadTextFileContent(path);
                 let def;
                 if (path.indexOf('.fbp') >= 0)

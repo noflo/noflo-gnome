@@ -1,7 +1,6 @@
 GladeConstructorComponent = require './GladeConstructorComponent'
 Gio = imports.gi.Gio
 Runtime = imports.runtime;
-Utils = imports.utils
 
 exports = (loader, done) ->
   manifest = Runtime.getApplicationManifest()
@@ -10,7 +9,7 @@ exports = (loader, done) ->
     return
   for ui in manifest.ui
     try
-      path = Utils.resolvePath('local://' + ui.file)
+      path = Runtime.resolvePath('local://' + ui.file)
       file = Gio.File.new_for_path path
       name = file.get_basename().replace(/\.glade$/, '').replace(/[^a-zA-Z\/\-0-9_]/g, '')
       component = GladeConstructorComponent.getComponentForFile file, ui.additionals

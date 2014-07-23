@@ -3,6 +3,7 @@ const Gio = imports.gi.Gio;
 const ComponentLoader = imports.componentLoader;
 const Options = imports.options;
 const Path = imports.path;
+const Runtime = imports.runtime;
 const Utils = imports.utils;
 
 const CmdOptions = [
@@ -71,13 +72,13 @@ let addModule = function(loader, module, dest) {
     // Loader
     if (module.noflo.loader) {
         files.push(addFileContent(dir + module.noflo.loader,
-                                  Utils.loadTextFileContent(Utils.resolvePath(module.vpath + '/' + module.noflo.loader)),
+                                  Utils.loadTextFileContent(Runtime.resolvePath(module.vpath + '/' + module.noflo.loader)),
                                   dest));
     }
 
     // index
     files.push(addFileContent(dir + 'component.json',
-                              Utils.loadTextFileContent(Utils.resolvePath(module.vpath + '/component.json')),
+                              Utils.loadTextFileContent(Runtime.resolvePath(module.vpath + '/component.json')),
                               dest));
 
     return files;

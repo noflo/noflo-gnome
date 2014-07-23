@@ -13,9 +13,11 @@ let NoFloContext = null;
 /* Require() "emulation" */
 
 let loadFile = function(vpath) {
-    if (GLib.file_test(Utils.resolvePath(vpath + '.js'), GLib.FileTest.IS_REGULAR))
+    if (GLib.file_test(Runtime.resolvePath(vpath + '.js'),
+                       GLib.FileTest.IS_REGULAR))
         return CodeLoader.loadJavascript(vpath);
-    if (GLib.file_test(Utils.resolvePath(vpath + '.coffee'), GLib.FileTest.IS_REGULAR))
+    if (GLib.file_test(Runtime.resolvePath(vpath + '.coffee'),
+                       GLib.FileTest.IS_REGULAR))
         return CodeLoader.loadCoffeescript(vpath);
     throw new Error("Can't load " + vpath);
 };

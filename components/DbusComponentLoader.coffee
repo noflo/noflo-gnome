@@ -30,7 +30,7 @@ exports.load = (loader, manifest) ->
   for iface in manifest.dbus
     vpath = 'local://' + iface.file
     try
-      content = Utils.loadTextFileContent Utils.resolvePath vpath
+      content = Utils.loadTextFileContent Runtime.resolvePath vpath
       info = Gio.DBusNodeInfo.new_for_xml content
       loadInterfaces loader, info.interfaces
     catch e

@@ -1,4 +1,5 @@
 const Gio = imports.gi.Gio;
+const Runtime = imports.runtime;
 const Utils = imports.utils;
 
 const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
@@ -39,7 +40,7 @@ let loadJavascriptFile = function(file) {
 
 // vpath: string, doesn't include extension
 let loadJavascript = function(vpath) {
-    let path = Utils.resolvePath(vpath);
+    let path = Runtime.resolvePath(vpath);
     let file = Gio.File.new_for_path(path + '.js');
     let [, javascriptSource] = file.load_contents(null);
 
@@ -51,8 +52,8 @@ let loadJavascript = function(vpath) {
 
 // vpath: string, doesn't include extension
 let loadCoffeescript = function(vpath) {
-    let sourcePath = Utils.resolvePath(vpath);
-    let cachedPath = Utils.resolveCachedPath(vpath);
+    let sourcePath = Runtime.resolvePath(vpath);
+    let cachedPath = Runtime.resolveCachedPath(vpath);
     let sourceFile = Gio.File.new_for_path(sourcePath + '.coffee');
     let cachedFile = Gio.File.new_for_path(cachedPath + '.js');
 

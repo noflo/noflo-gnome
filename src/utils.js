@@ -86,34 +86,6 @@ let buildPath = function(parent, child) {
     return parent + '/' + child;
 };
 
-let resolvePath = function(virtualPath) {
-    let ret;
-    if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = Path.RESOURCE_DIR + '/' + ret[1];
-    else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = Path.CURRENT_DIR + '/' + ret[1];
-    else
-        ret = virtualPath
-
-    //log('path : ' + virtualPath + ' ->  ' + ret);
-
-    return ret;
-};
-
-let resolveCachedPath = function(virtualPath) {
-    let ret;
-    if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = Path.CACHE_DIR + '/library/' + ret[1];
-    else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = Path.CACHE_DIR + '/local/' + ret[1]; // TODO: should be local
-    else
-        ret = virtualPath
-
-    //log('cached path : ' + virtualPath + ' ->  ' + ret);
-
-    return ret;
-};
-
 let loadTextFileContent = function(path) {
     let file = Gio.File.new_for_path(path);
     let [, content] = file.load_contents(null);
