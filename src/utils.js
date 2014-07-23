@@ -61,7 +61,13 @@ let forEachInDirectory = function(directory, recurse, callback) {
     let fileInfo;
     while ((fileInfo = enumerator.next_file(null)) != null) {
         let child = enumerator.get_child(fileInfo);
-        callback(child);
+        if (recurse &&
+            child.query_file_type(Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+                                  null) == Gio.FileType.DIRECTORY) {
+            callback(child);
+            forEachInDirectory(child, recurse, callback);
+        } else
+            callback(child);
     }
     enumerator.close(null);
 };
