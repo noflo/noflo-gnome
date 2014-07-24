@@ -88,9 +88,10 @@ let exec = function(args) {
     try {
         manifest = Utils.parseJSON(
             Utils.loadTextFileContent(
-                Utils.resolvePath('local://manifest.json')));
+                Runtime.resolvePath('local://manifest.json')));
     } catch (e) {
-        log('Cannot load manifest : ' + manifest.name + ' : ' + e.message);
+        log('Cannot load manifest : ' + e.message);
+        throw e;
     }
 
     Runtime.setArguments(options.arguments);
