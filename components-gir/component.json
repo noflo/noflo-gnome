@@ -3,6 +3,10 @@
   "json": [
     "component.json"
   ],
+  "scripts": [
+    "ComponentLoader.coffee",
+    "ConstructorComponent.coffee"
+  ],
   "noflo": {
     "loader": "ComponentLoader.coffee"
   }

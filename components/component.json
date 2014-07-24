@@ -3,6 +3,24 @@
   "json": [
     "component.json"
   ],
+  "scripts": [
+    "Arguments.coffee",
+    "ComponentLoader.coffee",
+    "DbusComponentFactory.coffee",
+    "DbusComponentLoader.coffee",
+    "GioFileMonitor.coffee",
+    "GioFileLoadContent.coffee",
+    "GioFileWrite.coffee",
+    "GioInputStreamFromFd.coffee",
+    "GioOutputStreamFromFd.coffee",
+    "GioStreamClose.coffee",
+    "GioStreamReadAll.coffee",
+    "GLibSpawn.coffee",
+    "ListenProperty.coffee",
+    "ListenSignal.coffee",
+    "Log.coffee",
+    "RunGC.coffee"
+  ],
   "noflo": {
     "loader": "ComponentLoader.coffee",
     "components": {
