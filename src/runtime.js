@@ -3,6 +3,12 @@ const Mainloop = imports.mainloop;
 const Path = imports.path;
 const Utils = imports.utils;
 
+/**/
+
+let _bundled;
+let setBundled = function(value) {
+    _bundled = value;
+};
 
 /**/
 
@@ -10,22 +16,38 @@ let _resourceDir = function() {
     if (_bundled)
         return 'resource:///org/gnome/noflo-gnome/';
     else
-        return Path.RESOURCE_DIR;
+        return 'file://' + Path.RESOURCE_DIR;
 };
 
 let _currentDir = function() {
     if (_bundled)
         return 'resource:///org/gnome/noflo-gnome/application';
     else
-        return Path.CURRENT_DIR;
+        return 'file://' + Path.CURRENT_DIR;
+};
+
+let _cacheDir = function() {
+    if (_bundled)
+        return 'resource:///org/gnome/noflo-gnome/cache';
+    else
+        return 'file://' + Path.CACHE_DIR;
+};
+
+let _internalDir = function() {
+    if (_bundled)
+        return 'resource:///org/gnome/noflo-gnome/runtime';
+    else
+        return 'file://' + Path.RESOURCE_DIR
 };
 
 let resolvePath = function(virtualPath) {
     let ret;
     if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = _resourceDir() + '/' + ret[1];
+        ret = Utils.buildPath(_resourceDir(), ret[1]);
     else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = _currentDir() + '/' + ret[1];
+        ret = Utils.buildPath(_currentDir(), ret[1]);
+    else if ((ret = /^internal:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = Utils.buildPath(_internalDir(), ret[1]);
     else
         ret = virtualPath
     //log('path : ' + virtualPath + ' ->  ' + ret);
@@ -36,9 +58,9 @@ let resolvePath = function(virtualPath) {
 let resolveCachedPath = function(virtualPath) {
     let ret;
     if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = Path.CACHE_DIR + '/library/' + ret[1];
+        ret = _cacheDir() + '/library/' + ret[1];
     else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = Path.CACHE_DIR + '/local/' + ret[1]; // TODO: should be local
+        ret = _cacheDir() + '/local/' + ret[1]; // TODO: should be local
     else
         ret = virtualPath
     //log('cached path : ' + virtualPath + ' ->  ' + ret);

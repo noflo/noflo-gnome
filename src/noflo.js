@@ -13,11 +13,10 @@ let NoFloContext = null;
 /* Require() "emulation" */
 
 let loadFile = function(vpath) {
-    if (GLib.file_test(Runtime.resolvePath(vpath + '.js'),
-                       GLib.FileTest.IS_REGULAR))
+    //log('load file ' + vpath);
+    if (Utils.isPathRegular(Runtime.resolvePath(vpath + '.js')))
         return CodeLoader.loadJavascript(vpath);
-    if (GLib.file_test(Runtime.resolvePath(vpath + '.coffee'),
-                       GLib.FileTest.IS_REGULAR))
+    if (Utils.isPathRegular(Runtime.resolvePath(vpath + '.coffee')))
         return CodeLoader.loadCoffeescript(vpath);
     throw new Error("Can't load " + vpath);
 };
@@ -31,8 +30,8 @@ let require = function(arg) {
         } catch (e) {
         }
 
-        let libPath = Path.RESOURCE_DIR + '/js/libs/' + arg + '.js';
-        if (GLib.file_test(libPath, GLib.FileTest.IS_REGULAR)) {
+        let libPath = 'internal://libs/' + arg + '.js';
+        if (Utils.isPathRegular(libPath)) {
             let lib = imports.libs[arg];
             return lib;
         }

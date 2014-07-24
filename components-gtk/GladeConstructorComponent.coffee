@@ -14,7 +14,11 @@ exports.getComponentForFile = (file, additionals) ->
     error = null
     try
       Gtk.init null, null
-      builder.add_from_file(file.get_path())
+      # TODO: GtkBuilder would be a lot nicer taking an actually GFile
+      if file.is_native()
+        builder.add_from_file file.get_path()
+      else
+        builder.add_from_resource file.get_uri().replace('resource://', '')
       for object in builder.get_objects()
         try
           name = object.get_name()

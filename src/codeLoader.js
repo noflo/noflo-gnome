@@ -4,17 +4,21 @@ const Utils = imports.utils;
 
 const CoffeeScript = imports.libs.coffeescript.CoffeeScript;
 
+//
+let compileCoffeeSource = function(source) {
+    return CoffeeScript.compile(source, { bare: true });
+};
+
 // from: GFile
 // to: GFile
 let compileFile = function(to, from) {
     let [, coffeeSource] = from.load_contents(null);
-    let javascriptSource = CoffeeScript.compile('' + coffeeSource,
-                                                { bare: true });
+    let javascriptSource = compileCoffeeSource('' + coffeeSource);
     let module = eval('(function () { var exports = {};' +
                       javascriptSource + '; return exports; })()');
 
     // Compilation cache
-    //log('writing ' + to.get_path());
+    //log('writing ' + to.get_uri());
     try {
         to.get_parent().make_directory_with_parents(null);
     } catch (e) {
@@ -22,7 +26,8 @@ let compileFile = function(to, from) {
     to.replace_contents(javascriptSource,
                         null,
                         false,
-                        Gio.FileCreateFlags.NONE, null,
+                        Gio.FileCreateFlags.REPLACE_DESTINATION,
+                        null,
                         null);
 
     return module;
@@ -41,7 +46,7 @@ let loadJavascriptFile = function(file) {
 // vpath: string, doesn't include extension
 let loadJavascript = function(vpath) {
     let path = Runtime.resolvePath(vpath);
-    let file = Gio.File.new_for_path(path + '.js');
+    let file = Gio.File.new_for_uri(path + '.js');
     let [, javascriptSource] = file.load_contents(null);
 
     let module = eval('(function () { var exports = {};' +
@@ -54,8 +59,8 @@ let loadJavascript = function(vpath) {
 let loadCoffeescript = function(vpath) {
     let sourcePath = Runtime.resolvePath(vpath);
     let cachedPath = Runtime.resolveCachedPath(vpath);
-    let sourceFile = Gio.File.new_for_path(sourcePath + '.coffee');
-    let cachedFile = Gio.File.new_for_path(cachedPath + '.js');
+    let sourceFile = Gio.File.new_for_uri(sourcePath + '.coffee');
+    let cachedFile = Gio.File.new_for_uri(cachedPath + '.js');
 
     if (cachedFile.query_exists(null)) {
         let sourceFileInfo = sourceFile.query_info('time::modified',

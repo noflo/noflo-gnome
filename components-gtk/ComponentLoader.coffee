@@ -10,7 +10,7 @@ exports = (loader, done) ->
   for ui in manifest.ui
     try
       path = Runtime.resolvePath('local://' + ui.file)
-      file = Gio.File.new_for_path path
+      file = Gio.File.new_for_uri path
       name = file.get_basename().replace(/\.glade$/, '').replace(/[^a-zA-Z\/\-0-9_]/g, '')
       component = GladeConstructorComponent.getComponentForFile file, ui.additionals
       loader.registerComponent 'gtk-builder', name, component

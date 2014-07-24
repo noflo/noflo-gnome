@@ -1,5 +1,6 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
+const CodeLoader = imports.codeLoader;
 const ComponentLoader = imports.componentLoader;
 const Options = imports.options;
 const Path = imports.path;
@@ -7,6 +8,13 @@ const Runtime = imports.runtime;
 const Utils = imports.utils;
 
 const CmdOptions = [
+    {
+        name: 'include-code',
+        shortName: 'c',
+        requireArgument: false,
+        defaultValue: false,
+        help: 'Include debug component code'
+    },
     {
         name: 'help',
         shortName: 'h',
@@ -17,9 +25,14 @@ const CmdOptions = [
 ];
 
 //
-let addRuntimeFile = function(srcPath, dstPath, dest) {
+let outputUri = null;
+let includeCode = false
+let currentDirectory = null
+
+//
+let addRuntimeFile = function(srcPath, dstPath) {
     try {
-        Utils.copyFile(srcPath, dest + '/' + dstPath);
+        Utils.copyFile(srcPath, outputUri + '/' + dstPath);
     } catch (e) {
         log('Cannot add ' + srcPath);
         throw e;
@@ -27,19 +40,26 @@ let addRuntimeFile = function(srcPath, dstPath, dest) {
     return dstPath;
 };
 
-let addFile = function(path, subdir, dest) {
+let addFile = function(path, subdir) {
+    let uri = currentDirectory.get_uri() + '/';
     try {
-        Utils.copyFile(path, dest + '/' + subdir + '/' + path);
+        if (subdir) {
+            Utils.copyFile(uri + path, outputUri + '/' + subdir + '/' + path);
+            return subdir + '/' + path;
+        } else {
+            Utils.copyFile(uri + path, outputUri + '/' + path);
+            return path;
+        }
     } catch (e) {
         log('Cannot add ' + path);
         throw e;
     }
-    return subdir + '/' + path;
+    return null;
 };
 
-let addFileContent = function(path, content, dest) {
+let addFileContent = function(path, content) {
     try {
-        Utils.saveTextFileContent(dest + '/' + path, content);
+        Utils.saveTextFileContent(outputUri + '/' + path, content);
     } catch (e) {
         log('Cannot add ' + path);
         throw e;
@@ -47,39 +67,35 @@ let addFileContent = function(path, content, dest) {
     return path;
 };
 
-let addModule = function(loader, module, dest) {
-    //log('add module ' + module.name);
+let addModule = function(loader, module) {
     let files = [];
     // strip vpath scheme to get relative directory
     let dir = /[\w\d]+:\/\/(.*)/.exec(module.vpath)[1] + '/';
 
-    // Add components
-    for (let componentName in module.noflo.components) {
-        let componentPath = module.noflo.components[componentName];
-        files.push(addFileContent(dir + componentPath,
-                                  loader.getComponentCode(module.normalizedName + '/' + componentName),
-                                  dest));
+    // Add scripts
+    for (let i in module.scripts) {
+        let scriptPath = module.scripts[i];
+        let coffeeTest = /(.*)\.coffee/.exec(scriptPath);
+        let source = Utils.loadTextFileContent(
+            Runtime.resolvePath(module.vpath + '/' + scriptPath));
+        if (coffeeTest) {
+            files.push(addFileContent(dir + scriptPath, ''));
+            files.push(addFileContent('cache/library/' + dir + coffeeTest[1] + '.js',
+                                      CodeLoader.compileCoffeeSource(source)));
+        }
+
+        if (includeCode || !coffeeTest)
+            files.push(addFileContent(dir + scriptPath, source));
     }
 
-    // Add graphs
-    for (let graphName in module.noflo.graphs) {
-        let graphPath = module.noflo.graphs[graphName];
-        files.push(addFileContent(dir + graphPath,
-                                  loader.getComponentCode(module.normalizedName + '/' + graphName),
-                                  dest));
+    // JSON data
+    for (let i in module.json) {
+        let jsonPath = module.json[i];
+        files.push(addFileContent(dir + jsonPath,
+                                  Utils.loadTextFileContent(
+                                      Runtime.resolvePath(
+                                          module.vpath + '/' + jsonPath))));
     }
-
-    // Loader
-    if (module.noflo.loader) {
-        files.push(addFileContent(dir + module.noflo.loader,
-                                  Utils.loadTextFileContent(Runtime.resolvePath(module.vpath + '/' + module.noflo.loader)),
-                                  dest));
-    }
-
-    // index
-    files.push(addFileContent(dir + 'component.json',
-                              Utils.loadTextFileContent(Runtime.resolvePath(module.vpath + '/component.json')),
-                              dest));
 
     return files;
 };
@@ -109,6 +125,8 @@ let exec = function(args) {
         return 0;
     }
 
+    includeCode = options.options.include_code;
+
     // Get library loader
     let loader = new ComponentLoader.ComponentLoader({
         baseDir: '/noflo-runtime-base',
@@ -121,16 +139,19 @@ let exec = function(args) {
     currentDirectory = Gio.File.new_for_path(GLib.getenv('PWD'));
 
     // Load manifest
-    let manifestPath = currentDirectory.get_path() + '/manifest.json';
-    if (!GLib.file_test(manifestPath, GLib.FileTest.EXISTS))
+    let manifestPath = currentDirectory.get_uri() + '/manifest.json';
+    if (!Utils.isPathRegular(manifestPath))
         throw new Error('Cannot find repository manifest');
+
+    // Create temporary directory
+    let files = [];
+    let outputDir = GLib.dir_make_tmp('XXXXXX');
+    outputUri = 'file://' + outputDir;
 
     // Parse manifest
     let manifest = Utils.parseJSON(Utils.loadTextFileContent(manifestPath));
 
-    // Create temporary directory
-    let files = [];
-    let tmpDir = GLib.dir_make_tmp('XXXXXX');
+    files.push(addFile('manifest.json', 'application'));
 
     // Add runtime files
     let runtimeDirectory = Gio.File.new_for_path(Path.RESOURCE_DIR + '/js');
@@ -138,37 +159,41 @@ let exec = function(args) {
         if (child.query_file_type(Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
                                   null) != Gio.FileType.REGULAR)
             return;
-        files.push(addRuntimeFile(child.get_path(),
-                                  'runtime/' + runtimeDirectory.get_relative_path(child),
-                                  tmpDir));
+        files.push(addRuntimeFile(
+            child.get_uri(),
+            'runtime/' + runtimeDirectory.get_relative_path(child)));
     });
 
     // Add application ui files
     for (let i in manifest.ui)
-        files.push(addFile(manifest.ui[i].file,
-                           'application',
-                           tmpDir));
+        files.push(addFile(manifest.ui[i].file, 'application'));
 
     // Add application DBus files
     for (let i in manifest.dbus)
-        files.push(addFile(manifest.dbus[i].file,
-                           'application',
-                           tmpDir));
+        files.push(addFile(manifest.dbus[i].file, 'application'));
 
     // Add application components
     for (let componentName in manifest.noflo.components) {
         let componentPath = manifest.noflo.components[componentName];
-        files.push(addFile(componentPath,
-                           'application',
-                           tmpDir));
+
+        let coffeeTest = /(.*)\.coffee/.exec(componentPath);
+        if (coffeeTest) {
+            files.push(addFileContent('application/' + componentPath,
+                                      ''));
+            files.push(addFileContent('cache/local/' + coffeeTest[1] + '.js',
+                                      CodeLoader.compileCoffeeSource(
+                                          Utils.loadTextFileContent(
+                                              currentDirectory.get_uri() + '/' + componentPath))));
+        }
+
+        if (includeCode || !coffeeTest)
+            files.push(addFile(componentPath, 'application'));
     }
 
     // Add application graphs
     for (let graphName in manifest.noflo.graphs) {
         let graphPath = manifest.noflo.graphs[graphName];
-        files.push(addFile(graphPath,
-                           'application',
-                           tmpDir));
+        files.push(addFile(graphPath, 'application'));
     }
 
     // Add dependency modules
@@ -190,18 +215,18 @@ let exec = function(args) {
             continue;
 
         modules[module.name] = module;
-        files = files.concat(addModule(loader, module, tmpDir));
+        files = files.concat(addModule(loader, module));
     }
 
     // GResource index
-    Utils.saveTextFileContent(tmpDir + '/app.xml',
+    Utils.saveTextFileContent(outputUri + '/app.xml',
                               generateIndex(files));
 
     // Generate resource file
     GLib.spawn_command_line_sync('glib-compile-resources' +
-                                 ' --sourcedir ' + tmpDir +
+                                 ' --sourcedir ' + outputDir +
                                  ' --target app.gresource' +
-                                 ' ' + tmpDir + '/app.xml');
+                                 ' ' + outputDir + '/app.xml');
     log('Bundled ' + files.length + ' files');
 
     // TODO: remove packaging directory
@@ -227,10 +252,11 @@ let exec = function(args) {
     let base64 = GLib.base64_encode(compressed.steal_as_bytes().get_data());
 
     // Insert into bundle
-    let template = Utils.loadTextFileContent(Path.RESOURCE_DIR +
-                                             '/bundle/bundle.sh.in');
+    let template = Utils.loadTextFileContent(
+        Runtime.resolvePath('internal://bundle/bundle.sh.in'));
     template = template.replace('@@APP_DATA@@', base64);
-    Utils.saveTextFileContent(manifest.name, template);
+    Utils.saveTextFileContent(Runtime.resolvePath('local://' + manifest.name),
+                              template);
 
     // Set executable
     let executable = Gio.File.new_for_path(manifest.name);

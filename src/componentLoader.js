@@ -17,16 +17,14 @@ let normalizeName = function(name) {
 let getModuleAtPath = function(vpath, alternativeFile) {
     let path = Runtime.resolvePath(vpath);
 
-    if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
+    if (!Utils.isPathDirectory(path))
         return null;
 
-    let manifestPath = path + (alternativeFile ? alternativeFile : '/component.json');
-    if (!GLib.file_test(manifestPath, GLib.FileTest.IS_REGULAR))
+    let manifestPath = path + (alternativeFile ? ('/' + alternativeFile) : '/component.json');
+    if (!Utils.isPathRegular(manifestPath))
         return null;
 
-    let file = Gio.File.new_for_path(manifestPath);
-    let [, manifestContent] = file.load_contents(null);
-    let manifest;
+    let manifestContent = Utils.loadTextFileContent(manifestPath);
 
     let module;
     try {
@@ -50,10 +48,10 @@ let getModulesInPath = function(vpath) {
     let modules = {};
     let path = Runtime.resolvePath(vpath);
 
-    if (!GLib.file_test(path, GLib.FileTest.IS_DIR))
+    if (!Utils.isPathDirectory(path))
         return modules;
 
-    Utils.forEachInDirectory(Gio.File.new_for_path(path), false, function(child) {
+    Utils.forEachInDirectory(Gio.File.new_for_uri(path), false, function(child) {
         let module = getModuleAtPath(Utils.buildPath(vpath,
                                                      child.get_basename()));
 
@@ -106,7 +104,7 @@ let ComponentLoader = function(options) {
 
     let generateComponentCodeLoader = function(path) {
         return function() {
-            let file = Gio.File.new_for_path(Runtime.resolvePath(path));
+            let file = Gio.File.new_for_uri(Runtime.resolvePath(path));
             try {
                 let [, code] = file.load_contents(null);
                 return '' + code;
@@ -262,7 +260,6 @@ let ComponentLoader = function(options) {
 
         for (let moduleName in self.modules) {
             self._loadModule(self.modules[moduleName]);
-            //log('loading ' + moduleName);
         }
     };
 
@@ -342,7 +339,7 @@ let ComponentLoader = function(options) {
     };
 
     self.registerGraph = function(packageId, name, gPath, callback) {
-        log('----------> registerGraph ' + packageId + ' / ' + name);
+        //log('----------> registerGraph ' + packageId + ' / ' + name);
         throw new Error('registerGraph ' + packageId + ' / ' + name);
     };
 
@@ -411,7 +408,7 @@ let ComponentLoader = function(options) {
     /**/
 
     self.save = function(runtime) {
-        log('Saving graphs!');
+        //log('Saving graphs!');
         for (let i in runtime.graph.graphs) {
             let graph = runtime.graph.graphs[i];
             CodeWriter.writeGraph(graph);
@@ -432,11 +429,11 @@ let ComponentLoader = function(options) {
     };
 
     self.autosave = function(runtime) {
-        log('autosave!');
+        //log('autosave!');
         self._runtime = runtime;
         for (let i in runtime.graph.graphs) {
             let graph = runtime.graph.graphs[i];
-            log('listening on ' + graph.name);
+            //log('listening on ' + graph.name);
             graph.on('endTransaction', Lang.bind(self, self._graphUpdate));
         }
    };

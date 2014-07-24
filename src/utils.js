@@ -83,17 +83,31 @@ let getFileName = function(path) {
 }
 
 let buildPath = function(parent, child) {
-    return parent + '/' + child;
+    if (child && child.length > 0)
+        return parent + '/' + child;
+    return parent;
+};
+
+let isPathRegular = function(path) {
+    let file = Gio.File.new_for_uri(path);
+    return file.query_file_type(
+        Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null) == Gio.FileType.REGULAR;
+};
+
+let isPathDirectory = function(path) {
+    let file = Gio.File.new_for_uri(path);
+    return file.query_file_type(
+        Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null) == Gio.FileType.DIRECTORY;
 };
 
 let loadTextFileContent = function(path) {
-    let file = Gio.File.new_for_path(path);
+    let file = Gio.File.new_for_uri(path);
     let [, content] = file.load_contents(null);
     return '' + content;
 };
 
 let saveTextFileContent = function(path, content) {
-    let file = Gio.File.new_for_path(path);
+    let file = Gio.File.new_for_uri(path);
     let parent = file.get_parent();
 
     if (!parent.query_exists(null))
@@ -108,8 +122,8 @@ let saveTextFileContent = function(path, content) {
 };
 
 let copyFile = function(from, to) {
-    let fromFile = Gio.File.new_for_path(from);
-    let toFile = Gio.File.new_for_path(to);
+    let fromFile = Gio.File.new_for_uri(from);
+    let toFile = Gio.File.new_for_uri(to);
     let parent = toFile.get_parent();
 
     if (!parent.query_exists(null))

@@ -1,15 +1,12 @@
 #!/bin/sh
 
 SCRIPT=$( cat <<EOF
+const data = '@@APP_DATA@@';
+
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 
-log(imports.searchPath);
-
-const data = '@@APP_DATA@@';
-log('yo1');
 let zipped = GLib.base64_decode(data);
-log('yo2');
 let input = new Gio.ConverterInputStream({
     base_stream: Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(zipped)),
     converter: new Gio.ZlibDecompressor({
@@ -20,6 +17,7 @@ let unzipped = input.read_bytes(2000000, null);
 let resource = Gio.Resource.new_from_data(unzipped);
 Gio.resources_register(resource);
 
+imports.runtime.setBundled(true);
 imports.main.start();
 EOF
 )
