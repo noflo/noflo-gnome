@@ -1,8 +1,9 @@
-require 'noflo'
+noflo = require 'noflo'
 Runtime = imports.runtime;
 
 exports.getComponent = () ->
   c = new noflo.Component
+  c.description = 'Get arguments passed to the application'
 
   c.inPorts.add 'in',
     datatype: 'bang'
