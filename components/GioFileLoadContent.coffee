@@ -18,14 +18,20 @@ exports.getComponent = ->
     in: 'uri'
     out: 'content'
     forwardGroups: true
-  , (data, groups, out) ->
+    async: true
+  , (data, groups, out, callback) ->
     return unless out.isAttached()
-    try
-      file = Gio.File.new_for_uri data
-      [status, content, etag] = file.load_contents null
-      out.send
-        data: content
-        length: content.length
-        toString = -> "[C Buffer - length=#{@length}]" # prevent warnings
-    catch e
-      c.error e, groups
+    file = Gio.File.new_for_uri data
+    file.load_contents_async null, (src, res) ->
+      try
+        [status, content, etag] = file.load_contents_finish res
+        out.send
+          data: content
+          length: content.length
+          toString = -> "[C Buffer - length=#{@length}]" # prevent warnings
+        do callback
+      catch e
+        c.error e, groups
+        do callback
+
+  c
