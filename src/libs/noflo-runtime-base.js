@@ -410,8 +410,7 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
 
   // Export the Underscore object for **Node.js**, with
   // backwards-compatibility for the old `require()` API. If we're in
-  // the browser, add `_` as a global object via a string identifier,
-  // for Closure Compiler "advanced" mode.
+  // the browser, add `_` as a global object.
   if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = _;
@@ -588,8 +587,6 @@ require.register("jashkenas-underscore/underscore.js", function(exports, require
     return true;
   };
 
-  // Determine if at least one element in the object matches a truth test.
-  // Aliased as `any`.
   // Determine if at least one element in the object matches a truth test.
   // Aliased as `any`.
   _.some = _.any = function(obj, predicate, context) {
@@ -4922,6 +4919,9 @@ BasePort = (function(_super) {
     connected = false;
     this.sockets.forEach((function(_this) {
       return function(socket) {
+        if (!socket) {
+          return;
+        }
         if (socket.isConnected()) {
           return connected = true;
         }
@@ -7158,7 +7158,9 @@ Network = (function(_super) {
     var key, port, process, socket, _ref;
     process = this.processes[node.id];
     if (!process.component.isReady()) {
-      process.component.setMaxListeners(0);
+      if (process.component.setMaxListeners) {
+        process.component.setMaxListeners(0);
+      }
       process.component.once("ready", (function(_this) {
         return function() {
           return _this.addDefaults(process, callback);
@@ -7191,7 +7193,9 @@ Network = (function(_super) {
       throw new Error("No process defined for inbound node " + initializer.to.node);
     }
     if (!(to.component.isReady() || to.component.inPorts[initializer.to.port])) {
-      to.component.setMaxListeners(0);
+      if (to.component.setMaxListeners) {
+        to.component.setMaxListeners(0);
+      }
       to.component.once("ready", (function(_this) {
         return function() {
           return _this.addInitial(initializer, callback);
@@ -8039,7 +8043,7 @@ exports.MapComponent = function(component, func, config) {
 };
 
 exports.WirePattern = function(component, config, proc) {
-  var baseShutdown, collectGroups, disconnectOuts, inPorts, name, outPorts, port, processQueue, resumeTaskQ, sendDefaultParams, _fn, _fn1, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1;
+  var baseShutdown, closeGroupOnOuts, collectGroups, disconnectOuts, inPorts, name, outPorts, port, processQueue, resumeTaskQ, sendGroupToOuts, _fn, _fn1, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1;
   inPorts = 'in' in config ? config["in"] : 'in';
   if (!(inPorts instanceof Array)) {
     inPorts = [inPorts];
@@ -8055,7 +8059,7 @@ exports.WirePattern = function(component, config, proc) {
     config.async = false;
   }
   if (!('ordered' in config)) {
-    config.ordered = false;
+    config.ordered = true;
   }
   if (!('group' in config)) {
     config.group = false;
@@ -8129,6 +8133,24 @@ exports.WirePattern = function(component, config, proc) {
     }
     return _results;
   };
+  sendGroupToOuts = function(grp) {
+    var p, _k, _len2, _results;
+    _results = [];
+    for (_k = 0, _len2 = outPorts.length; _k < _len2; _k++) {
+      p = outPorts[_k];
+      _results.push(component.outPorts[p].beginGroup(grp));
+    }
+    return _results;
+  };
+  closeGroupOnOuts = function(grp) {
+    var p, _k, _len2, _results;
+    _results = [];
+    for (_k = 0, _len2 = outPorts.length; _k < _len2; _k++) {
+      p = outPorts[_k];
+      _results.push(component.outPorts[p].endGroup(grp));
+    }
+    return _results;
+  };
   component.outputQ = [];
   processQueue = function() {
     var flushed, key, stream, streams, tmp;
@@ -8189,7 +8211,7 @@ exports.WirePattern = function(component, config, proc) {
   component.receivedParams = [];
   component.defaultedParams = [];
   component.defaultsSent = false;
-  sendDefaultParams = function() {
+  component.sendDefaults = function() {
     var param, tempSocket, _k, _len2, _ref;
     if (component.defaultedParams.length > 0) {
       _ref = component.defaultedParams;
@@ -8254,26 +8276,37 @@ exports.WirePattern = function(component, config, proc) {
   }
   component.disconnectData = [];
   component.disconnectQ = [];
+  component.groupBuffers = {};
   _fn1 = function(port) {
-    var inPort;
+    var inPort, needPortGroups;
+    component.groupBuffers[port] = [];
     if (config.receiveStreams && config.receiveStreams.indexOf(port) !== -1) {
       inPort = new StreamReceiver(component.inPorts[port]);
     } else {
       inPort = component.inPorts[port];
     }
-    inPort.groups = [];
+    needPortGroups = collectGroups instanceof Array && collectGroups.indexOf(port) !== -1;
     return inPort.process = function(event, payload) {
-      var data, foundGroup, g, groupLength, groups, grp, i, key, needPortGroups, obj, out, outs, p, postpone, postponedToQ, requiredLength, resume, task, whenDone, _len5, _len6, _len7, _len8, _len9, _n, _o, _p, _q, _r, _ref2, _ref3, _ref4, _s, _t;
+      var data, foundGroup, g, groupLength, groups, grp, i, key, obj, out, outs, postpone, postponedToQ, requiredLength, resume, task, whenDone, whenDoneGroups, _len5, _len6, _len7, _len8, _n, _o, _p, _q, _r, _ref2, _ref3, _ref4, _s;
       switch (event) {
         case 'begingroup':
-          return inPort.groups.push(payload);
+          component.groupBuffers[port].push(payload);
+          if (config.forwardGroups && (collectGroups === true || needPortGroups) && !config.async) {
+            return sendGroupToOuts(payload);
+          }
+          break;
         case 'endgroup':
-          return inPort.groups.pop();
+          component.groupBuffers[port] = component.groupBuffers[port].slice(0, component.groupBuffers[port].length - 1);
+          if (config.forwardGroups && (collectGroups === true || needPortGroups) && !config.async) {
+            return closeGroupOnOuts(payload);
+          }
+          break;
         case 'disconnect':
           if (inPorts.length === 1) {
             if (config.async || config.StreamSender) {
               if (config.ordered) {
-                return component.outputQ.push(null);
+                component.outputQ.push(null);
+                return processQueue();
               } else {
                 return component.disconnectQ.push(true);
               }
@@ -8291,6 +8324,7 @@ exports.WirePattern = function(component, config, proc) {
                   if (config.async || config.StreamSender) {
                     if (config.ordered) {
                       component.outputQ.push(null);
+                      processQueue();
                     } else {
                       component.disconnectQ.push(true);
                     }
@@ -8311,11 +8345,11 @@ exports.WirePattern = function(component, config, proc) {
         case 'data':
           if (inPorts.length === 1) {
             data = payload;
-            groups = inPort.groups;
+            groups = component.groupBuffers[port];
           } else {
             key = '';
-            if (config.group && inPort.groups.length > 0) {
-              key = inPort.groups.toString();
+            if (config.group && component.groupBuffers[port].length > 0) {
+              key = component.groupBuffers[port].toString();
               if (config.group instanceof RegExp) {
                 if (!config.group.test(key)) {
                   key = '';
@@ -8324,7 +8358,6 @@ exports.WirePattern = function(component, config, proc) {
             } else if (config.field && typeof payload === 'object' && config.field in payload) {
               key = payload[config.field];
             }
-            needPortGroups = collectGroups instanceof Array && collectGroups.indexOf(port) !== -1;
             if (!(key in component.groupedData)) {
               component.groupedData[key] = [];
             }
@@ -8341,7 +8374,7 @@ exports.WirePattern = function(component, config, proc) {
                 foundGroup = true;
                 component.groupedData[key][i][port] = payload;
                 if (needPortGroups) {
-                  _ref4 = inPort.groups;
+                  _ref4 = component.groupBuffers[port];
                   for (_p = 0, _len5 = _ref4.length; _p < _len5; _p++) {
                     grp = _ref4[_p];
                     if (component.groupedGroups[key][i].indexOf(grp) === -1) {
@@ -8367,7 +8400,7 @@ exports.WirePattern = function(component, config, proc) {
               obj[port] = payload;
               component.groupedData[key].push(obj);
               if (needPortGroups) {
-                component.groupedGroups[key].push(inPort.groups);
+                component.groupedGroups[key].push(component.groupBuffers[port]);
               } else {
                 component.groupedGroups[key].push([]);
               }
@@ -8375,15 +8408,11 @@ exports.WirePattern = function(component, config, proc) {
             }
           }
           if (collectGroups === true) {
-            groups = inPort.groups;
-          }
-          for (_q = 0, _len6 = inPorts.length; _q < _len6; _q++) {
-            p = inPorts[_q];
-            component.inPorts[p].groups = [];
+            groups = component.groupBuffers[port];
           }
           outs = {};
-          for (_r = 0, _len7 = outPorts.length; _r < _len7; _r++) {
-            name = outPorts[_r];
+          for (_q = 0, _len6 = outPorts.length; _q < _len6; _q++) {
+            name = outPorts[_q];
             if (config.async || config.sendStreams && config.sendStreams.indexOf(name) !== -1) {
               outs[name] = new StreamSender(component.outPorts[name], config.ordered);
             } else {
@@ -8393,10 +8422,11 @@ exports.WirePattern = function(component, config, proc) {
           if (outPorts.length === 1) {
             outs = outs[outPorts[0]];
           }
+          whenDoneGroups = groups.slice(0);
           whenDone = function(err) {
-            var disconnect, g, out, outputs, _len8, _s;
+            var disconnect, out, outputs, _len7, _r;
             if (err) {
-              component.error(err, groups);
+              component.error(err, whenDoneGroups);
             }
             if (typeof component.fail === 'function' && component.hasErrors) {
               component.fail();
@@ -8411,9 +8441,9 @@ exports.WirePattern = function(component, config, proc) {
             }
             for (name in outputs) {
               out = outputs[name];
-              if (config.forwardGroups) {
-                for (_s = 0, _len8 = groups.length; _s < _len8; _s++) {
-                  g = groups[_s];
+              if (config.forwardGroups && config.async) {
+                for (_r = 0, _len7 = whenDoneGroups.length; _r < _len7; _r++) {
+                  i = whenDoneGroups[_r];
                   out.endGroup();
                 }
               }
@@ -8431,22 +8461,17 @@ exports.WirePattern = function(component, config, proc) {
           if (typeof component.beforeProcess === 'function') {
             component.beforeProcess(outs);
           }
-          if (!component.defaultsSent) {
-            sendDefaultParams();
-          }
-          if (outPorts.length === 1) {
-            if (config.forwardGroups) {
-              for (_s = 0, _len8 = groups.length; _s < _len8; _s++) {
-                g = groups[_s];
+          if (config.forwardGroups && config.async) {
+            if (outPorts.length === 1) {
+              for (_r = 0, _len7 = groups.length; _r < _len7; _r++) {
+                g = groups[_r];
                 outs.beginGroup(g);
               }
-            }
-          } else {
-            for (name in outs) {
-              out = outs[name];
-              if (config.forwardGroups) {
-                for (_t = 0, _len9 = groups.length; _t < _len9; _t++) {
-                  g = groups[_t];
+            } else {
+              for (name in outs) {
+                out = outs[name];
+                for (_s = 0, _len8 = groups.length; _s < _len8; _s++) {
+                  g = groups[_s];
                   out.beginGroup(g);
                 }
               }
@@ -8503,7 +8528,8 @@ exports.WirePattern = function(component, config, proc) {
     component.params = {};
     component.completeParams = [];
     component.receivedParams = [];
-    return component.defaultsSent = false;
+    component.defaultsSent = false;
+    return component.groupBuffers = {};
   };
   return component;
 };
@@ -9738,14 +9764,14 @@ NetworkProtocol = (function() {
       }
     }
     switch (topic) {
-      case 'list':
-        return this.listNetworks(payload, context);
       case 'start':
         return this.initNetwork(graph, payload, context);
       case 'stop':
         return this.stopNetwork(graph, payload, context);
       case 'edges':
         return this.updateEdgesFilter(graph, payload, context);
+      case 'list':
+        return this.listNetworks(payload, context);
     }
   };
 
@@ -9794,7 +9820,7 @@ NetworkProtocol = (function() {
 
   NetworkProtocol.prototype.initNetwork = function(graph, payload, context) {
     if (this.networks[payload.graph]) {
-      this.networks[payload.graph].stop();
+      this.networks[payload.graph].network.stop();
       delete this.networks[payload.graph];
     }
     graph.componentLoader = this.transport.component.getLoader(graph.baseDir);
