@@ -17,6 +17,7 @@ let unzipped = input.read_bytes(2000000, null);
 let resource = Gio.Resource.new_from_data(unzipped);
 Gio.resources_register(resource);
 
+imports.runtime.setArguments(ARGV.slice(1));
 imports.runtime.setBundled(true);
 imports.main.start();
 EOF
@@ -26,5 +27,5 @@ EOF
 mkdir -p /tmp/$USER/noflo-gnome
 tmpfile=`mktemp /tmp/$USER/noflo-gnome/XXXXXX`
 echo $SCRIPT > $tmpfile
-gjs -I resource:///org/gnome/noflo-gnome/runtime $tmpfile run
+gjs -I resource:///org/gnome/noflo-gnome/runtime $tmpfile run $@
 rm $tmpfile
