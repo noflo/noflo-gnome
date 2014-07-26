@@ -1,6 +1,7 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Options = imports.options;
+const Runtime = imports.runtime;
 const Utils = imports.utils;
 
 const CmdOptions = [
@@ -55,8 +56,8 @@ let exec = function(args) {
     let appDirectory = Gio.File.new_for_path(GLib.getenv('PWD'));
 
     // Load content
-    let manifestPath = GLib.getenv('PWD') + '/manifest.json';
-    if (!GLib.file_test(manifestPath, GLib.FileTest.EXISTS))
+    let manifestPath = Runtime.resolvePath('local://manifest.json');
+    if (!Utils.isPathRegular(manifestPath))
         throw new Error('Cannot find repository manifest');
 
     // Parse content

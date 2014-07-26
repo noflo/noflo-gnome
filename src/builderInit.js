@@ -1,6 +1,7 @@
 const GLib = imports.gi.GLib;
 const NoFlo = imports.noflo;
 const Options = imports.options;
+const Runtime = imports.runtime;
 const Utils = imports.utils;
 
 const CmdOptions = [
@@ -36,8 +37,8 @@ let exec = function(args) {
         return 0;
     }
 
-    let manifestPath = GLib.getenv('PWD') + '/manifest.json';
-    if (GLib.file_test(manifestPath, GLib.FileTest.EXISTS))
+    let manifestPath = Runtime.resolvePath('local://manifest.json');
+    if (Utils.isPathRegular(manifestPath))
         throw new Error('Cannot initialize repository, already initialized');
 
     let manifest = {
@@ -52,7 +53,7 @@ let exec = function(args) {
             main: 'Main'
         },
     };
-    let mainGraphPath = GLib.getenv('PWD') + '/' + manifest.noflo.graphs.Main;
+    let mainGraphPath = Runtime.resolvePath('local://' + manifest.noflo.graphs.Main);
 
     try {
         let oldManifest = Utils.parseJSON(Utils.loadTextFileContent(manifestPath));
