@@ -23,7 +23,9 @@ exports.getComponent = ->
     try
       file = Gio.File.new_for_uri data
       [status, content, etag] = file.load_contents null
-      content.toString = -> "[C Buffer - length=#{@length}]" # prevent warnings
-      out.send content
+      out.send
+        data: content
+        length: content.length
+        toString = -> "[C Buffer - length=#{@length}]" # prevent warnings
     catch e
       c.error e, groups
