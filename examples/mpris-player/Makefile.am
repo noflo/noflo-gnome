@@ -5,6 +5,7 @@ noinst_DATA = \
 	manifest.json \
 	components/Count.coffee \
 	components/Title.coffee \
+	dbus/org.mpris.MediaPlayer2.Player.xml \
 	ui/basic-ui.glade \
 	ui/slider.ui \
 	graphs/Main.json \
