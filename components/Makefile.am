@@ -11,6 +11,7 @@ components_DATA = \
 	DbusComponentFactory.coffee \
 	\
 	Arguments.coffee \
+	ContentToString.coffee \
 	GioFileLoadContent.coffee \
 	GioFileMonitor.coffee \
 	GioFileWrite.coffee \

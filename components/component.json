@@ -6,6 +6,7 @@
   "scripts": [
     "Arguments.coffee",
     "ComponentLoader.coffee",
+    "ContentToString.coffee",
     "DbusComponentFactory.coffee",
     "DbusComponentLoader.coffee",
     "GioFileMonitor.coffee",
@@ -25,6 +26,7 @@
     "loader": "ComponentLoader.coffee",
     "components": {
       "Arguments": "Arguments.coffee",
+      "ContentToString": "ContentToString.coffee",
       "GioFileMonitor": "GioFileMonitor.coffee",
       "GioFileLoadContent": "GioFileLoadContent.coffee",
       "GioFileWrite": "GioFileWrite.coffee",
