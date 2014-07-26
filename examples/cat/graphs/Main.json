@@ -1,0 +1,193 @@
+{
+ "properties": {
+  "name": "Main",
+  "id": "Main"
+ },
+ "inports": {},
+ "outports": {},
+ "groups": [
+  {
+   "name": "Args To Uri",
+   "nodes": [
+    "Arguments",
+    "EachArgument",
+    "ToUri"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Load And Print",
+   "nodes": [
+    "Error",
+    "Load",
+    "Print",
+    "ToString"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  }
+ ],
+ "processes": {
+  "Load": {
+   "component": "gnome/GioFileLoadContent",
+   "metadata": {
+    "label": "Load",
+    "x": 432,
+    "y": 288
+   }
+  },
+  "Start": {
+   "component": "core/RepeatAsync",
+   "metadata": {
+    "label": "Start",
+    "x": -216,
+    "y": 288
+   }
+  },
+  "Error": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "Error",
+    "x": 576,
+    "y": 432
+   }
+  },
+  "ToString": {
+   "component": "gnome/ContentToString",
+   "metadata": {
+    "label": "ToString",
+    "x": 576,
+    "y": 288
+   }
+  },
+  "Print": {
+   "component": "gnome/Print",
+   "metadata": {
+    "label": "Print",
+    "x": 720,
+    "y": 288
+   }
+  },
+  "Arguments": {
+   "component": "gnome/Arguments",
+   "metadata": {
+    "label": "Arguments",
+    "x": -36,
+    "y": 288
+   }
+  },
+  "EachArgument": {
+   "component": "objects/SplitArray",
+   "metadata": {
+    "label": "EachArgument",
+    "x": 72,
+    "y": 288
+   }
+  },
+  "ToUri": {
+   "component": "gnome/PathToUri",
+   "metadata": {
+    "label": "ToUri",
+    "x": 180,
+    "y": 288
+   }
+  }
+ },
+ "connections": [
+  {
+   "src": {
+    "process": "Load",
+    "port": "error"
+   },
+   "tgt": {
+    "process": "Error",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Load",
+    "port": "content"
+   },
+   "tgt": {
+    "process": "ToString",
+    "port": "in"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "ToString",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Print",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "Start",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Arguments",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Arguments",
+    "port": "arguments"
+   },
+   "tgt": {
+    "process": "EachArgument",
+    "port": "in"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "EachArgument",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "ToUri",
+    "port": "in"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "ToUri",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Load",
+    "port": "uri"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "data": "true",
+   "tgt": {
+    "process": "Start",
+    "port": "in"
+   }
+  }
+ ]
+}

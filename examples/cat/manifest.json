@@ -1,0 +1,12 @@
+{
+  "name": "MyApplication",
+  "version": "0.0.1",
+  "ui": [],
+  "noflo": {
+    "components": {},
+    "graphs": {
+      "Main": "graphs/Main.json"
+    },
+    "main": "Main"
+  }
+}

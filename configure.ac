@@ -40,6 +40,7 @@ AC_CONFIG_FILES([
     components-gir/Makefile
     components-gtk/Makefile
     examples/Makefile
+    examples/cat/Makefile
     examples/mpris-player/Makefile
     src/Makefile
 ])
