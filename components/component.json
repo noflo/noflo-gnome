@@ -20,6 +20,7 @@
     "ListenProperty.coffee",
     "ListenSignal.coffee",
     "Log.coffee",
+    "PathToUri.coffee",
     "Print.coffee",
     "RunGC.coffee"
   ],
@@ -39,6 +40,7 @@
       "ListenProperty": "ListenProperty.coffee",
       "ListenSignal": "ListenSignal.coffee",
       "Log": "Log.coffee",
+      "PathToUri": "PathToUri.coffee",
       "Print": "Print.coffee",
       "RunGC": "RunGC.coffee"
     }
