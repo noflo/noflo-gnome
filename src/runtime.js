@@ -71,19 +71,21 @@ let resolveCachedPath = function(virtualPath) {
 
 /**/
 
-let nextMainFunc = null;
+let nextMainFunc = [];
+let inRuntimeMainloop = true;
 let run = function() {
     Mainloop.run('noflo-gnome');
-    while (nextMainFunc != null) {
-        let mainFunc = nextMainFunc;
-        nextMainFunc = null;
+    inRuntimeMainloop = false;
+    while (nextMainFunc.length > 0) {
+        let mainFunc = nextMainFunc.shift();
         mainFunc();
     }
 };
 
 let replaceMainloop = function(func) {
-    nextMainFunc = func;
-    Mainloop.quit('noflo-gnome');
+    nextMainFunc.push(func);
+    if (inRuntimeMainloop)
+        Mainloop.quit('noflo-gnome');
 };
 
 /**/
