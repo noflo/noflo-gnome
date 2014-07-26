@@ -20,6 +20,7 @@
     "ListenProperty.coffee",
     "ListenSignal.coffee",
     "Log.coffee",
+    "Print.coffee",
     "RunGC.coffee"
   ],
   "noflo": {
@@ -38,6 +39,7 @@
       "ListenProperty": "ListenProperty.coffee",
       "ListenSignal": "ListenSignal.coffee",
       "Log": "Log.coffee",
+      "Print": "Print.coffee",
       "RunGC": "RunGC.coffee"
     }
   }

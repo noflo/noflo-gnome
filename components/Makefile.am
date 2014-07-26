@@ -23,5 +23,6 @@ components_DATA = \
 	ListenProperty.coffee \
 	ListenSignal.coffee \
 	Log.coffee \
+	Print.coffee \
 	RunGC.coffee \
 	$(NULL)
