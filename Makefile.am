@@ -4,7 +4,7 @@ SUBDIRS = \
 	components \
 	components-gir \
 	components-gtk \
-	example \
+	examples \
 	src
 
 # 	components-clutter

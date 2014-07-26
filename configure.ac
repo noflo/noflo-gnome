@@ -39,7 +39,8 @@ AC_CONFIG_FILES([
     components-clutter/Makefile
     components-gir/Makefile
     components-gtk/Makefile
-    example/Makefile
+    examples/Makefile
+    examples/mpris-player/Makefile
     src/Makefile
 ])
 AC_OUTPUT

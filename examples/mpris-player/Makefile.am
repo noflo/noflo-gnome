@@ -3,6 +3,7 @@ CLEANFILES =
 
 noinst_DATA = \
 	manifest.json \
+	components/Count.coffee \
 	components/Title.coffee \
 	ui/basic-ui.glade \
 	ui/slider.ui \
