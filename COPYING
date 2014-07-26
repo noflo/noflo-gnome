@@ -21,11 +21,13 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-The following files contain code from the NoFlo project, generated
-from https://github.com/djdeath/noflo-runtime-base :
+The following files contain code from the NoFlo project
+(http://noflojs.org), generated from
+https://github.com/djdeath/noflo-runtime-base :
 
 src/libs/noflo-runtime-base.js
 
-The following files contain code from the CoffeeScript project :
+The following files contain code from the CoffeeScript project
+(http://coffeescript.org/) :
 
 src/libs/coffeescript.js
