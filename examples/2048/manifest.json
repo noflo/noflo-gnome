@@ -1,0 +1,27 @@
+{
+  "name": "2048",
+  "version": "0.0.1",
+  "libraries": [
+    "GtkClutter"
+  ],
+  "ui": [
+    {
+      "file": "ui/2048.ui",
+      "additionals": []
+    }
+  ],
+  "noflo": {
+    "components": {
+      "EmptyMap": "components/EmptyMap.coffee",
+      "AddTile": "components/AddTile.coffee",
+      "PrintMap": "components/PrintMap.coffee",
+      "SquashTiles": "components/SquashTiles.coffee",
+      "DisplayMap": "components/DisplayMap.coffee",
+      "ApplyAnimations": "components/ApplyAnimations.coffee"
+    },
+    "graphs": {
+      "Main": "graphs/Main.json"
+    },
+    "main": "Main"
+  }
+}
