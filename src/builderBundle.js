@@ -218,6 +218,11 @@ let exec = function(args) {
         files = files.concat(addModule(loader, module));
     }
 
+    // Special case for introspected components
+    if (manifest.libraries)
+        files = files.concat(addModule(loader,
+                                       loader.getModule('noflo-gir')));
+
     // GResource index
     Utils.saveTextFileContent(outputUri + '/app.xml',
                               generateIndex(files));

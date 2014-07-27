@@ -406,6 +406,13 @@ let ComponentLoader = function(options) {
         return null;
     };
 
+    self.getModule = function(name) {
+        let item = self.modules[name];
+        if (item)
+            return item;
+        return null;
+    };
+
     /**/
 
     self.save = function(runtime) {
