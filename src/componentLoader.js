@@ -33,6 +33,7 @@ let getModuleAtPath = function(vpath, alternativeFile) {
         module.path = path;
         module.normalizedName = normalizeName(module.name);
     } catch (e) {
+        log('Cannot load manifest : ' + vpath);
         return null;
     }
 
