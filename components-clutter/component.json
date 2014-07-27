@@ -4,6 +4,7 @@
     "component.json"
   ],
   "scripts": [
+    "ClutterEventConsume.coffee",
     "ListenEvent.coffee",
     "SwipeDetect.coffee"
   ],
