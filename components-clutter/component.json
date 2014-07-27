@@ -3,6 +3,10 @@
   "json": [
     "component.json"
   ],
+  "scripts": [
+    "ListenEvent.coffee",
+    "SwipeDetect.coffee"
+  ],
   "noflo": {
     "components": {
       "Actor": "Actor.coffee",
@@ -30,7 +34,9 @@
       "CoglSnippet": "CoglSnippet.coffee",
       "CoglTexture": "CoglTexture.coffee",
       "Init": "Init.coffee",
-      "Main": "Main.coffee"
+      "ListenEvent": "ListenEvent.coffee",
+      "Main": "Main.coffee",
+      "SwipeDetect": "SwipeDetect.coffee"
     }
   }
 }

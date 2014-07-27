@@ -32,5 +32,7 @@ components_DATA = \
 	CoglSnippetTemplateCompile.coffee \
 	CoglTexture.coffee \
 	Init.coffee \
+	ListenEvent.coffee \
 	Main.coffee \
+	SwipeDetect.coffee \
 	$(NULL)
