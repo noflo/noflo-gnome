@@ -67,8 +67,10 @@ let execCommand = function(cmd, args) {
 /**/
 
 let start = function() {
-    if (ARGV[0])
-        return execCommand(ARGV[0], ARGV.slice(1));
+    if (ARGV[0] == '--' && ARGV[1])
+        return execCommand(ARGV[1], ARGV.slice(1));
+    else if (ARGV[0])
+        return execCommand(ARGV[0], ARGV);
 
     printProgram('');
     printHelp();
