@@ -26,8 +26,8 @@ exports.getComponent = () ->
     params: ['map']
     out: 'map'
     forwardGroups: true
-  , (data, groups, out) ->
-    c.squash data, c.params.map
+  , (direction, groups, out) ->
+    c.squash direction, c.params.map
     out.send c.params.map
     if @squashCount > 0
       @outPorts.modified.send true

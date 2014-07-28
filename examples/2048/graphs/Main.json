@@ -32,9 +32,19 @@
    }
   },
   {
-   "name": "UserSwipe",
+   "name": "Quit",
    "nodes": [
-    "ConsumeEvent",
+    "Quit",
+    "QuitClicked"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Swipe",
+   "nodes": [
+    "ConsumeMoveEvent",
     "Events",
     "SwipeDetect"
    ],
@@ -43,22 +53,38 @@
    }
   },
   {
-   "name": "Squash",
+   "name": "Key",
    "nodes": [
-    "AddTile",
-    "AnimateTiles",
-    "SquashTiles",
-    "core/Kick_i8uh5"
+    "ConsumeKeyEvent_hoab6",
+    "KeyPress",
+    "ListenKeyEvent",
+    "LowerCase"
    ],
    "metadata": {
     "description": ""
    }
   },
   {
-   "name": "Quit",
+   "name": "Init",
    "nodes": [
-    "Quit",
-    "QuitClicked"
+    "GrabFocus",
+    "Init",
+    "Main",
+    "PackEmbedded",
+    "UI",
+    "ShowAll"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "AnimateTiles",
+   "nodes": [
+    "AddTile",
+    "AnimateTiles",
+    "SquashTiles",
+    "core/Kick_i8uh5"
    ],
    "metadata": {
     "description": ""
@@ -82,10 +108,10 @@
     "y": 288
    }
   },
-  "gtk/Show_ohscu": {
+  "ShowAll": {
    "component": "gtk/Show",
    "metadata": {
-    "label": "gtk/Show",
+    "label": "ShowAll",
     "x": 324,
     "y": 288
    }
@@ -98,10 +124,10 @@
     "y": 180
    }
   },
-  "CreateStage": {
+  "CreateEmbeddedStage": {
    "component": "gtkclutter/CreateEmbed",
    "metadata": {
-    "label": "CreateStage",
+    "label": "CreateEmbeddedStage",
     "x": 324,
     "y": 144
    }
@@ -127,7 +153,7 @@
    "metadata": {
     "label": "NewClicked",
     "x": 432,
-    "y": 504
+    "y": 540
    }
   },
   "NewMap": {
@@ -135,7 +161,7 @@
    "metadata": {
     "label": "NewMap",
     "x": 576,
-    "y": 504
+    "y": 540
    }
   },
   "AddTile1": {
@@ -143,7 +169,7 @@
    "metadata": {
     "label": "AddTile1",
     "x": 864,
-    "y": 504
+    "y": 540
    }
   },
   "AddTile2": {
@@ -151,31 +177,23 @@
    "metadata": {
     "label": "AddTile2",
     "x": 972,
-    "y": 504
+    "y": 540
    }
   },
   "SwipeDetect": {
    "component": "clutter/SwipeDetect",
    "metadata": {
     "label": "SwipeDetect",
-    "x": 1080,
+    "x": 1044,
     "y": 144
-   }
-  },
-  "gnome/Log_zytb1": {
-   "component": "gnome/Log",
-   "metadata": {
-    "label": "gnome/Log",
-    "x": 1332,
-    "y": 0
    }
   },
   "Stage": {
    "component": "gtk/GetStage",
    "metadata": {
     "label": "Stage",
-    "x": 612,
-    "y": -396
+    "x": 648,
+    "y": -324
    }
   },
   "reactive": {
@@ -183,15 +201,15 @@
    "metadata": {
     "label": "reactive",
     "x": 1080,
-    "y": -432
+    "y": -324
    }
   },
   "core/Kick_viopv": {
    "component": "core/Kick",
    "metadata": {
     "label": "core/Kick",
-    "x": 756,
-    "y": -504
+    "x": 792,
+    "y": -432
    }
   },
   "strings/ParseJson_g3xf8": {
@@ -199,31 +217,31 @@
    "metadata": {
     "label": "strings/ParseJson",
     "x": 900,
-    "y": -504
+    "y": -432
    }
   },
   "Events": {
    "component": "clutter/ListenEvent",
    "metadata": {
     "label": "Events",
-    "x": 792,
-    "y": 108
+    "x": 900,
+    "y": 144
    }
   },
   "SquashTiles": {
    "component": "2048/SquashTiles",
    "metadata": {
     "label": "SquashTiles",
-    "x": 1548,
-    "y": 252
+    "x": 1728,
+    "y": 396
    }
   },
   "AddTile": {
    "component": "2048/AddTile",
    "metadata": {
     "label": "AddTile",
-    "x": 1836,
-    "y": 252
+    "x": 2016,
+    "y": 396
    }
   },
   "DisplayMap": {
@@ -231,23 +249,23 @@
    "metadata": {
     "label": "DisplayMap",
     "x": 756,
-    "y": 504
+    "y": 540
    }
   },
   "AnimateTiles": {
    "component": "2048/ApplyAnimations",
    "metadata": {
     "label": "AnimateTiles",
-    "x": 2016,
-    "y": 288
+    "x": 2160,
+    "y": 468
    }
   },
-  "ConsumeEvent": {
+  "ConsumeMoveEvent": {
    "component": "clutter/ClutterEventConsume",
    "metadata": {
-    "label": "ConsumeEvent",
-    "x": 1368,
-    "y": 144
+    "label": "ConsumeMoveEvent",
+    "x": 1188,
+    "y": 216
    }
   },
   "QuitClicked": {
@@ -255,7 +273,7 @@
    "metadata": {
     "label": "QuitClicked",
     "x": 432,
-    "y": 684
+    "y": 720
    }
   },
   "Quit": {
@@ -263,71 +281,63 @@
    "metadata": {
     "label": "Quit",
     "x": 576,
-    "y": 684
+    "y": 720
    }
   },
   "core/Kick_i8uh5": {
    "component": "core/Kick",
    "metadata": {
     "label": "core/Kick",
-    "x": 1692,
-    "y": 252
-   }
-  },
-  "clutter/KeyPressDetect_l9d7x": {
-   "component": "clutter/KeyPressDetect",
-   "metadata": {
-    "label": "clutter/KeyPressDetect",
-    "x": 936,
-    "y": 108
+    "x": 1872,
+    "y": 396
    }
   },
   "GrabFocus": {
    "component": "gtk/GrabFocus",
    "metadata": {
     "label": "GrabFocus",
-    "x": 432,
-    "y": 0
-   }
-  },
-  "ConsumeKeyEvent": {
-   "component": "clutter/ClutterEventConsume",
-   "metadata": {
-    "label": "ConsumeKeyEvent",
-    "x": 1116,
-    "y": 36
+    "x": 504,
+    "y": 72
    }
   },
   "ListenKeyEvent": {
    "component": "gtk/ListenEvent",
    "metadata": {
     "label": "ListenKeyEvent",
-    "x": 792,
-    "y": -180
+    "x": 900,
+    "y": -108
    }
   },
   "KeyPress": {
    "component": "gtk/KeyPressDetect",
    "metadata": {
     "label": "KeyPress",
-    "x": 936,
-    "y": -180
+    "x": 1044,
+    "y": -108
    }
   },
   "ConsumeKeyEvent_hoab6": {
    "component": "gtk/ConsumeEvent",
    "metadata": {
     "label": "ConsumeKeyEvent",
-    "x": 1260,
-    "y": -252
+    "x": 1188,
+    "y": -144
    }
   },
   "LowerCase": {
    "component": "strings/LowerCaseString",
    "metadata": {
     "label": "LowerCase",
-    "x": 1080,
-    "y": -144
+    "x": 1188,
+    "y": -36
+   }
+  },
+  "Gate": {
+   "component": "flow/Gate",
+   "metadata": {
+    "label": "Gate",
+    "x": 1512,
+    "y": 324
    }
   }
  },
@@ -338,7 +348,7 @@
     "port": "mainwindow"
    },
    "tgt": {
-    "process": "gtk/Show_ohscu",
+    "process": "ShowAll",
     "port": "in"
    },
    "metadata": {
@@ -384,7 +394,7 @@
     "port": "mainbox"
    },
    "tgt": {
-    "process": "CreateStage",
+    "process": "CreateEmbeddedStage",
     "port": "create"
    },
    "metadata": {
@@ -393,12 +403,15 @@
   },
   {
    "src": {
-    "process": "CreateStage",
+    "process": "CreateEmbeddedStage",
     "port": "instance"
    },
    "tgt": {
     "process": "PackEmbedded",
     "port": "child"
+   },
+   "metadata": {
+    "route": 7
    }
   },
   {
@@ -448,16 +461,6 @@
    },
    "metadata": {
     "route": 2
-   }
-  },
-  {
-   "src": {
-    "process": "SwipeDetect",
-    "port": "direction"
-   },
-   "tgt": {
-    "process": "gnome/Log_zytb1",
-    "port": "in"
    }
   },
   {
@@ -534,19 +537,6 @@
   },
   {
    "src": {
-    "process": "SwipeDetect",
-    "port": "direction"
-   },
-   "tgt": {
-    "process": "SquashTiles",
-    "port": "direction"
-   },
-   "metadata": {
-    "route": 0
-   }
-  },
-  {
-   "src": {
     "process": "AddTile",
     "port": "map"
    },
@@ -629,7 +619,7 @@
     "port": "processedevent"
    },
    "tgt": {
-    "process": "ConsumeEvent",
+    "process": "ConsumeMoveEvent",
     "port": "event"
    }
   },
@@ -691,30 +681,7 @@
   },
   {
    "src": {
-    "process": "Events",
-    "port": "event"
-   },
-   "tgt": {
-    "process": "clutter/KeyPressDetect_l9d7x",
-    "port": "event"
-   },
-   "metadata": {
-    "route": null
-   }
-  },
-  {
-   "src": {
-    "process": "clutter/KeyPressDetect_l9d7x",
-    "port": "discardedevent"
-   },
-   "tgt": {
-    "process": "SwipeDetect",
-    "port": "event"
-   }
-  },
-  {
-   "src": {
-    "process": "CreateStage",
+    "process": "CreateEmbeddedStage",
     "port": "instance"
    },
    "tgt": {
@@ -722,7 +689,7 @@
     "port": "in"
    },
    "metadata": {
-    "route": 0
+    "route": 7
    }
   },
   {
@@ -733,16 +700,9 @@
    "tgt": {
     "process": "Stage",
     "port": "embedded"
-   }
-  },
-  {
-   "src": {
-    "process": "clutter/KeyPressDetect_l9d7x",
-    "port": "processedevent"
    },
-   "tgt": {
-    "process": "ConsumeKeyEvent",
-    "port": "event"
+   "metadata": {
+    "route": 7
    }
   },
   {
@@ -755,7 +715,7 @@
     "port": "widget"
    },
    "metadata": {
-    "route": 0
+    "route": 7
    }
   },
   {
@@ -790,7 +750,46 @@
   },
   {
    "src": {
+    "process": "NewClicked",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "Gate",
+    "port": "open"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "SwipeDetect",
+    "port": "direction"
+   },
+   "tgt": {
+    "process": "Gate",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
     "process": "LowerCase",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Gate",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "Gate",
     "port": "out"
    },
    "tgt": {
@@ -798,13 +797,26 @@
     "port": "direction"
    },
    "metadata": {
-    "route": 0
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "Events",
+    "port": "event"
+   },
+   "tgt": {
+    "process": "SwipeDetect",
+    "port": "event"
+   },
+   "metadata": {
+    "route": null
    }
   },
   {
    "data": true,
    "tgt": {
-    "process": "gtk/Show_ohscu",
+    "process": "ShowAll",
     "port": "all"
    }
   },
