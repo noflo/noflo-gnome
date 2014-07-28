@@ -5,13 +5,21 @@ exports.getComponent = () ->
 
   c.inPorts.add 'map',
     datatype: 'array'
+    required: yes
   c.inPorts.add 'direction',
     datatype: 'string'
+    required: yes
 
   c.outPorts.add 'map',
     datatype: 'array'
-
-  c.squashCounter = 0
+    process: (event, payload) ->
+      return unless event is 'data'
+      c.squashCounter = 0
+      return
+  c.outPorts.add 'modified',
+    datatype: 'bang'
+  c.outPorts.add 'unmodified',
+    datatype: 'bang'
 
   noflo.helpers.WirePattern c,
     in: 'direction'
@@ -21,6 +29,12 @@ exports.getComponent = () ->
   , (data, groups, out) ->
     c.squash data, c.params.map
     out.send c.params.map
+    if @squashCount > 0
+      @outPorts.modified.send true
+      @outPorts.modified.disconnect()
+    else
+      @outPorts.unmodified.send true
+      @outPorts.unmodified.disconnect()
 
   c.generateMove = (map, sx, sy, dx, dy) ->
     map[dx][dy].value = map[sx][sy].value
@@ -31,6 +45,7 @@ exports.getComponent = () ->
     tmpActor = map[dx][dy].text
     map[dx][dy].text = map[sx][sy].text
     map[sx][sy].text = tmpActor
+    @squashCount += 1
 
   c.generateSquash = (map, sx, sy, dx, dy) ->
     map[dx][dy].value += map[sx][sy].value
@@ -42,8 +57,10 @@ exports.getComponent = () ->
     tmpActor = map[dx][dy].text
     map[dx][dy].text = map[sx][sy].text
     map[sx][sy].text = tmpActor
+    @squashCount += 1
 
   c.squash = (direction, map) ->
+    @squashCount = 0
     @squashCounter += 1
     switch direction
       when 'left'

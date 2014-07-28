@@ -29,17 +29,16 @@ exports.getComponent = () ->
           lastSquash: 0
           actor: new Clutter.Actor
             opacity: 255
+            layout_manager: new Clutter.BinLayout
+              x_align: Clutter.BinAlignment.CENTER
+              y_align: Clutter.BinAlignment.CENTER
           text: new Clutter.Text
             text: "0"
             opacity: 255
             justify: true
         el.actor.add_child el.text
-        el.actor.layout_manager = new Clutter.BinLayout
-          x_align: 0.5
-          y_align: 0.5
         map[i].push el
 
-
-
-
     out.send map
+
+  c

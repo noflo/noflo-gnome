@@ -20,17 +20,6 @@
    }
   },
   {
-   "name": "Swipe",
-   "nodes": [
-    "2048/AddTile_plw2n",
-    "2048/ApplyAnimations_5bw28",
-    "SquashTiles"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
    "name": "CreateStage",
    "nodes": [
     "Stage",
@@ -54,14 +43,22 @@
    }
   },
   {
-   "name": "Init",
+   "name": "Squash",
    "nodes": [
-    "CreateStage",
-    "Init",
-    "Main",
-    "PackEmbedded",
-    "UI",
-    "gtk/Show_ohscu"
+    "AddTile",
+    "AnimateTiles",
+    "SquashTiles",
+    "core/Kick_i8uh5"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Quit",
+   "nodes": [
+    "Quit",
+    "QuitClicked"
    ],
    "metadata": {
     "description": ""
@@ -161,72 +158,72 @@
    "component": "clutter/SwipeDetect",
    "metadata": {
     "label": "SwipeDetect",
-    "x": 864,
-    "y": 180
+    "x": 1080,
+    "y": 144
    }
   },
   "gnome/Log_zytb1": {
    "component": "gnome/Log",
    "metadata": {
     "label": "gnome/Log",
-    "x": 1260,
-    "y": 36
+    "x": 1332,
+    "y": 0
    }
   },
   "Stage": {
    "component": "gtk/GetStage",
    "metadata": {
     "label": "Stage",
-    "x": 540,
-    "y": 0
+    "x": 612,
+    "y": -396
    }
   },
   "reactive": {
    "component": "objects/SetPropertyValue",
    "metadata": {
     "label": "reactive",
-    "x": 1008,
-    "y": -36
+    "x": 1080,
+    "y": -432
    }
   },
   "core/Kick_viopv": {
    "component": "core/Kick",
    "metadata": {
     "label": "core/Kick",
-    "x": 684,
-    "y": -108
+    "x": 756,
+    "y": -504
    }
   },
   "strings/ParseJson_g3xf8": {
    "component": "strings/ParseJson",
    "metadata": {
     "label": "strings/ParseJson",
-    "x": 828,
-    "y": -108
+    "x": 900,
+    "y": -504
    }
   },
   "Events": {
    "component": "clutter/ListenEvent",
    "metadata": {
     "label": "Events",
-    "x": 720,
-    "y": 180
+    "x": 792,
+    "y": 108
    }
   },
   "SquashTiles": {
    "component": "2048/SquashTiles",
    "metadata": {
     "label": "SquashTiles",
-    "x": 1224,
-    "y": 216
+    "x": 1548,
+    "y": 252
    }
   },
-  "2048/AddTile_plw2n": {
+  "AddTile": {
    "component": "2048/AddTile",
    "metadata": {
-    "label": "2048/AddTile",
-    "x": 1404,
-    "y": 216
+    "label": "AddTile",
+    "x": 1836,
+    "y": 252
    }
   },
   "DisplayMap": {
@@ -237,27 +234,27 @@
     "y": 504
    }
   },
-  "2048/ApplyAnimations_5bw28": {
+  "AnimateTiles": {
    "component": "2048/ApplyAnimations",
    "metadata": {
-    "label": "2048/ApplyAnimations",
-    "x": 1656,
-    "y": 216
+    "label": "AnimateTiles",
+    "x": 2016,
+    "y": 288
    }
   },
   "ConsumeEvent": {
    "component": "clutter/ClutterEventConsume",
    "metadata": {
     "label": "ConsumeEvent",
-    "x": 1008,
-    "y": 252
+    "x": 1368,
+    "y": 144
    }
   },
   "QuitClicked": {
    "component": "gnome/ListenSignal",
    "metadata": {
     "label": "QuitClicked",
-    "x": 324,
+    "x": 432,
     "y": 684
    }
   },
@@ -265,8 +262,72 @@
    "component": "gtk/Quit",
    "metadata": {
     "label": "Quit",
-    "x": 468,
+    "x": 576,
     "y": 684
+   }
+  },
+  "core/Kick_i8uh5": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "core/Kick",
+    "x": 1692,
+    "y": 252
+   }
+  },
+  "clutter/KeyPressDetect_l9d7x": {
+   "component": "clutter/KeyPressDetect",
+   "metadata": {
+    "label": "clutter/KeyPressDetect",
+    "x": 936,
+    "y": 108
+   }
+  },
+  "GrabFocus": {
+   "component": "gtk/GrabFocus",
+   "metadata": {
+    "label": "GrabFocus",
+    "x": 432,
+    "y": 0
+   }
+  },
+  "ConsumeKeyEvent": {
+   "component": "clutter/ClutterEventConsume",
+   "metadata": {
+    "label": "ConsumeKeyEvent",
+    "x": 1116,
+    "y": 36
+   }
+  },
+  "ListenKeyEvent": {
+   "component": "gtk/ListenEvent",
+   "metadata": {
+    "label": "ListenKeyEvent",
+    "x": 792,
+    "y": -180
+   }
+  },
+  "KeyPress": {
+   "component": "gtk/KeyPressDetect",
+   "metadata": {
+    "label": "KeyPress",
+    "x": 936,
+    "y": -180
+   }
+  },
+  "ConsumeKeyEvent_hoab6": {
+   "component": "gtk/ConsumeEvent",
+   "metadata": {
+    "label": "ConsumeKeyEvent",
+    "x": 1260,
+    "y": -252
+   }
+  },
+  "LowerCase": {
+   "component": "strings/LowerCaseString",
+   "metadata": {
+    "label": "LowerCase",
+    "x": 1080,
+    "y": -144
    }
   }
  },
@@ -401,19 +462,6 @@
   },
   {
    "src": {
-    "process": "CreateStage",
-    "port": "instance"
-   },
-   "tgt": {
-    "process": "Stage",
-    "port": "embedded"
-   },
-   "metadata": {
-    "route": 3
-   }
-  },
-  {
-   "src": {
     "process": "Stage",
     "port": "stage"
    },
@@ -473,16 +521,6 @@
   },
   {
    "src": {
-    "process": "Events",
-    "port": "event"
-   },
-   "tgt": {
-    "process": "SwipeDetect",
-    "port": "event"
-   }
-  },
-  {
-   "src": {
     "process": "AddTile2",
     "port": "map"
    },
@@ -509,7 +547,7 @@
   },
   {
    "src": {
-    "process": "2048/AddTile_plw2n",
+    "process": "AddTile",
     "port": "map"
    },
    "tgt": {
@@ -565,7 +603,7 @@
     "port": "map"
    },
    "tgt": {
-    "process": "2048/ApplyAnimations_5bw28",
+    "process": "AnimateTiles",
     "port": "map"
    },
    "metadata": {
@@ -574,24 +612,11 @@
   },
   {
    "src": {
-    "process": "SquashTiles",
+    "process": "AddTile",
     "port": "map"
    },
    "tgt": {
-    "process": "2048/AddTile_plw2n",
-    "port": "map"
-   },
-   "metadata": {
-    "route": 2
-   }
-  },
-  {
-   "src": {
-    "process": "2048/AddTile_plw2n",
-    "port": "map"
-   },
-   "tgt": {
-    "process": "2048/ApplyAnimations_5bw28",
+    "process": "AnimateTiles",
     "port": "map"
    },
    "metadata": {
@@ -616,6 +641,9 @@
    "tgt": {
     "process": "QuitClicked",
     "port": "object"
+   },
+   "metadata": {
+    "route": 7
    }
   },
   {
@@ -626,6 +654,151 @@
    "tgt": {
     "process": "Quit",
     "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "SquashTiles",
+    "port": "map"
+   },
+   "tgt": {
+    "process": "core/Kick_i8uh5",
+    "port": "data"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "SquashTiles",
+    "port": "modified"
+   },
+   "tgt": {
+    "process": "core/Kick_i8uh5",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "core/Kick_i8uh5",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "AddTile",
+    "port": "map"
+   }
+  },
+  {
+   "src": {
+    "process": "Events",
+    "port": "event"
+   },
+   "tgt": {
+    "process": "clutter/KeyPressDetect_l9d7x",
+    "port": "event"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "clutter/KeyPressDetect_l9d7x",
+    "port": "discardedevent"
+   },
+   "tgt": {
+    "process": "SwipeDetect",
+    "port": "event"
+   }
+  },
+  {
+   "src": {
+    "process": "CreateStage",
+    "port": "instance"
+   },
+   "tgt": {
+    "process": "GrabFocus",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "GrabFocus",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Stage",
+    "port": "embedded"
+   }
+  },
+  {
+   "src": {
+    "process": "clutter/KeyPressDetect_l9d7x",
+    "port": "processedevent"
+   },
+   "tgt": {
+    "process": "ConsumeKeyEvent",
+    "port": "event"
+   }
+  },
+  {
+   "src": {
+    "process": "GrabFocus",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "ListenKeyEvent",
+    "port": "widget"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "ListenKeyEvent",
+    "port": "event"
+   },
+   "tgt": {
+    "process": "KeyPress",
+    "port": "event"
+   }
+  },
+  {
+   "src": {
+    "process": "KeyPress",
+    "port": "processedevent"
+   },
+   "tgt": {
+    "process": "ConsumeKeyEvent_hoab6",
+    "port": "event"
+   }
+  },
+  {
+   "src": {
+    "process": "KeyPress",
+    "port": "keyval"
+   },
+   "tgt": {
+    "process": "LowerCase",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "LowerCase",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SquashTiles",
+    "port": "direction"
+   },
+   "metadata": {
+    "route": 0
    }
   },
   {
