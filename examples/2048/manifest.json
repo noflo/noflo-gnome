@@ -17,7 +17,8 @@
       "PrintMap": "components/PrintMap.coffee",
       "SquashTiles": "components/SquashTiles.coffee",
       "DisplayMap": "components/DisplayMap.coffee",
-      "ApplyAnimations": "components/ApplyAnimations.coffee"
+      "ApplyAnimations": "components/ApplyAnimations.coffee",
+      "DestroyMap": "components/DestroyMap.coffee"
     },
     "graphs": {
       "Main": "graphs/Main.json"

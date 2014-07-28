@@ -273,7 +273,7 @@
    "metadata": {
     "label": "QuitClicked",
     "x": 432,
-    "y": 720
+    "y": 972
    }
   },
   "Quit": {
@@ -281,7 +281,7 @@
    "metadata": {
     "label": "Quit",
     "x": 576,
-    "y": 720
+    "y": 972
    }
   },
   "core/Kick_i8uh5": {
@@ -338,6 +338,30 @@
     "label": "Gate",
     "x": 1512,
     "y": 324
+   }
+  },
+  "DestroyOldMap": {
+   "component": "2048/DestroyMap",
+   "metadata": {
+    "label": "DestroyOldMap",
+    "x": 972,
+    "y": 720
+   }
+  },
+  "core/Kick_xoynk": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "core/Kick",
+    "x": 864,
+    "y": 720
+   }
+  },
+  "500Delay": {
+   "component": "core/RepeatDelayed",
+   "metadata": {
+    "label": "500Delay",
+    "x": 720,
+    "y": 720
    }
   }
  },
@@ -814,6 +838,52 @@
    }
   },
   {
+   "src": {
+    "process": "core/Kick_xoynk",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "DestroyOldMap",
+    "port": "map"
+   }
+  },
+  {
+   "src": {
+    "process": "500Delay",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "core/Kick_xoynk",
+    "port": "data"
+   }
+  },
+  {
+   "src": {
+    "process": "NewMap",
+    "port": "map"
+   },
+   "tgt": {
+    "process": "500Delay",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "NewClicked",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "core/Kick_xoynk",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
    "data": true,
    "tgt": {
     "process": "ShowAll",
@@ -881,6 +951,13 @@
    "tgt": {
     "process": "QuitClicked",
     "port": "signal"
+   }
+  },
+  {
+   "data": 500,
+   "tgt": {
+    "process": "500Delay",
+    "port": "delay"
    }
   }
  ]

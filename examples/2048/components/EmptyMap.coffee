@@ -8,8 +8,10 @@ exports.getComponent = () ->
     datatype: 'bang'
   c.inPorts.add 'width',
     datatype: 'int'
+    required: yes
   c.inPorts.add 'height',
     datatype: 'int'
+    required: yes
 
   c.outPorts.add 'map',
     datatype: 'array'
