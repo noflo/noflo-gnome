@@ -5,6 +5,7 @@
   ],
   "scripts": [
     "ClutterEventConsume.coffee",
+    "KeyPressDetect.coffee",
     "ListenEvent.coffee",
     "SwipeDetect.coffee"
   ],
@@ -35,6 +36,7 @@
       "CoglSnippet": "CoglSnippet.coffee",
       "CoglTexture": "CoglTexture.coffee",
       "Init": "Init.coffee",
+      "KeyPressDetect": "KeyPressDetect.coffee",
       "ListenEvent": "ListenEvent.coffee",
       "Main": "Main.coffee",
       "SwipeDetect": "SwipeDetect.coffee"

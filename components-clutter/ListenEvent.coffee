@@ -1,15 +1,4 @@
 noflo = require 'noflo'
-Clutter = imports.gi.Clutter;
-
-coordsToDirection = (initial, final) ->
-  dx = final.x - initial.x
-  dy = final.y - initial.y
-  return 'none' if dx == 0 and dx == dy
-  if Math.abs(dx) > Math.abs(dy)
-    return if dx > 0 then 'right' else 'left'
-  else
-    return if dy > 0 then 'down' else 'up'
-  return 'unknown'
 
 exports.getComponent = () ->
   c = new noflo.Component
@@ -41,8 +30,10 @@ exports.getComponent = () ->
     @actor = actor
     if @actor
       @listener = @actor.connect 'event', (actor, event) =>
+        event.consumed = false
         @outPorts.event.send event
         @outPorts.event.disconnect()
+        return event.consumed
 
   c.shutdown = () ->
     @updateActor null

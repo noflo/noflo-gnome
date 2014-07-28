@@ -32,6 +32,7 @@ components_DATA = \
 	CoglSnippetTemplateCompile.coffee \
 	CoglTexture.coffee \
 	Init.coffee \
+	KeyPressDetect.coffee \
 	ListenEvent.coffee \
 	Main.coffee \
 	SwipeDetect.coffee \
