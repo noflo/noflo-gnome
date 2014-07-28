@@ -9,12 +9,16 @@ components_DATA = \
 	BuilderAddFile.coffee \
 	ClutterInit.coffee \
 	ComponentLoader.coffee \
+	ConsumeEvent.coffee \
 	GetObject.coffee \
 	GetStage.coffee \
 	GetWidget.coffee \
 	GladeConstructorComponent.coffee \
+	GrabFocus.coffee \
 	Hide.coffee \
 	Init.coffee \
+	KeyPressDetect.coffee \
+	ListenEvent.coffee \
 	LoadPixbuf.coffee \
 	Main.coffee \
 	Pack.coffee \
