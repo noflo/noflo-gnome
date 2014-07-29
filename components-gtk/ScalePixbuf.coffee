@@ -11,9 +11,11 @@ exports.getComponent = ->
   c.inPorts.add 'width',
     datatype: 'int'
     description: 'Width to scale to'
+    required: yes
   c.inPorts.add 'height',
     datatype: 'int'
     description: 'Height to scale to'
+    required: yes
 
   c.outPorts.add 'pixbuf',
     datatype: 'object'
@@ -29,6 +31,8 @@ exports.getComponent = ->
   , (pixbuf, groups, out) ->
     try
       pix = pixbuf.scale_simple c.params.width, c.params.height, GdkPixbuf.InterpType.BILINEAR
-      out.send pix
     catch e
       c.error e, groups
+      return
+    out.send pix
+    return
