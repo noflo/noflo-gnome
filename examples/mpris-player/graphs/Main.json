@@ -435,14 +435,14 @@
    "metadata": {
     "label": "LoadFile",
     "x": 648,
-    "y": 1440
+    "y": 1404
    }
   },
   "PictureUri": {
    "component": "objects/ExtractProperty",
    "metadata": {
     "label": "PictureUri",
-    "x": 504,
+    "x": 468,
     "y": 1440
    }
   },
@@ -450,8 +450,8 @@
    "component": "gtk/LoadPixbuf",
    "metadata": {
     "label": "LoadPicture",
-    "x": 828,
-    "y": 1404
+    "x": 864,
+    "y": 1368
    }
   },
   "AlbumImage": {
@@ -475,7 +475,7 @@
    "metadata": {
     "label": "ScalePicture",
     "x": 1008,
-    "y": 1368
+    "y": 1332
    }
   },
   "SetDefaultAlbumImage": {
@@ -491,7 +491,7 @@
    "metadata": {
     "label": "DefaultImage",
     "x": 1152,
-    "y": 1512
+    "y": 1548
    }
   },
   "PositionAdj_h63sm": {
@@ -708,6 +708,14 @@
     "label": "Status",
     "x": 972,
     "y": 612
+   }
+  },
+  "gnome/Log_fx5kv": {
+   "component": "gnome/Log",
+   "metadata": {
+    "label": "gnome/Log",
+    "x": 648,
+    "y": 1548
    }
   }
  },
@@ -1154,19 +1162,6 @@
    },
    "metadata": {
     "route": 5
-   }
-  },
-  {
-   "src": {
-    "process": "LoadFile",
-    "port": "content"
-   },
-   "tgt": {
-    "process": "LoadPicture",
-    "port": "data"
-   },
-   "metadata": {
-    "route": 3
    }
   },
   {
@@ -1874,6 +1869,32 @@
    },
    "metadata": {
     "route": 2
+   }
+  },
+  {
+   "src": {
+    "process": "PictureUri",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gnome/Log_fx5kv",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
+   }
+  },
+  {
+   "src": {
+    "process": "LoadFile",
+    "port": "content"
+   },
+   "tgt": {
+    "process": "LoadPicture",
+    "port": "data"
+   },
+   "metadata": {
+    "route": 3
    }
   },
   {
