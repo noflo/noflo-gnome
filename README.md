@@ -14,6 +14,8 @@ noflo-gnome init -n "MyApplicationName"
 
 ## How to add a custom component to your application repository :
 
+Components need to be listed in order to be visible in the UI.
+You can add one with the following command :
 ```
 touch MyComponent.js
 noflo-gnome add -c MyComponent.js
@@ -21,18 +23,29 @@ noflo-gnome add -c MyComponent.js
 
 ## How to add a Glade UI file to your application repository :
 
+The Gnome integration layer to NoFlo provides the ability to represent
+Glade UI files automatically in the UI. To do so, you Glade file needs
+to be listed in the application's manifest.
+
+You can add a Glade file with the following command :
 ```
 noflo-gnome add -u MyGladeFile.glade
 ```
 
 ## How to add a DBus xml description file to your application repository :
 
+To communicate facilitate communication with DBus services, the Gnome
+integration layer to NoFlo provides the ability to generate components
+automatically from the DBus XML interface description.
+
+You can add an xml description file with the following command :
 ```
 noflo-gnome add -d MyDbusDescription.xml
 ```
 
 ## How to run your application :
 
+Run the application without debugging :
 ```
 noflo-gnome run
 ```
