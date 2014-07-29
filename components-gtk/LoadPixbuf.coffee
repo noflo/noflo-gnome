@@ -22,7 +22,7 @@ exports.getComponent = ->
   , (data, groups, out) ->
     try
       loader = new GdkPixbuf.PixbufLoader
-      loader.write_bytes data
+      loader.write_bytes data.data
       loader.close()
       out.send loader.get_pixbuf()
     catch e
