@@ -25,13 +25,17 @@ exports.getComponent = ->
     file.load_contents_async null, (src, res) ->
       try
         [status, content, etag] = file.load_contents_finish res
-        out.send
+        packet =
           data: content
           length: content.length
-          toString = -> "[C Buffer - length=#{@length}]" # prevent warnings
-        do callback
+          toString: () ->
+            "[C Buffer - length=#{@length}]" # prevent warnings
       catch e
         c.error e, groups
         do callback
+        return
+      out.send packet
+      do callback
+      return
 
   c
