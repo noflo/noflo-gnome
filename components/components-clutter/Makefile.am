@@ -3,7 +3,7 @@ CLEANFILES =
 EXTRA_DIST =
 
 componentsdir = $(pkgdatadir)/components/noflo-clutter
-components_DATA = \
+dist_components_DATA = \
 	component.json \
 	Actor.coffee \
 	ActorHide.coffee \
