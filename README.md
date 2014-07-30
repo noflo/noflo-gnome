@@ -4,6 +4,20 @@ NoFlo-Gnome a set of tools to help you write applications using the
 NoFlo framework and its UI editor (https://github.com/noflo/noflo-ui)
 for the Gnome environment.
 
+## How to install
+
+NoFlo-Gnome currently depends on a WebSocket support for LibSoup. To
+facilitate the installation, a jhbuild moduleset is provided. You can
+install all required dependencies with the following command :
+```
+jhbuild -m https://raw.githubusercontent.com/noflo/noflo-gnome/master/data/noflo-gnome.modules build noflo-gnome
+```
+
+To run the noflo-gnome command, just switch to the jhbuild environment :
+```
+jhbuild shell
+```
+
 ## How to create a new application repository :
 
 ```
