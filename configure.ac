@@ -40,6 +40,7 @@ AC_CONFIG_FILES([
     components/components-clutter/Makefile
     components/components-gir/Makefile
     components/components-gtk/Makefile
+    data/Makefile
     examples/Makefile
     examples/2048/Makefile
     examples/cat/Makefile

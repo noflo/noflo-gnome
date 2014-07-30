@@ -1,0 +1,58 @@
+<?xml version="1.0"?><!--*- mode: nxml; indent-tabs-mode: nil -*-->
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<!-- vim:set ts=2 expandtab: -->
+<moduleset>
+  <metamodule id="noflo-gnome">
+    <dependencies>
+      <dep package="noflo-gnome"/>
+      <dep package="dleyna-renderer"/>
+      <dep package="dleyna-control"/>
+    </dependencies>
+  </metamodule>
+
+  <repository type="system" name="system"/>
+  <repository type="git" name="gnome" default="yes"
+      href="git://git.gnome.org"/>
+  <repository type="git" name="github-noflo"
+    href="git://github.com/noflo/"/>
+  <repository type="git" name="github-djdeath"
+    href="git://github.com/djdeath/"/>
+
+  <systemmodule id="glib">
+    <pkg-config>glib-2.0.pc</pkg-config>
+    <branch repo="system" version="2.40"/>
+  </systemmodule>
+
+  <systemmodule id="libxml2">
+    <pkg-config>libxml-2.0.pc</pkg-config>
+    <branch repo="system" version="2.5.0"/>
+  </systemmodule>
+
+  <systemmodule id="sqlite3">
+    <pkg-config>sqlite3.pc</pkg-config>
+    <branch repo="system" version="3.5"/>
+  </systemmodule>
+
+  <systemmodule id="gobject-introspection">
+    <pkg-config>gobject-introspection-1.0.pc</pkg-config>
+    <branch repo="system" version="1.40"/>
+  </systemmodule>
+
+  <autotools id="libsoup">
+    <branch repo="github-djdeath" revision="websocket-cockpit"/>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="libxml2"/>
+      <dep package="sqlite3"/>
+      <dep package="gobject-introspection"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="noflo-gnome">
+    <branch repo="github-noflo"/>
+    <dependencies>
+      <dep package="libsoup"/>
+    </dependencies>
+  </autotools>
+</moduleset>
