@@ -14,11 +14,8 @@ let compileCoffeeSource = function(source) {
 let compileFile = function(to, from) {
     let [, coffeeSource] = from.load_contents(null);
     let javascriptSource = compileCoffeeSource('' + coffeeSource);
-    let module = eval('(function () { var exports = {};' +
-                      javascriptSource + '; return exports; })()');
 
     // Compilation cache
-    //log('writing ' + to.get_uri());
     try {
         to.get_parent().make_directory_with_parents(null);
     } catch (e) {
@@ -30,6 +27,15 @@ let compileFile = function(to, from) {
                         null,
                         null);
 
+    let module = null;
+    try {
+        module = eval('(function () { var exports = {};' +
+                      javascriptSource + '; return exports; })()');
+    } catch (e) {
+        log('Failed to load ' + from.get_uri() + ' : ' + e);
+        throw e;
+    }
+
     return module;
 };
 
@@ -37,8 +43,13 @@ let compileFile = function(to, from) {
 let loadJavascriptFile = function(file) {
     let [, javascriptSource] = file.load_contents(null);
 
-    let module = eval('(function () { var exports = {};' +
-                      javascriptSource + '; return exports; })()');
+    try {
+        let module = eval('(function () { var exports = {};' +
+                          javascriptSource + '; return exports; })()');
+    } catch (e) {
+        log('Failed to load ' + file.get_uri() + ' : ' + e);
+        throw e;
+    }
 
     return module;
 };
@@ -47,10 +58,8 @@ let loadJavascriptFile = function(file) {
 let loadJavascript = function(vpath) {
     let path = Runtime.resolvePath(vpath);
     let file = Gio.File.new_for_uri(path + '.js');
-    let [, javascriptSource] = file.load_contents(null);
 
-    let module = eval('(function () { var exports = {};' +
-                      javascriptSource + '; return exports; })()');
+    let module = loadJavascript(file);
 
     return module;
 };
