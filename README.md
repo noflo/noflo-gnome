@@ -24,8 +24,8 @@ noflo-gnome add -c MyComponent.js
 ## How to add a Glade UI file to your application repository :
 
 The Gnome integration layer to NoFlo provides the ability to represent
-Glade UI files automatically in the UI. To do so, you Glade file needs
-to be listed in the application's manifest.
+Glade UI files automatically in the UI. To do so, your Glade file
+needs to be listed in the application's manifest.
 
 You can add a Glade file with the following command :
 ```
@@ -57,7 +57,7 @@ noflo-gnome run -d -u
 
 ## How to bundle your application into a single file :
 
-Once you're done creating you application and would like to exchange
+Once you're done creating your application and would like to exchange
 it with other people, you can do so by creating a bundle (single file
 containing all your assets, code, ui files, etc...)
 
