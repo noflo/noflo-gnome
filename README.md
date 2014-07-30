@@ -6,9 +6,12 @@ for the Gnome environment.
 
 ## How to install
 
-NoFlo-Gnome currently depends on a WebSocket support for LibSoup. To
-facilitate the installation, a jhbuild moduleset is provided. You can
-install all required dependencies with the following command :
+NoFlo-Gnome currently depends on WebSocket support for LibSoup. This
+support hasn't made it upstream yet, but a branch is available and
+rebased every few week.
+
+To facilitate the installation, a jhbuild moduleset is provided. You
+can install all required dependencies with the following command :
 ```
 jhbuild -m https://raw.githubusercontent.com/noflo/noflo-gnome/master/data/noflo-gnome.modules build noflo-gnome
 ```
