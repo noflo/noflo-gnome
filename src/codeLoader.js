@@ -43,8 +43,9 @@ let compileFile = function(to, from) {
 let loadJavascriptFile = function(file) {
     let [, javascriptSource] = file.load_contents(null);
 
+    let module = null;
     try {
-        let module = eval('(function () { var exports = {};' +
+        module = eval('(function () { var exports = {};' +
                           javascriptSource + '; return exports; })()');
     } catch (e) {
         log('Failed to load ' + file.get_uri() + ' : ' + e);
