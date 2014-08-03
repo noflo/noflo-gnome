@@ -80,6 +80,7 @@ exports.getComponent = () ->
 
           #log "#{x}x#{y} -> #{} - #{actor.translation_x}x#{actor.translation_y} #{actor} anim=#{anim} value=#{value}"
       c.outPorts.map.send map
+      return
 
   c.outPorts.add 'map',
     datatype: 'array'

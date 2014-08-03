@@ -9,5 +9,6 @@ exports.getComponent = () ->
     process: (event, payload) ->
       return unless event is 'data'
       payload.consumed = true
+      return
 
   c
