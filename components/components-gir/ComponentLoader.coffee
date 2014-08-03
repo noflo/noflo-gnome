@@ -12,14 +12,18 @@ exports = (loader, done) ->
 
   # List the constructors
   manifest.libraries.forEach (lib) ->
-    imports.gi[lib]
+    libRepo = imports.gi[lib]
+    if typeof libRepo.init is 'function'
+      libRepo.init(null, null)
     infos = repo.get_n_infos lib
     for item in [0..infos]
       info = repo.get_info lib, item
       continue unless info.get_type() is GI.InfoType.OBJECT
       name = info.get_name()
-      component = constructorComponent.getComponentForConstructor name, imports.gi[lib][name]
-      loader.registerComponent lib.toLowerCase(), "Create#{name}", component
+      try
+        component = constructorComponent.getComponentForConstructor name, imports.gi[lib][name]
+        loader.registerComponent lib.toLowerCase(), "Create#{name}", component
+      catch e
 
   do done if done
   return
