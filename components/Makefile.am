@@ -4,4 +4,5 @@ SUBDIRS = \
 	components-clutter \
 	components-gir \
 	components-gtk \
+	components-gstreamer \
 	$(NULL)

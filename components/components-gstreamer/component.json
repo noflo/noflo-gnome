@@ -1,0 +1,16 @@
+{
+  "name": "noflo-gstreamer",
+  "json": [
+    "component.json"
+  ],
+  "scripts": [
+    "ComponentLoader.coffee",
+    "GstreamerComponentFactory.coffee",
+    "GstreamerComponentLoader.coffee"
+  ],
+  "noflo": {
+    "loader": "ComponentLoader.coffee",
+    "components": {
+    }
+  }
+}
