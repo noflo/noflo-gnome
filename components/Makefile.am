@@ -1,8 +1,8 @@
 NULL =
 SUBDIRS = \
-	components-base \
-	components-clutter \
-	components-gir \
-	components-gtk \
-	components-gstreamer \
+	base \
+	clutter \
+	gir \
+	gtk \
+	gstreamer \
 	$(NULL)
