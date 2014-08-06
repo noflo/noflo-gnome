@@ -55,6 +55,9 @@ let levelToSpaces = function(level) {
 };
 
 let forEachInDirectory = function(directory, recurse, callback) {
+    let queryFlags = recurse ?
+        Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS :
+        Gio.FileQueryInfoFlags.NONE;
     let enumerator = directory.enumerate_children('*',
                                                   Gio.FileQueryInfoFlags.NONE,
                                                   null);
@@ -62,8 +65,7 @@ let forEachInDirectory = function(directory, recurse, callback) {
     while ((fileInfo = enumerator.next_file(null)) != null) {
         let child = enumerator.get_child(fileInfo);
         if (recurse &&
-            child.query_file_type(Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
-                                  null) == Gio.FileType.DIRECTORY) {
+            child.query_file_type(queryFlags, null) == Gio.FileType.DIRECTORY) {
             callback(child);
             forEachInDirectory(child, recurse, callback);
         } else
@@ -90,14 +92,14 @@ let buildPath = function(parent, child) {
 
 let isPathRegular = function(path) {
     let file = Gio.File.new_for_uri(path);
-    return file.query_file_type(
-        Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null) == Gio.FileType.REGULAR;
+    return file.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
+        == Gio.FileType.REGULAR;
 };
 
 let isPathDirectory = function(path) {
     let file = Gio.File.new_for_uri(path);
-    return file.query_file_type(
-        Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null) == Gio.FileType.DIRECTORY;
+    return file.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
+        == Gio.FileType.DIRECTORY;
 };
 
 let loadTextFileContent = function(path) {
