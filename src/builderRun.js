@@ -37,7 +37,7 @@ const CmdOptions = [
         shortName: 'u',
         requireArgument: false,
         defaultValue: false,
-        help: 'Whether to start the UI automatically',
+        help: 'Start the UI automatically',
     },
     {
         name: 'help',
