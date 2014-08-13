@@ -89,6 +89,29 @@
    "metadata": {
     "description": ""
    }
+  },
+  {
+   "name": "DestroyOldMap",
+   "nodes": [
+    "500Delay",
+    "DestroyOldMap",
+    "core/Kick_xoynk"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "CountScore",
+   "nodes": [
+    "Count",
+    "ScoreLabel",
+    "SetScore",
+    "strings/ToString_eltil"
+   ],
+   "metadata": {
+    "description": ""
+   }
   }
  ],
  "processes": {
@@ -344,7 +367,7 @@
    "component": "2048/DestroyMap",
    "metadata": {
     "label": "DestroyOldMap",
-    "x": 972,
+    "x": 1044,
     "y": 720
    }
   },
@@ -352,7 +375,7 @@
    "component": "core/Kick",
    "metadata": {
     "label": "core/Kick",
-    "x": 864,
+    "x": 936,
     "y": 720
    }
   },
@@ -360,8 +383,40 @@
    "component": "core/RepeatDelayed",
    "metadata": {
     "label": "500Delay",
-    "x": 720,
+    "x": 792,
     "y": 720
+   }
+  },
+  "Count": {
+   "component": "math/Accumulate",
+   "metadata": {
+    "label": "Count",
+    "x": 1980,
+    "y": 216
+   }
+  },
+  "strings/ToString_eltil": {
+   "component": "strings/ToString",
+   "metadata": {
+    "label": "strings/ToString",
+    "x": 2124,
+    "y": 216
+   }
+  },
+  "SetScore": {
+   "component": "objects/SetPropertyValue",
+   "metadata": {
+    "label": "SetScore",
+    "x": 2304,
+    "y": 144
+   }
+  },
+  "ScoreLabel": {
+   "component": "core/Kick",
+   "metadata": {
+    "label": "ScoreLabel",
+    "x": 2124,
+    "y": 72
    }
   }
  },
@@ -884,6 +939,91 @@
    }
   },
   {
+   "src": {
+    "process": "SquashTiles",
+    "port": "score"
+   },
+   "tgt": {
+    "process": "Count",
+    "port": "in"
+   }
+  },
+  {
+   "src": {
+    "process": "NewClicked",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "Count",
+    "port": "reset"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Count",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "strings/ToString_eltil",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "strings/ToString_eltil",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetScore",
+    "port": "value"
+   }
+  },
+  {
+   "src": {
+    "process": "Count",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "ScoreLabel",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "ScoreLabel",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SetScore",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "UI",
+    "port": "scorelabel"
+   },
+   "tgt": {
+    "process": "ScoreLabel",
+    "port": "data"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
    "data": true,
    "tgt": {
     "process": "ShowAll",
@@ -926,13 +1066,6 @@
    }
   },
   {
-   "data": "true",
-   "tgt": {
-    "process": "core/Kick_viopv",
-    "port": "data"
-   }
-  },
-  {
    "data": "reactive",
    "tgt": {
     "process": "reactive",
@@ -958,6 +1091,34 @@
    "tgt": {
     "process": "500Delay",
     "port": "delay"
+   }
+  },
+  {
+   "data": "false",
+   "tgt": {
+    "process": "core/Kick_viopv",
+    "port": "data"
+   }
+  },
+  {
+   "data": "label",
+   "tgt": {
+    "process": "SetScore",
+    "port": "property"
+   }
+  },
+  {
+   "data": false,
+   "tgt": {
+    "process": "SetScore",
+    "port": "keep"
+   }
+  },
+  {
+   "data": true,
+   "tgt": {
+    "process": "Count",
+    "port": "emitreset"
    }
   }
  ]
