@@ -23,6 +23,10 @@ imports.main.start();
 EOF
 )
 
+GJS_DISABLE_EXTRA_WARNINGS=1 # workaround CoffeeScript generated code
+
+export GJS_DISABLE_EXTRA_WARNINGS
+
 # Not great, but hey...
 mkdir -p /tmp/$USER/noflo-gnome
 tmpfile=`mktemp /tmp/$USER/noflo-gnome/XXXXXX`
