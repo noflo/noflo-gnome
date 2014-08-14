@@ -4321,6 +4321,24 @@ Graph = (function(_super) {
     return initializer;
   };
 
+  Graph.prototype.addGraphInitial = function(data, node, metadata) {
+    var inport;
+    inport = this.inports[node];
+    if (!inport) {
+      return;
+    }
+    return this.addInitial(data, inport.process, inport.port, metadata);
+  };
+
+  Graph.prototype.addGraphInitialIndex = function(data, node, index, metadata) {
+    var inport;
+    inport = this.inports[node];
+    if (!inport) {
+      return;
+    }
+    return this.addInitialIndex(data, inport.process, inport.port, index, metadata);
+  };
+
   Graph.prototype.removeInitial = function(node, port) {
     var edge, index, toKeep, toRemove, _i, _j, _len, _len1, _ref;
     this.checkTransactionStart();
@@ -4341,6 +4359,15 @@ Graph = (function(_super) {
       this.emit('removeInitial', edge);
     }
     return this.checkTransactionEnd();
+  };
+
+  Graph.prototype.removeGraphInitial = function(node) {
+    var inport;
+    inport = this.inports[node];
+    if (!inport) {
+      return;
+    }
+    return this.removeInitial(inport.process, inport.port);
   };
 
   Graph.prototype.toDOT = function() {
@@ -4548,8 +4575,9 @@ exports.loadJSON = function(definition, success, metadata) {
     if (conn.data !== void 0) {
       if (typeof conn.tgt.index === 'number') {
         graph.addInitialIndex(conn.data, conn.tgt.process, conn.tgt.port.toLowerCase(), conn.tgt.index, metadata);
+      } else {
+        graph.addInitial(conn.data, conn.tgt.process, conn.tgt.port.toLowerCase(), metadata);
       }
-      graph.addInitial(conn.data, conn.tgt.process, conn.tgt.port.toLowerCase(), metadata);
       continue;
     }
     if (typeof conn.src.index === 'number' || typeof conn.tgt.index === 'number') {
@@ -4677,10 +4705,29 @@ EventEmitter = require('events').EventEmitter;
 InternalSocket = (function(_super) {
   __extends(InternalSocket, _super);
 
+  InternalSocket.prototype.regularEmitEvent = function(event, data) {
+    return this.emit(event, data);
+  };
+
+  InternalSocket.prototype.debugEmitEvent = function(event, data) {
+    var error;
+    try {
+      return this.emit(event, data);
+    } catch (_error) {
+      error = _error;
+      return this.emit('error', {
+        id: this.to.process.id,
+        error: error
+      });
+    }
+  };
+
   function InternalSocket() {
     this.connected = false;
     this.groups = [];
     this.dataDelegate = null;
+    this.debug = false;
+    this.emitEvent = this.regularEmitEvent;
   }
 
   InternalSocket.prototype.connect = function() {
@@ -4688,7 +4735,7 @@ InternalSocket = (function(_super) {
       return;
     }
     this.connected = true;
-    return this.emit('connect', this);
+    return this.emitEvent('connect', this);
   };
 
   InternalSocket.prototype.disconnect = function() {
@@ -4696,7 +4743,7 @@ InternalSocket = (function(_super) {
       return;
     }
     this.connected = false;
-    return this.emit('disconnect', this);
+    return this.emitEvent('disconnect', this);
   };
 
   InternalSocket.prototype.isConnected = function() {
@@ -4710,19 +4757,19 @@ InternalSocket = (function(_super) {
     if (data === void 0 && typeof this.dataDelegate === 'function') {
       data = this.dataDelegate();
     }
-    return this.emit('data', data);
+    return this.emitEvent('data', data);
   };
 
   InternalSocket.prototype.beginGroup = function(group) {
     this.groups.push(group);
-    return this.emit('begingroup', group);
+    return this.emitEvent('begingroup', group);
   };
 
   InternalSocket.prototype.endGroup = function() {
     if (!this.groups.length) {
       return;
     }
-    return this.emit('endgroup', this.groups.pop());
+    return this.emitEvent('endgroup', this.groups.pop());
   };
 
   InternalSocket.prototype.setDataDelegate = function(delegate) {
@@ -4730,6 +4777,11 @@ InternalSocket = (function(_super) {
       throw Error('A data delegate must be a function.');
     }
     return this.dataDelegate = delegate;
+  };
+
+  InternalSocket.prototype.setDebug = function(active) {
+    this.debug = active;
+    return this.emitEvent = this.debug ? this.debugEmitEvent : this.regularEmitEvent;
   };
 
   InternalSocket.prototype.getId = function() {
@@ -6285,12 +6337,12 @@ ComponentLoader = (function(_super) {
     })(this), 1);
   };
 
-  ComponentLoader.prototype.load = function(name, callback, delayed, metadata) {
+  ComponentLoader.prototype.load = function(name, callback, metadata) {
     var component, componentName, instance;
     if (!this.ready) {
       this.listComponents((function(_this) {
         return function() {
-          return _this.load(name, callback, delayed, metadata);
+          return _this.load(name, callback, metadata);
         };
       })(this));
       return;
@@ -6312,13 +6364,13 @@ ComponentLoader = (function(_super) {
       if (typeof process !== 'undefined' && process.execPath && process.execPath.indexOf('node') !== -1) {
         process.nextTick((function(_this) {
           return function() {
-            return _this.loadGraph(name, component, callback, delayed, metadata);
+            return _this.loadGraph(name, component, callback, metadata);
           };
         })(this));
       } else {
         setTimeout((function(_this) {
           return function() {
-            return _this.loadGraph(name, component, callback, delayed, metadata);
+            return _this.loadGraph(name, component, callback, metadata);
           };
         })(this), 0);
       }
@@ -6361,22 +6413,17 @@ ComponentLoader = (function(_super) {
     return cPath.indexOf('.fbp') !== -1 || cPath.indexOf('.json') !== -1;
   };
 
-  ComponentLoader.prototype.loadGraph = function(name, component, callback, delayed, metadata) {
-    var delaySocket, graph, graphImplementation, graphSocket;
+  ComponentLoader.prototype.loadGraph = function(name, component, callback, metadata) {
+    var graph, graphImplementation, graphSocket;
     graphImplementation = require(this.components['Graph']);
     graphSocket = internalSocket.createSocket();
     graph = graphImplementation.getComponent(metadata);
     graph.loader = this;
     graph.baseDir = this.baseDir;
-    if (delayed) {
-      delaySocket = internalSocket.createSocket();
-      graph.inPorts.start.attach(delaySocket);
-    }
     graph.inPorts.graph.attach(graphSocket);
     graphSocket.send(component);
     graphSocket.disconnect();
     graph.inPorts.remove('graph');
-    graph.inPorts.remove('start');
     this.setIcon(name, graph);
     return callback(graph);
   };
@@ -6663,6 +6710,7 @@ Network = (function(_super) {
     this.defaults = [];
     this.graph = graph;
     this.started = false;
+    this.debug = false;
     if (typeof process !== 'undefined' && process.execPath && process.execPath.indexOf('node') !== -1) {
       this.baseDir = graph.baseDir || process.cwd();
     } else {
@@ -6712,7 +6760,7 @@ Network = (function(_super) {
   };
 
   Network.prototype.load = function(component, metadata, callback) {
-    return this.loader.load(component, callback, false, metadata);
+    return this.loader.load(component, callback, metadata);
   };
 
   Network.prototype.addNode = function(node, callback) {
@@ -7017,8 +7065,11 @@ Network = (function(_super) {
     node.component.network.on('endgroup', function(data) {
       return emitSub('endgroup', data);
     });
-    return node.component.network.on('disconnect', function(data) {
+    node.component.network.on('disconnect', function(data) {
       return emitSub('disconnect', data);
+    });
+    return node.component.network.on('process-error', function(data) {
+      return emitSub('process-error', data);
     });
   };
 
@@ -7059,13 +7110,18 @@ Network = (function(_super) {
         });
       };
     })(this));
-    return socket.on('disconnect', (function(_this) {
+    socket.on('disconnect', (function(_this) {
       return function() {
         _this.decreaseConnections();
         return _this.emit('disconnect', {
           id: socket.getId(),
           socket: socket
         });
+      };
+    })(this));
+    return socket.on('error', (function(_this) {
+      return function(event) {
+        return _this.emit('process-error', event);
       };
     })(this));
   };
@@ -7117,9 +7173,9 @@ Network = (function(_super) {
       })(this));
       return;
     }
+    this.subscribeSocket(socket);
     this.connectPort(socket, to, edge.to.port, edge.to.index, true);
     this.connectPort(socket, from, edge.from.port, edge.from.index, false);
-    this.subscribeSocket(socket);
     this.connections.push(socket);
     if (callback) {
       return callback();
@@ -7280,6 +7336,9 @@ Network = (function(_super) {
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       socket = _ref[_i];
+      if (socket.to.process.component.inPorts[socket.to.port].sockets.length !== 1) {
+        continue;
+      }
       socket.connect();
       socket.send();
       _results.push(socket.disconnect());
@@ -7310,6 +7369,35 @@ Network = (function(_super) {
       process.component.shutdown();
     }
     return this.started = false;
+  };
+
+  Network.prototype.getDebug = function() {
+    return this.debug;
+  };
+
+  Network.prototype.setDebug = function(active) {
+    var instance, process, processId, socket, _i, _len, _ref, _ref1, _results;
+    if (active === this.debug) {
+      return;
+    }
+    this.debug = active;
+    _ref = this.connections;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      socket = _ref[_i];
+      socket.setDebug(active);
+    }
+    _ref1 = this.processes;
+    _results = [];
+    for (processId in _ref1) {
+      process = _ref1[processId];
+      instance = process.component;
+      if (instance.isSubgraph()) {
+        _results.push(instance.network.setDebug(active));
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
   };
 
   return Network;
@@ -8094,6 +8182,15 @@ exports.WirePattern = function(component, config, proc) {
   if (!('name' in config)) {
     config.name = '';
   }
+  if (!('dropInput' in config)) {
+    config.dropInput = false;
+  }
+  if (!('arrayPolicy' in config)) {
+    config.arrayPolicy = {
+      "in": 'any',
+      params: 'all'
+    };
+  }
   collectGroups = config.forwardGroups;
   if (typeof collectGroups === 'boolean' && !config.group) {
     collectGroups = inPorts;
@@ -8109,7 +8206,6 @@ exports.WirePattern = function(component, config, proc) {
     if (!component.inPorts[name]) {
       throw new Error("no inPort named '" + name + "'");
     }
-    component.inPorts[name].options.required = true;
   }
   for (_j = 0, _len1 = outPorts.length; _j < _len1; _j++) {
     name = outPorts[_j];
@@ -8169,7 +8265,8 @@ exports.WirePattern = function(component, config, proc) {
         for (key in streams) {
           stream = streams[key];
           if (stream.resolved) {
-            flushed = flushed || stream.flush();
+            stream.flush();
+            flushed = true;
           }
         }
       }
@@ -8258,11 +8355,21 @@ exports.WirePattern = function(component, config, proc) {
   _fn = function(port) {
     var inPort;
     inPort = component.inPorts[port];
-    return inPort.process = function(event, payload) {
+    return inPort.process = function(event, payload, index) {
       if (event !== 'data') {
         return;
       }
-      component.params[port] = payload;
+      if (inPort.isAddressable()) {
+        if (!(port in component.params)) {
+          component.params[port] = {};
+        }
+        component.params[port][index] = payload;
+        if (config.arrayPolicy.params === 'all' && Object.keys(component.params[port]).length < inPort.listAttached().length) {
+          return;
+        }
+      } else {
+        component.params[port] = payload;
+      }
       if (component.completeParams.indexOf(port) === -1 && component.requiredParams.indexOf(port) > -1) {
         component.completeParams.push(port);
       }
@@ -8286,7 +8393,7 @@ exports.WirePattern = function(component, config, proc) {
       inPort = component.inPorts[port];
     }
     needPortGroups = collectGroups instanceof Array && collectGroups.indexOf(port) !== -1;
-    return inPort.process = function(event, payload) {
+    return inPort.process = function(event, payload, index) {
       var data, foundGroup, g, groupLength, groups, grp, i, key, obj, out, outs, postpone, postponedToQ, requiredLength, resume, task, whenDone, whenDoneGroups, _len5, _len6, _len7, _len8, _n, _o, _p, _q, _r, _ref2, _ref3, _ref4, _s;
       switch (event) {
         case 'begingroup':
@@ -8344,7 +8451,12 @@ exports.WirePattern = function(component, config, proc) {
           break;
         case 'data':
           if (inPorts.length === 1) {
-            data = payload;
+            if (inPort.isAddressable()) {
+              data = {};
+              data[index] = payload;
+            } else {
+              data = payload;
+            }
             groups = component.groupBuffers[port];
           } else {
             key = '';
@@ -8370,9 +8482,16 @@ exports.WirePattern = function(component, config, proc) {
               ++requiredLength;
             }
             for (i = _o = 0, _ref3 = component.groupedData[key].length; 0 <= _ref3 ? _o < _ref3 : _o > _ref3; i = 0 <= _ref3 ? ++_o : --_o) {
-              if (!(port in component.groupedData[key][i])) {
+              if (!(port in component.groupedData[key][i]) || (component.inPorts[port].isAddressable() && config.arrayPolicy["in"] === 'all' && !(index in component.groupedData[key][i][port]))) {
                 foundGroup = true;
-                component.groupedData[key][i][port] = payload;
+                if (component.inPorts[port].isAddressable()) {
+                  if (!(port in component.groupedData[key][i])) {
+                    component.groupedData[key][i][port] = {};
+                  }
+                  component.groupedData[key][i][port][index] = payload;
+                } else {
+                  component.groupedData[key][i][port] = payload;
+                }
                 if (needPortGroups) {
                   _ref4 = component.groupBuffers[port];
                   for (_p = 0, _len5 = _ref4.length; _p < _len5; _p++) {
@@ -8381,6 +8500,9 @@ exports.WirePattern = function(component, config, proc) {
                       component.groupedGroups[key][i].push(grp);
                     }
                   }
+                }
+                if (component.inPorts[port].isAddressable() && config.arrayPolicy["in"] === 'all' && Object.keys(component.groupedData[key][i][port]).length < component.inPorts[port].listAttached().length) {
+                  return;
                 }
                 groupLength = Object.keys(component.groupedData[key][i]).length;
                 if (groupLength === requiredLength) {
@@ -8406,6 +8528,9 @@ exports.WirePattern = function(component, config, proc) {
               }
               return;
             }
+          }
+          if (config.dropInput && component.completeParams.length !== component.requiredParams.length) {
+            return;
           }
           if (collectGroups === true) {
             groups = component.groupBuffers[port];
@@ -8939,22 +9064,12 @@ Graph = (function(_super) {
         description: 'NoFlo graph definition to be used with the subgraph component',
         required: true,
         immediate: true
-      },
-      start: {
-        datatype: 'bang',
-        description: 'if attached, the network will only be started when receiving a start message',
-        required: false
       }
     });
     this.outPorts = new noflo.OutPorts;
     this.inPorts.on('graph', 'data', (function(_this) {
       return function(data) {
         return _this.setGraph(data);
-      };
-    })(this));
-    this.inPorts.on('start', 'data', (function(_this) {
-      return function() {
-        return _this.start();
       };
     })(this));
   }
@@ -8993,7 +9108,7 @@ Graph = (function(_super) {
         _this.network = network;
         _this.emit('network', _this.network);
         return _this.network.connect(function() {
-          var name, notReady, process, _ref, _ref1;
+          var name, notReady, process, _ref;
           notReady = false;
           _ref = _this.network.processes;
           for (name in _ref) {
@@ -9003,31 +9118,27 @@ Graph = (function(_super) {
             }
           }
           if (!notReady) {
-            _this.setToReady();
+            return _this.setToReady();
           }
-          if (((_ref1 = _this.inPorts.start) != null ? _ref1.isAttached() : void 0) && !_this.started) {
-            return;
-          }
-          return _this.start(graph);
         });
       };
     })(this), true);
   };
 
-  Graph.prototype.start = function(graph) {
-    this.started = true;
+  Graph.prototype.start = function() {
+    if (!this.isReady()) {
+      this.on('ready', (function(_this) {
+        return function() {
+          return _this.start();
+        };
+      })(this));
+      return;
+    }
     if (!this.network) {
       return;
     }
-    this.network.sendInitials();
-    if (!graph) {
-      return;
-    }
-    return graph.on('addInitial', (function(_this) {
-      return function() {
-        return _this.network.sendInitials();
-      };
-    })(this));
+    this.started = true;
+    return this.network.start();
   };
 
   Graph.prototype.checkComponent = function(name, process) {
@@ -9137,6 +9248,14 @@ Graph = (function(_super) {
         continue;
       }
       this.inPorts.add(targetPortName, port);
+      this.inPorts[targetPortName].once('connect', (function(_this) {
+        return function() {
+          if (_this.isStarted()) {
+            return;
+          }
+          return _this.start();
+        };
+      })(this));
     }
     _ref1 = process.component.outPorts;
     for (portName in _ref1) {
@@ -9314,16 +9433,25 @@ GraphProtocol = (function() {
     return this.loaders[baseDir];
   };
 
+  GraphProtocol.prototype.sendGraph = function(id, graph, context) {
+    var payload;
+    payload = {
+      graph: id,
+      description: graph.toJSON()
+    };
+    return this.send('graph', payload, context);
+  };
+
   GraphProtocol.prototype.getGraph = function(graph, payload, context) {
-    return this.send('graph', graph.toJSON(), context);
+    return this.sendGraph(payload.graph, graph, context);
   };
 
   GraphProtocol.prototype.listGraphs = function(payload, context) {
-    var graph, graphName, _ref;
+    var graph, graphId, _ref;
     _ref = this.graphs;
-    for (graphName in _ref) {
-      graph = _ref[graphName];
-      this.send('graph', graph.toJSON(), context);
+    for (graphId in _ref) {
+      graph = _ref[graphId];
+      this.sendGraph(graphId, graph, context);
     }
     return this.send('graphsdone', {}, context);
   };
@@ -9770,6 +9898,8 @@ NetworkProtocol = (function() {
         return this.stopNetwork(graph, payload, context);
       case 'edges':
         return this.updateEdgesFilter(graph, payload, context);
+      case 'debug':
+        return this.debugNetwork(graph, payload, context);
       case 'list':
         return this.listNetworks(payload, context);
     }
@@ -9888,11 +10018,20 @@ NetworkProtocol = (function() {
         return _this.send('disconnect', prepareSocketEvent(event, payload), context);
       };
     })(this));
-    return network.on('end', (function(_this) {
+    network.on('end', (function(_this) {
       return function(event) {
         return _this.send('stopped', {
           time: new Date,
           uptime: event.uptime,
+          graph: payload.graph
+        }, context);
+      };
+    })(this));
+    return network.on('process-error', (function(_this) {
+      return function(event) {
+        return _this.send('processerror', {
+          id: event.id,
+          error: event.error,
           graph: payload.graph
         }, context);
       };
@@ -9904,6 +10043,13 @@ NetworkProtocol = (function() {
       return;
     }
     return this.networks[payload.graph].network.stop();
+  };
+
+  NetworkProtocol.prototype.debugNetwork = function(graph, payload, context) {
+    if (!this.networks[payload.graph]) {
+      return;
+    }
+    return this.networks[payload.graph].network.setDebug(payload.enable);
   };
 
   NetworkProtocol.prototype.listNetworks = function(payload, context) {

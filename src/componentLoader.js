@@ -268,14 +268,14 @@ let ComponentLoader = function(options) {
         callback(self.components);
     };
 
-    self.load = function(name, callback, delayed, metadata) {
+    self.load = function(name, callback, metadata) {
         //log('load name=' + name);
         let item = self.components[name];
         if (!item)
             throw new Error('Component ' + name + ' not available');
 
         if (item.isGraph)
-            self._loadGraph(item, delayed, metadata, callback);
+            self._loadGraph(item, metadata, callback);
         else
             self._loadComponent(item, metadata, callback);
     };
@@ -293,17 +293,12 @@ let ComponentLoader = function(options) {
         }));
     }
 
-    self._loadGraph = function(item, delayed, metadata, callback) {
+    self._loadGraph = function(item, metadata, callback) {
         //log('loadGraph ' + item.name);
         let graph = NoFlo.Graph.getComponent(metadata);
         let graphSocket = NoFlo.internalSocket.createSocket();
         graph.loader = self;
         graph.baseDir = self.options.baseDir
-
-        if (delayed) {
-            let delaySocket = NoFlo.internalSocket.createSocket();
-            graph.inPorts.start.attach(delaySocket);
-        }
 
         graph.inPorts.graph.attach(graphSocket);
 
