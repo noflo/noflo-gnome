@@ -1166,6 +1166,13 @@
     "process": "AnimateTiles",
     "port": "duration"
    }
+  },
+  {
+   "data": 10,
+   "tgt": {
+    "process": "SwipeDetect",
+    "port": "mindistance"
+   }
   }
  ]
 }

@@ -1,10 +1,11 @@
 noflo = require 'noflo'
 Clutter = imports.gi.Clutter;
 
-coordsToDirection = (initial, final) ->
+coordsToDirection = (initial, final, minimumDistance) ->
   dx = final.x - initial.x
   dy = final.y - initial.y
   return 'none' if dx == 0 and dx == dy
+  return 'none' if dx < minimumDistance && dy < minimumDistance
   if Math.abs(dx) > Math.abs(dy)
     return if dx > 0 then 'right' else 'left'
   else
@@ -21,6 +22,13 @@ exports.getComponent = () ->
     process: (event, payload) ->
       return unless event is 'data'
       c.processEvent payload
+      return
+  c.inPorts.add 'mindistance',
+    datatype: 'int'
+    description: 'Minimum distance to trigger the gesture'
+    process: (event, payload) ->
+      return unless event is 'data'
+      c.minimumDistance = payload
       return
   c.inPorts.add 'reset',
     datatype: 'bang'
@@ -40,6 +48,8 @@ exports.getComponent = () ->
     datatype: 'string'
     description: 'Direction of the detected swipe'
 
+  c.minimumDistance = 0
+
   c.processEvent = (event) ->
     switch event.type()
       when Clutter.EventType.BUTTON_PRESS, Clutter.EventType.TOUCH_BEGIN
@@ -55,7 +65,7 @@ exports.getComponent = () ->
         final =
           x: coords[0]
           y: coords[1]
-        val = coordsToDirection @initial, final
+        val = coordsToDirection @initial, final, @minimumDistance
         c.outPorts.direction.send val unless val is 'none'
         c.outPorts.processedevent.send event
         c.outPorts.direction.disconnect()
