@@ -2,7 +2,8 @@
   "name": "2048",
   "version": "0.0.1",
   "libraries": [
-    "GtkClutter"
+    "GtkClutter",
+    "Gst"
   ],
   "ui": [
     {

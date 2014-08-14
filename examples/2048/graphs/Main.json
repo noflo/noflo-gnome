@@ -32,16 +32,6 @@
    }
   },
   {
-   "name": "Quit",
-   "nodes": [
-    "Quit",
-    "QuitClicked"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
    "name": "Swipe",
    "nodes": [
     "ConsumeMoveEvent",
@@ -108,6 +98,17 @@
     "ScoreLabel",
     "SetScore",
     "strings/ToString_eltil"
+   ],
+   "metadata": {
+    "description": ""
+   }
+  },
+  {
+   "name": "Quit",
+   "nodes": [
+    "Quit",
+    "QuitClicked",
+    "WindowDestroyed"
    ],
    "metadata": {
     "description": ""
@@ -295,16 +296,16 @@
    "component": "gnome/ListenSignal",
    "metadata": {
     "label": "QuitClicked",
-    "x": 432,
-    "y": 972
+    "x": 468,
+    "y": 1044
    }
   },
   "Quit": {
    "component": "gtk/Quit",
    "metadata": {
     "label": "Quit",
-    "x": 576,
-    "y": 972
+    "x": 612,
+    "y": 1044
    }
   },
   "core/Kick_i8uh5": {
@@ -417,6 +418,14 @@
     "label": "ScoreLabel",
     "x": 2124,
     "y": 72
+   }
+  },
+  "WindowDestroyed": {
+   "component": "gnome/ListenSignal",
+   "metadata": {
+    "label": "WindowDestroyed",
+    "x": 468,
+    "y": 900
    }
   }
  },
@@ -1024,6 +1033,29 @@
    }
   },
   {
+   "src": {
+    "process": "UI",
+    "port": "mainwindow"
+   },
+   "tgt": {
+    "process": "WindowDestroyed",
+    "port": "object"
+   },
+   "metadata": {
+    "route": 7
+   }
+  },
+  {
+   "src": {
+    "process": "WindowDestroyed",
+    "port": "object"
+   },
+   "tgt": {
+    "process": "Quit",
+    "port": "in"
+   }
+  },
+  {
    "data": true,
    "tgt": {
     "process": "ShowAll",
@@ -1119,6 +1151,20 @@
    "tgt": {
     "process": "Count",
     "port": "emitreset"
+   }
+  },
+  {
+   "data": "destroy",
+   "tgt": {
+    "process": "WindowDestroyed",
+    "port": "signal"
+   }
+  },
+  {
+   "data": 150,
+   "tgt": {
+    "process": "AnimateTiles",
+    "port": "duration"
    }
   }
  ]
