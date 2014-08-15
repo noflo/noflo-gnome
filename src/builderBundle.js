@@ -40,6 +40,16 @@ let addRuntimeFile = function(srcPath, dstPath) {
     return dstPath;
 };
 
+let addRuntimeContent = function(dstPath, content) {
+    try {
+        Utils.saveTextFileContent(outputUri + '/' + dstPath, content);
+    } catch (e) {
+        log('Cannot add ' + dstPath);
+        throw e;
+    }
+    return dstPath;
+};
+
 let addFile = function(path, subdir) {
     let uri = currentDirectory.get_uri() + '/';
     try {
@@ -67,14 +77,28 @@ let addFileContent = function(path, content) {
     return path;
 };
 
-let addModule = function(loader, module) {
+let addModule = function(loader, module, filter) {
     let files = [];
     // strip vpath scheme to get relative directory
     let dir = /[\w\d]+:\/\/(.*)/.exec(module.vpath)[1] + '/';
 
+    // Build up invert map of components (path -> name)
+    let invertScripts = {};
+    for (let i in module.noflo.components)
+        invertScripts[module.noflo.components[i]] = i;
+
     // Add scripts
     for (let i in module.scripts) {
         let scriptPath = module.scripts[i];
+
+        // Discard scripts that components but not in the filter list
+        if (invertScripts[scriptPath] &&
+            !filter[invertScripts[scriptPath]]) {
+            continue;
+        }
+
+        // Other compile it to Javascript if it's coffeescript and
+        // save the result
         let coffeeTest = /(.*)\.coffee/.exec(scriptPath);
         let source = Utils.loadTextFileContent(
             Runtime.resolvePath(module.vpath + '/' + scriptPath));
@@ -91,11 +115,24 @@ let addModule = function(loader, module) {
     // JSON data
     for (let i in module.json) {
         let jsonPath = module.json[i];
+        if (jsonPath === 'component.json') // We rewrite the component.json
+            continue;
         files.push(addFileContent(dir + jsonPath,
                                   Utils.loadTextFileContent(
                                       Runtime.resolvePath(
                                           module.vpath + '/' + jsonPath))));
     }
+
+    // Rewrite component.json using the filter
+    let manifestPath = Runtime.resolvePath(module.vpath + '/component.json');
+    let manifest = Utils.parseJSON(Utils.loadTextFileContent(manifestPath));
+
+    for (let i in manifest.noflo.components)
+        if (!filter[i])
+            delete manifest.noflo.components[i];
+
+    files.push(addFileContent(dir + 'component.json',
+                              JSON.stringify(manifest, null, 2)));
 
     return files;
 };
@@ -159,9 +196,17 @@ let exec = function(args) {
         if (child.query_file_type(Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
                                   null) != Gio.FileType.REGULAR)
             return;
-        files.push(addRuntimeFile(
-            child.get_uri(),
-            'runtime/' + runtimeDirectory.get_relative_path(child)));
+
+        // Special case for coffeescript compiler, since we compile
+        // everything upfront
+        if (child.get_basename() == 'coffeescript.js')
+            files.push(addRuntimeContent(
+                'runtime/' + runtimeDirectory.get_relative_path(child),
+                ''));
+        else
+            files.push(addRuntimeFile(
+                child.get_uri(),
+                'runtime/' + runtimeDirectory.get_relative_path(child)));
     });
 
     // Add application ui files
@@ -198,9 +243,30 @@ let exec = function(args) {
 
     // Add dependency modules
     let components = {};
+    let moduleFilters = {};
     let modules = {};
 
     let mainGraph = loader.mainGraph.getDefinition();
+    for (let i in mainGraph.processes) {
+        let cmpName = mainGraph.processes[i].component;
+        if (components[cmpName])
+            continue;
+
+        components[cmpName] = true;
+
+        let module = loader.getComponentModule(cmpName);
+        if (!module ||
+            module.name == loader.applicationName) // skip app components
+            continue;
+
+        if (!moduleFilters[module.name])
+            moduleFilters[module.name] = {};
+
+        let component = loader.getComponent(cmpName);
+        moduleFilters[module.name][component.name] = true;
+    }
+
+    components = {};
     for (let i in mainGraph.processes) {
         let cmp = mainGraph.processes[i].component;
         if (components[cmp])
@@ -210,12 +276,13 @@ let exec = function(args) {
 
         let module = loader.getComponentModule(cmp);
         if (!module ||
-            modules[module.name] || // drop already loaded modules
-            module.name == loader.applicationName) // drop app components
+            modules[module.name] || // skip already loaded modules
+            module.name == loader.applicationName) // skip app components
             continue;
 
         modules[module.name] = module;
-        files = files.concat(addModule(loader, module));
+        files = files.concat(addModule(loader, module,
+                                       moduleFilters[module.name]));
     }
 
     // Special case for introspected components

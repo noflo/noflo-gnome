@@ -401,6 +401,10 @@ let ComponentLoader = function(options) {
         return null;
     };
 
+    self.getComponent = function(name) {
+        return self.components[name];
+    };
+
     self.getModule = function(name) {
         let item = self.modules[name];
         if (item)
