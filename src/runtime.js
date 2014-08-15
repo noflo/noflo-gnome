@@ -60,7 +60,7 @@ let resolveCachedPath = function(virtualPath) {
     if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
         ret = _cacheDir() + '/library/' + ret[1];
     else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = _cacheDir() + '/local/' + ret[1]; // TODO: should be local
+        ret = _currentDir() + '/.noflo/' + ret[1];
     else
         ret = virtualPath
     //log('cached path : ' + virtualPath + ' ->  ' + ret);

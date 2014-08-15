@@ -180,7 +180,7 @@ let exec = function(args) {
         if (coffeeTest) {
             files.push(addFileContent('application/' + componentPath,
                                       ''));
-            files.push(addFileContent('cache/local/' + coffeeTest[1] + '.js',
+            files.push(addFileContent('application/.noflo/' + coffeeTest[1] + '.js',
                                       CodeLoader.compileCoffeeSource(
                                           Utils.loadTextFileContent(
                                               currentDirectory.get_uri() + '/' + componentPath))));
