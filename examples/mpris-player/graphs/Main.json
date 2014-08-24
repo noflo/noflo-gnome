@@ -91,18 +91,6 @@
    }
   },
   {
-   "name": "DisplayPosition",
-   "nodes": [
-    "Delay",
-    "Percent_jsqgs",
-    "PositionAdj_h63sm",
-    "objects/SetPropertyValue_k0zie"
-   ],
-   "metadata": {
-    "description": ""
-   }
-  },
-  {
    "name": "UserSeek",
    "nodes": [
     "Gate",
@@ -179,6 +167,19 @@
    "metadata": {
     "description": ""
    }
+  },
+  {
+   "name": "SetPosition",
+   "nodes": [
+    "Delay",
+    "Delay_rethr",
+    "Percent_jsqgs",
+    "PositionAdj_h63sm",
+    "SetSliderPosition"
+   ],
+   "metadata": {
+    "description": ""
+   }
   }
  ],
  "processes": {
@@ -203,7 +204,9 @@
    "metadata": {
     "label": "ShowAll",
     "x": -216,
-    "y": 324
+    "y": 324,
+    "width": 72,
+    "height": 72
    }
   },
   "Start": {
@@ -219,7 +222,9 @@
    "metadata": {
     "label": "UI",
     "x": -324,
-    "y": 540
+    "y": 504,
+    "width": 72,
+    "height": 160
    }
   },
   "SetSoundValue": {
@@ -498,8 +503,10 @@
    "component": "core/Kick",
    "metadata": {
     "label": "PositionAdj",
-    "x": 1332,
-    "y": 2268
+    "x": 1404,
+    "y": 2268,
+    "width": 72,
+    "height": 72
    }
   },
   "Seeked": {
@@ -526,12 +533,14 @@
     "y": 2412
    }
   },
-  "objects/SetPropertyValue_k0zie": {
+  "SetSliderPosition": {
    "component": "objects/SetPropertyValue",
    "metadata": {
-    "label": "objects/SetPropertyValue",
-    "x": 1476,
-    "y": 2340
+    "label": "SetSliderPosition",
+    "x": 1548,
+    "y": 2340,
+    "width": 72,
+    "height": 72
    }
   },
   "PositionAdj": {
@@ -546,8 +555,10 @@
    "component": "math/Multiply",
    "metadata": {
     "label": "Percent",
-    "x": 1116,
-    "y": 2376
+    "x": 1152,
+    "y": 2376,
+    "width": 72,
+    "height": 72
    }
   },
   "Clock": {
@@ -682,8 +693,10 @@
    "component": "core/RepeatAsync",
    "metadata": {
     "label": "Delay",
-    "x": 1224,
-    "y": 2376
+    "x": 1296,
+    "y": 2376,
+    "width": 72,
+    "height": 72
    }
   },
   "PlayerSetPosition": {
@@ -710,12 +723,24 @@
     "y": 612
    }
   },
-  "gnome/Log_fx5kv": {
+  "Delay_rethr": {
+   "component": "core/RepeatAsync",
+   "metadata": {
+    "label": "Delay",
+    "x": 1692,
+    "y": 2340,
+    "width": 72,
+    "height": 72
+   }
+  },
+  "gnome/Log_sshme": {
    "component": "gnome/Log",
    "metadata": {
     "label": "gnome/Log",
     "x": 648,
-    "y": 1548
+    "y": 1548,
+    "width": 72,
+    "height": 72
    }
   }
  },
@@ -1326,21 +1351,11 @@
     "port": "out"
    },
    "tgt": {
-    "process": "objects/SetPropertyValue_k0zie",
+    "process": "SetSliderPosition",
     "port": "in"
    },
    "metadata": {
     "route": 7
-   }
-  },
-  {
-   "src": {
-    "process": "IsPlaying",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "Clock",
-    "port": "start"
    }
   },
   {
@@ -1669,7 +1684,7 @@
     "port": "out"
    },
    "tgt": {
-    "process": "objects/SetPropertyValue_k0zie",
+    "process": "SetSliderPosition",
     "port": "value"
    },
    "metadata": {
@@ -1782,19 +1797,6 @@
   },
   {
    "src": {
-    "process": "objects/SetPropertyValue_k0zie",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "Gate",
-    "port": "open"
-   },
-   "metadata": {
-    "route": null
-   }
-  },
-  {
-   "src": {
     "process": "Seeked",
     "port": "position"
    },
@@ -1873,19 +1875,6 @@
   },
   {
    "src": {
-    "process": "PictureUri",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "gnome/Log_fx5kv",
-    "port": "in"
-   },
-   "metadata": {
-    "route": 5
-   }
-  },
-  {
-   "src": {
     "process": "LoadFile",
     "port": "content"
    },
@@ -1895,6 +1884,55 @@
    },
    "metadata": {
     "route": 3
+   }
+  },
+  {
+   "src": {
+    "process": "SetSliderPosition",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Delay_rethr",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
+   "src": {
+    "process": "Delay_rethr",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Gate",
+    "port": "open"
+   }
+  },
+  {
+   "src": {
+    "process": "IsPlaying",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "Clock",
+    "port": "start"
+   },
+   "metadata": {
+    "route": null
+   }
+  },
+  {
+   "src": {
+    "process": "PictureUri",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "gnome/Log_sshme",
+    "port": "in"
+   },
+   "metadata": {
+    "route": 5
    }
   },
   {
@@ -2152,7 +2190,7 @@
   {
    "data": "value",
    "tgt": {
-    "process": "objects/SetPropertyValue_k0zie",
+    "process": "SetSliderPosition",
     "port": "property"
    }
   },
