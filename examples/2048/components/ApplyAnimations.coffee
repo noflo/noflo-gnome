@@ -59,6 +59,7 @@ exports.getComponent = () ->
     actor.translation_x = 100 * pos.x
     actor.translation_y = 100 * pos.y
     actor.set_pivot_point 0.5, 0.5
+    actor.opacity = 255
     actor.scale_x = actor.scale_y = 0.01
 
     actor.save_easing_state()

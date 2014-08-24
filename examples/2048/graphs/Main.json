@@ -877,19 +877,6 @@
   },
   {
    "src": {
-    "process": "Gate",
-    "port": "out"
-   },
-   "tgt": {
-    "process": "SquashTiles",
-    "port": "direction"
-   },
-   "metadata": {
-    "route": 5
-   }
-  },
-  {
-   "src": {
     "process": "Events",
     "port": "event"
    },
@@ -1056,6 +1043,19 @@
    }
   },
   {
+   "src": {
+    "process": "Gate",
+    "port": "out"
+   },
+   "tgt": {
+    "process": "SquashTiles",
+    "port": "direction"
+   },
+   "metadata": {
+    "route": 0
+   }
+  },
+  {
    "data": true,
    "tgt": {
     "process": "ShowAll",
@@ -1161,17 +1161,17 @@
    }
   },
   {
-   "data": 150,
-   "tgt": {
-    "process": "AnimateTiles",
-    "port": "duration"
-   }
-  },
-  {
    "data": 10,
    "tgt": {
     "process": "SwipeDetect",
     "port": "mindistance"
+   }
+  },
+  {
+   "data": 150,
+   "tgt": {
+    "process": "AnimateTiles",
+    "port": "duration"
    }
   }
  ]
