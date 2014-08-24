@@ -12,11 +12,18 @@ let setBundled = function(value) {
 
 /**/
 
-let _resourceDir = function() {
+let _systemDir = function() {
     if (_bundled)
         return 'resource:///org/gnome/noflo-gnome/';
     else
         return 'file://' + Path.RESOURCE_DIR;
+};
+
+let _libraryDir = function() {
+    if (_bundled)
+        return 'resource:///org/gnome/noflo-gnome/';
+    else
+        return 'file://' + Path.LOCAL_DIR;
 };
 
 let _currentDir = function() {
@@ -42,8 +49,10 @@ let _internalDir = function() {
 
 let resolvePath = function(virtualPath) {
     let ret;
-    if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
-        ret = Utils.buildPath(_resourceDir(), ret[1]);
+    if ((ret = /^system:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = Utils.buildPath(_systemDir(), ret[1]);
+    else if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = Utils.buildPath(_libraryDir(), ret[1]);
     else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
         ret = Utils.buildPath(_currentDir(), ret[1]);
     else if ((ret = /^internal:\/\/(.*)/.exec(virtualPath)) != null)
@@ -57,7 +66,9 @@ let resolvePath = function(virtualPath) {
 
 let resolveCachedPath = function(virtualPath) {
     let ret;
-    if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
+    if ((ret = /^system:\/\/(.*)/.exec(virtualPath)) != null)
+        ret = _cacheDir() + '/system/' + ret[1];
+    else if ((ret = /^library:\/\/(.*)/.exec(virtualPath)) != null)
         ret = _cacheDir() + '/library/' + ret[1];
     else if ((ret = /^local:\/\/(.*)/.exec(virtualPath)) != null)
         ret = _currentDir() + '/.noflo/' + ret[1];

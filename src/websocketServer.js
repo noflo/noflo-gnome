@@ -48,7 +48,8 @@ const WebProtoServer = new Lang.Class({
 
         this.loader = new ComponentLoader({
             baseDir: '/noflo-runtime-base',
-            paths: [ 'library://components',
+            paths: [ 'system://components',
+                     'library://components',
                      'local://components', ],
         });
         this.runtime.component.loaders = {

@@ -1,9 +1,10 @@
 const GLib = imports.gi.GLib;
 const Options = imports.options;
 
-const builderInit = imports.builderInit;
 const builderAdd = imports.builderAdd;
 const builderBundle = imports.builderBundle;
+const builderInit = imports.builderInit;
+const builderInstall = imports.builderInstall;
 const builderRun = imports.builderRun;
 
 /**/
@@ -22,21 +23,25 @@ let printHelp = function() {
 /**/
 
 let commands = {
-    'init': {
-        exec: builderInit.exec,
-        help: 'Initialize a new application repository',
-    },
     'add': {
         exec: builderAdd.exec,
         help: 'Add content to an application repository',
     },
-    'run': {
-        exec: builderRun.exec,
-        help: 'Run an application repository',
-    },
     'bundle': {
         exec: builderBundle.exec,
         help: 'Create a bundle of an application repository',
+    },
+    'init': {
+        exec: builderInit.exec,
+        help: 'Initialize a new application repository',
+    },
+    'install': {
+        exec: builderInstall.exec,
+        help: 'Install a noflo component repository',
+    },
+    'run': {
+        exec: builderRun.exec,
+        help: 'Run an application repository',
     },
     'help': {
         exec: function(args) {

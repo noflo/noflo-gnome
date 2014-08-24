@@ -21,6 +21,7 @@ js_files = \
 	builderInit.js \
 	builderAdd.js \
 	builderBundle.js \
+	builderInstall.js \
 	builderRun.js \
 	codeLoader.js \
 	codeWriter.js \

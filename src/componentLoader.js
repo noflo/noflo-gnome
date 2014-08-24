@@ -79,7 +79,8 @@ let ComponentLoader = function(options) {
     /* Ensure with have valid options */
     self.options = options;
     if (!self.options || !self.options.paths)
-        self.options = { paths: [ 'library://components' ] };
+        self.options = { paths: [ 'system://components',
+                                  'library://components' ] };
 
     self.applicationName = null;
     self.mainGraphName = null;
