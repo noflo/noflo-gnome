@@ -71,8 +71,8 @@ noflo-gnome add -u MyGladeFile.glade
 
 ## How to add a DBus xml description file to your application repository :
 
-To communicate facilitate communication with DBus services, the Gnome
-integration layer to NoFlo provides the ability to generate components
+To facilitate communication with DBus services, the Gnome integration
+layer to NoFlo provides the ability to generate components
 automatically from the DBus XML interface description.
 
 You can add an xml description file with the following command :
