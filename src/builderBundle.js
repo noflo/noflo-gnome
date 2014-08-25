@@ -167,7 +167,8 @@ let exec = function(args) {
     // Get library loader
     let loader = new ComponentLoader.ComponentLoader({
         baseDir: '/noflo-runtime-base',
-        paths: [ 'library://components',
+        paths: [ 'system://components',
+                 'library://components',
                  'local://components', ],
     });
     loader.loadModules();
