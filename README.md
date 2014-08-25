@@ -21,6 +21,26 @@ To run the noflo-gnome command, just switch to the jhbuild environment :
 jhbuild shell
 ```
 
+## How to install existing components :
+
+NoFlo-Gnome is capable of reusing generic NoFlo components. A lot of
+components provide features like string processing, simple mathematic
+functions, object processing, group processing, etc...
+
+For example, you can install the noflo-strings set of components by
+running the following command :
+
+```
+noflo-gnome install noflo/noflo-strings
+```
+
+The recommended set of component repository to install is the
+following :
+
+```
+noflo-gnome install noflo/noflo-core noflo/noflo-flow noflo/noflo-math noflo/noflo-objects noflo/noflo-strings
+```
+
 ## How to create a new application repository :
 
 ```
