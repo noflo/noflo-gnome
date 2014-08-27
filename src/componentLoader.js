@@ -125,7 +125,8 @@ let ComponentLoader = function(options) {
             try {
                 let path = Runtime.resolvePath(vpath);
                 let source = Utils.loadTextFileContent(path);
-                return source;
+                let json = JSON.parse(source);
+                return JSON.stringify(json);
             } catch (e) {
                 log('Failed to load graph : ' + vpath);
                 throw e;
