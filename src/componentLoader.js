@@ -84,6 +84,7 @@ let ComponentLoader = function(options) {
 
     self.applicationName = null;
     self.mainGraphName = null;
+    self.mainGraphPath = null;
     self.mainGraph = null;
     self.modules = {};
     self.components = {};
@@ -259,6 +260,7 @@ let ComponentLoader = function(options) {
         let appModule = getModuleAtPath('local://', 'manifest.json');
         self.applicationName = appModule.name;
         self.mainGraphName = appModule.noflo.main;
+        self.mainGraphPath = self.applicationName + '/' + self.mainGraphName;
         self.modules[appModule.name] = appModule;
 
         for (let moduleName in self.modules) {
@@ -348,7 +350,13 @@ let ComponentLoader = function(options) {
     };
 
     self.getSource = function(name, callback) {
-        let item = self.components[name];
+        let item = null;
+
+        if (name == self.mainGraphPath)
+            item = self.mainGraph;
+        else
+            item = self.components[name];
+
         if (item) {
             try {
                 //log(JSON.stringify(item.getCode()));
@@ -455,15 +463,14 @@ let ComponentLoader = function(options) {
             let component = self.components[path];
 
             if (component)
-                runtime.graph.registerGraph(graphName, component.create());
+                runtime.graph.registerGraph(path, component.create());
         }
-        runtime.graph.registerGraph(self.mainGraphName,
+        runtime.graph.registerGraph(self.mainGraphPath,
                                     self.mainGraph.create());
     };
 
     self._installNetwork = function(runtime) {
-        let path = self.mainGraphName;
-        let component = self.components[path];
+        let path = self.mainGraphPath;
 
         runtime.network.initNetwork(runtime.graph.graphs[path],
                                     { graph: path, },
