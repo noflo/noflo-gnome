@@ -23,6 +23,7 @@ exports.getComponent = ->
     return unless out.isAttached()
     unless data?
       c.error new Error 'Invalid filename', groups
+      do callback
       return
     file = Gio.File.new_for_uri data
     file.load_contents_async null, (src, res) ->
