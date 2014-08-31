@@ -127,6 +127,9 @@ let ComponentLoader = function(options) {
                 let path = Runtime.resolvePath(vpath);
                 let source = Utils.loadTextFileContent(path);
                 let json = JSON.parse(source);
+                json.properties.id = this.name;
+                json.properties.name = this.name;
+                json.properties.library = this.moduleName;
                 return JSON.stringify(json);
             } catch (e) {
                 log('Failed to load graph : ' + vpath);
@@ -149,6 +152,7 @@ let ComponentLoader = function(options) {
                 def.properties = {
                     name: this.name,
                     id: this.name,
+                    library: this.moduleName,
                 };
                 return def;
             } catch (e) {
