@@ -9,6 +9,13 @@ const Utils = imports.utils;
 
 const CmdOptions = [
     {
+        name: 'branch',
+        shortName: 'b',
+        requireArgument: true,
+        defaultValue: 'master',
+        help: 'Install components from a given branch'
+    },
+    {
         name: 'help',
         shortName: 'h',
         requireArgument: false,
@@ -45,26 +52,29 @@ let download = function(uri, callback) {
 /**/
 
 let generateUrl = function(repo, file) {
-    return 'https://raw.githubusercontent.com/' + repo + '/master/' + file;
+    return 'https://raw.githubusercontent.com/' +
+        repo.name +
+        '/' + repo.branch +
+        '/' + file;
 };
 
 let downloadedFile = function(repo, file, msg) {
     if (msg.status_code != Soup.KnownStatusCode.OK) {
         log("Couldn't download file " + file +
-            ' from  repository : ' + repo +
+            ' from repository : ' + repo.name +
             ' : ' + msg.reason_phrase);
         Mainloop.quit('noflo-gnome-install');
         return;
     }
 
-    let flattenRepo = repo.replace('/', '-');
+    let flattenRepo = repo.name.replace('/', '-');
     let path = Runtime.resolvePath('library://components/' + flattenRepo + '/' + file);
     Utils.saveTextFileContent(path, msg.response_body.data);
 };
 
 let downloadedDescr = function(repo, msg) {
     if (msg.status_code != Soup.KnownStatusCode.OK) {
-        log("Couldn't download informations from repository " + repo +
+        log("Couldn't download informations from repository " + repo.name +
             ' : ' + msg.reason_phrase);
         Mainloop.quit('noflo-gnome-install');
         return;
@@ -73,7 +83,7 @@ let downloadedDescr = function(repo, msg) {
     let pkgstr = msg.response_body.data;
     try {
         let pkg = JSON.parse(pkgstr);
-        print('Downloading : ' + repo);
+        print('Downloading : ' + repo.name);
         for (let i in pkg.scripts) {
             let file = pkg.scripts[i];
             let url = generateUrl(repo, file);
@@ -85,7 +95,7 @@ let downloadedDescr = function(repo, msg) {
             download(url, function(msg) { downloadedFile(repo, file, msg); });
         }
     } catch (error) {
-        log("Couldn't download repository : " + repo);
+        log("Couldn't download repository : " + repo.name);
         Mainloop.quit('noflo-gnome-install');
     }
 };
@@ -106,7 +116,10 @@ let exec = function(args) {
 
     for (let i in options.arguments) {
         let repo = options.arguments[i];
-        downloadRepo(repo);
+        downloadRepo({
+            name: repo,
+            branch: options.options['branch'],
+        });
     }
 
     Mainloop.run('noflo-gnome-install');
