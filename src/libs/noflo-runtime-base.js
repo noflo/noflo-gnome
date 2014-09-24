@@ -3573,7 +3573,7 @@ module.exports = (function(){
 })();
 });
 require.register("noflo-noflo/component.json", function(exports, require, module){
-module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.5.6","dependencies":{"bergie/emitter":"*","jashkenas/underscore":"*","noflo/fbp":"*"},"remotes":["https://raw.githubusercontent.com"],"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/BasePort.coffee","src/lib/InPort.coffee","src/lib/OutPort.coffee","src/lib/Ports.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/lib/Platform.coffee","src/lib/Journal.coffee","src/lib/Utils.coffee","src/lib/Helpers.coffee","src/lib/Streams.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.coffee"}}}');
+module.exports = JSON.parse('{"name":"noflo","description":"Flow-Based Programming environment for JavaScript","keywords":["fbp","workflow","flow"],"repo":"noflo/noflo","version":"0.5.9","dependencies":{"bergie/emitter":"*","jashkenas/underscore":"*","noflo/fbp":"*"},"remotes":["https://raw.githubusercontent.com"],"development":{},"license":"MIT","main":"src/lib/NoFlo.js","scripts":["src/lib/Graph.coffee","src/lib/InternalSocket.coffee","src/lib/BasePort.coffee","src/lib/InPort.coffee","src/lib/OutPort.coffee","src/lib/Ports.coffee","src/lib/Port.coffee","src/lib/ArrayPort.coffee","src/lib/Component.coffee","src/lib/AsyncComponent.coffee","src/lib/LoggingComponent.coffee","src/lib/ComponentLoader.coffee","src/lib/NoFlo.coffee","src/lib/Network.coffee","src/lib/Platform.coffee","src/lib/Journal.coffee","src/lib/Utils.coffee","src/lib/Helpers.coffee","src/lib/Streams.coffee","src/components/Graph.coffee"],"json":["component.json"],"noflo":{"components":{"Graph":"src/components/Graph.coffee"}}}');
 });
 require.register("noflo-noflo/src/lib/Graph.js", function(exports, require, module){
 var EventEmitter, Graph, clone, platform,
@@ -5332,6 +5332,9 @@ Ports = (function(_super) {
     if (name === 'add' || name === 'remove') {
       throw new Error('Add and remove are restricted port names');
     }
+    if (!name.match(/^[a-z0-9_\.\/]+$/)) {
+      throw new Error("Port names can only contain lowercase alphanumeric characters and underscores. '" + name + "' not allowed");
+    }
     if (this.ports[name]) {
       this.remove(name);
     }
@@ -6544,14 +6547,28 @@ ComponentLoader = (function(_super) {
     if (typeof component !== 'string') {
       return callback(new Error("Can't provide source for " + name + ". Not a file"));
     }
-    path = window.require.resolve(component);
-    if (!path) {
-      return callback(new Error("Component " + name + " is not resolvable to a path"));
-    }
     nameParts = name.split('/');
     if (nameParts.length === 1) {
       nameParts[1] = nameParts[0];
       nameParts[0] = '';
+    }
+    if (this.isGraph(component)) {
+      nofloGraph.loadFile(component, function(graph) {
+        if (!graph) {
+          return callback(new Error('Unable to load graph'));
+        }
+        return callback(null, {
+          name: nameParts[1],
+          library: nameParts[0],
+          code: JSON.stringify(graph.toJSON()),
+          language: 'json'
+        });
+      });
+      return;
+    }
+    path = window.require.resolve(component);
+    if (!path) {
+      return callback(new Error("Component " + name + " is not resolvable to a path"));
     }
     return callback(null, {
       name: nameParts[1],
@@ -9308,16 +9325,29 @@ protocols = {
 
 BaseTransport = (function() {
   function BaseTransport(options) {
+    var path;
     this.options = options;
     if (!this.options) {
       this.options = {};
     }
     this.version = '0.4';
     this.runtime = new protocols.Runtime(this);
+    this.component = new protocols.Component(this);
     this.graph = new protocols.Graph(this);
     this.network = new protocols.Network(this);
-    this.component = new protocols.Component(this);
     this.context = null;
+    if (this.options.defaultGraph != null) {
+      this.options.defaultGraph.baseDir = this.options.baseDir;
+      path = 'default/main';
+      this.context = 'none';
+      this.graph.registerGraph(path, this.options.defaultGraph);
+      this.network.initNetwork(this.options.defaultGraph, {
+        graph: path
+      }, this.context);
+    }
+    if ((this.options.captureOutput != null) && this.options.captureOutput) {
+      this.startCapture();
+    }
   }
 
   BaseTransport.prototype.send = function(protocol, topic, payload, context) {};
@@ -9360,7 +9390,7 @@ GraphProtocol = (function() {
 
   GraphProtocol.prototype.receive = function(topic, payload, context) {
     var graph;
-    if (topic !== 'clear' && topic !== 'list') {
+    if (topic !== 'clear') {
       graph = this.resolveGraph(payload, context);
       if (!graph) {
         return;
@@ -9369,10 +9399,6 @@ GraphProtocol = (function() {
     switch (topic) {
       case 'clear':
         return this.initGraph(payload, context);
-      case 'get':
-        return this.getGraph(graph, payload, context);
-      case 'list':
-        return this.listGraphs(payload, context);
       case 'addnode':
         return this.addNode(graph, payload, context);
       case 'removenode':
@@ -9442,20 +9468,6 @@ GraphProtocol = (function() {
     return this.send('graph', payload, context);
   };
 
-  GraphProtocol.prototype.getGraph = function(graph, payload, context) {
-    return this.sendGraph(payload.graph, graph, context);
-  };
-
-  GraphProtocol.prototype.listGraphs = function(payload, context) {
-    var graph, graphId, _ref;
-    _ref = this.graphs;
-    for (graphId in _ref) {
-      graph = _ref[graphId];
-      this.sendGraph(graphId, graph, context);
-    }
-    return this.send('graphsdone', {}, context);
-  };
-
   GraphProtocol.prototype.initGraph = function(payload, context) {
     var fullName, graph;
     if (!payload.id) {
@@ -9468,8 +9480,15 @@ GraphProtocol = (function() {
     graph = new noflo.Graph(payload.name);
     fullName = payload.id;
     if (payload.library) {
+      payload.library = payload.library.replace('noflo-', '');
       graph.properties.library = payload.library;
       fullName = "" + payload.library + "/" + fullName;
+    }
+    if (payload.icon) {
+      graph.properties.icon = payload.icon;
+    }
+    if (payload.description) {
+      graph.properties.description = payload.description;
     }
     graph.baseDir = this.transport.options.baseDir;
     this.subscribeGraph(payload.id, graph, context);
@@ -9900,8 +9919,6 @@ NetworkProtocol = (function() {
         return this.updateEdgesFilter(graph, payload, context);
       case 'debug':
         return this.debugNetwork(graph, payload, context);
-      case 'list':
-        return this.listNetworks(payload, context);
     }
   };
 
@@ -10029,9 +10046,17 @@ NetworkProtocol = (function() {
     })(this));
     return network.on('process-error', (function(_this) {
       return function(event) {
+        var bt, error, i, _i, _ref;
+        error = event.error.message;
+        if (event.error.stack) {
+          bt = event.error.stack.split('\n');
+          for (i = _i = 0, _ref = Math.min(bt.length, 3); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+            error += "\n" + bt[i];
+          }
+        }
         return _this.send('processerror', {
           id: event.id,
-          error: event.error,
+          error: error,
           graph: payload.graph
         }, context);
       };
@@ -10046,23 +10071,16 @@ NetworkProtocol = (function() {
   };
 
   NetworkProtocol.prototype.debugNetwork = function(graph, payload, context) {
+    var net;
     if (!this.networks[payload.graph]) {
       return;
     }
-    return this.networks[payload.graph].network.setDebug(payload.enable);
-  };
-
-  NetworkProtocol.prototype.listNetworks = function(payload, context) {
-    var graph, network, _ref;
-    _ref = this.networks;
-    for (graph in _ref) {
-      network = _ref[graph];
-      this.send('network', {
-        graph: graph,
-        started: network.network.isStarted()
-      }, context);
+    net = this.networks[payload.graph].network;
+    if (net.setDebug != null) {
+      return net.setDebug(payload.enable);
+    } else {
+      return console.log('Warning: Network.setDebug not supported. Update to newer NoFlo');
     }
-    return this.send('networksdone', {}, context);
   };
 
   return NetworkProtocol;
@@ -10125,11 +10143,23 @@ ComponentProtocol = (function() {
     loader = this.getLoader(baseDir);
     return loader.getSource(payload.name, (function(_this) {
       return function(err, component) {
+        var graph, nameParts;
         if (err) {
-          _this.send('error', err, context);
-          return;
+          graph = _this.transport.graph.graphs[payload.name];
+          if (graph == null) {
+            _this.send('error', err, context);
+            return;
+          }
+          nameParts = payload.name.split('/');
+          return _this.send('source', {
+            name: nameParts[1],
+            library: nameParts[0],
+            code: JSON.stringify(graph.toJSON()),
+            language: 'json'
+          }, context);
+        } else {
+          return _this.send('source', component, context);
         }
-        return _this.send('source', component, context);
       };
     })(this));
   };
@@ -10151,7 +10181,14 @@ ComponentProtocol = (function() {
 
   ComponentProtocol.prototype.processComponent = function(loader, component, context) {
     return loader.load(component, (function(_this) {
-      return function(instance) {
+      return function(err, instance) {
+        if (!instance) {
+          if (err instanceof Error) {
+            _this.send('error', err, context);
+            return;
+          }
+          instance = err;
+        }
         if (!instance.isReady()) {
           instance.once('ready', function() {
             return _this.sendComponent(component, instance, context);
@@ -10268,7 +10305,7 @@ RuntimeProtocol = (function() {
   };
 
   RuntimeProtocol.prototype.getRuntime = function(payload, context) {
-    var capabilities, type;
+    var capabilities, graph, k, type, v, _ref;
     type = this.transport.options.type;
     if (!type) {
       if (noflo.isBrowser()) {
@@ -10281,10 +10318,18 @@ RuntimeProtocol = (function() {
     if (!capabilities) {
       capabilities = ['protocol:graph', 'protocol:component', 'protocol:network', 'component:setsource', 'component:getsource'];
     }
+    graph = void 0;
+    _ref = this.transport.network.networks;
+    for (k in _ref) {
+      v = _ref[k];
+      graph = k;
+      break;
+    }
     return this.send('runtime', {
       type: type,
       version: this.transport.version,
-      capabilities: capabilities
+      capabilities: capabilities,
+      graph: graph
     }, context);
   };
 
