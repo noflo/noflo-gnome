@@ -65,11 +65,9 @@ let generateBrowserUrl = function(port, manifest) {
         type: 'noflo-gnome',
     };
 
-    let url = 'https://djdeath.github.io/live.html#';
-    url += '?runtime=' + Soup.uri_encode(GLib.base64_encode(JSON.stringify(runtime)),
-                                         null);
-    url += '&project=' + Soup.uri_encode(GLib.base64_encode(JSON.stringify(project)),
-                                         null);
+    let url = 'http://app.flowhub.io/#runtime/endpoint'
+    url += '?protocol=websocket'
+    url += '&address=' + Soup.uri_encode('ws://localhost:' + port, null)
 
     print('Open: ' + url);
     return url;
