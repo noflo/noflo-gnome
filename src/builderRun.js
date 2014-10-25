@@ -40,6 +40,13 @@ const CmdOptions = [
         help: 'Start the UI automatically',
     },
     {
+        name: 'ui-url',
+        shortName: 'y',
+        requireArgument: true,
+        defaultValue: 'http://app.flowhub.io',
+        help: 'Use a custom version of the UI at the given url',
+    },
+    {
         name: 'help',
         shortName: 'h',
         requireArgument: false,
@@ -48,7 +55,7 @@ const CmdOptions = [
     },
 ];
 
-let generateBrowserUrl = function(port, manifest) {
+let generateBrowserUrl = function(base_url, port, manifest) {
     let runtime = {
         label: 'NoFlo Gnome',
         id: '516416d5-9d62-41a1-a901-7ac469455c03',
@@ -65,7 +72,7 @@ let generateBrowserUrl = function(port, manifest) {
         type: 'noflo-gnome',
     };
 
-    let url = 'http://app.flowhub.io/#runtime/endpoint'
+    let url = base_url + '/#runtime/endpoint'
     url += '?protocol=websocket'
     url += '&address=' + Soup.uri_encode('ws://localhost:' + port, null)
 
@@ -93,7 +100,9 @@ let exec = function(args) {
         if (options.options.ui) {
             // Start webbrowser with address
             Gio.AppInfo.launch_default_for_uri(
-                generateBrowserUrl(options.options.port, manifest),
+                generateBrowserUrl(options.options['ui-url'],
+                                   options.options.port,
+                                   manifest),
                 null);
         }
         let server = new WebProtoServer.WebProtoServer({
