@@ -108,7 +108,8 @@ let exec = function(args) {
                                               type: 'noflo-nodejs', });
         let loader = new ComponentLoader.ComponentLoader({
             baseDir: '/noflo-runtime-base',
-            paths: [ 'library://components',
+            paths: [ 'system://components',
+                     'library://components',
                      'local://components', ],
         });
         runtime.component.loaders = {
