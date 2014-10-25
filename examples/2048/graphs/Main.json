@@ -1,7 +1,8 @@
 {
  "properties": {
   "name": "Main",
-  "id": "Main"
+  "id": "Main",
+  "library": "2048"
  },
  "inports": {},
  "outports": {},
@@ -117,7 +118,7 @@
  ],
  "processes": {
   "UI": {
-   "component": "gtk-builder/2048ui",
+   "component": "gtk-builder/2048",
    "metadata": {
     "label": "UI",
     "x": 144,

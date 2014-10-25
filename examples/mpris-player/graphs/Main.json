@@ -219,7 +219,7 @@
    }
   },
   "UI": {
-   "component": "gtk-builder/sliderui",
+   "component": "gtk-builder/slider",
    "metadata": {
     "label": "UI",
     "x": -324,
