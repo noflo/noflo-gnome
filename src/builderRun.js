@@ -114,7 +114,7 @@ let exec = function(args) {
     } else {
         // Start runtime, no debug connection
         let runtime = new NoFlo.RuntimeBase({ baseDir: '/noflo-runtime-base',
-                                              type: 'noflo-nodejs', });
+                                              type: 'noflo-gnome', });
         let loader = new ComponentLoader.ComponentLoader({
             baseDir: '/noflo-runtime-base',
             paths: [ 'system://components',
