@@ -1,4 +1,5 @@
 const Lang = imports.lang;
+const Gio = imports.gi.Gio;
 const Soup = imports.gi.Soup;
 
 const NoFlo = imports.noflo;
@@ -61,12 +62,15 @@ const WebProtoServer = new Lang.Class({
 
         this.signals = [];
 
-        this.server = new Soup.Server({ port: args.port, });
+        this.server = new Soup.Server();
+        this.server.listen(Gio.InetSocketAddress.new_from_string('0.0.0.0',
+                                                                 args.port),
+                           0);
         this.server.add_websocket_handler(null, null, null,
                                           Lang.bind(this, this.mainHandler));
     },
 
-    mainHandler: function(server, path, connection, client) {
+    mainHandler: function(server, connection, path, client) {
         if (this.connection != null) {
             this.connection.close(0, null);
             this.clientDisconnected(this.connection);
@@ -78,13 +82,8 @@ const WebProtoServer = new Lang.Class({
 
         this.connection = connection;
 
-        this.signals.push(this.connection.connect('open', Lang.bind(this, this.clientConnected)));
         this.signals.push(this.connection.connect('message', Lang.bind(this, this.clientMessage)));
         this.signals.push(this.connection.connect('close', Lang.bind(this, this.clientDisconnected)));
-    },
-
-    clientConnected: function(conn) {
-        log('client connected');
     },
 
     clientMessage: function(conn, opcode, message) {
@@ -118,7 +117,7 @@ const WebProtoServer = new Lang.Class({
         //log('sending message: ' + message);
         if (!this.connection)
             return;
-        this.connection.send_text(message);
+        this.connection.send(Soup.WebsocketDataType.TEXT, message);
     },
 
     /**/
