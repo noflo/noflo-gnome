@@ -314,7 +314,6 @@ let ComponentLoader = function(options) {
             graphSocket.send(item.create(metadata));
             graphSocket.disconnect();
             graph.inPorts.remove('graph');
-            graph.inPorts.remove('start');
             graph.setIcon('sitemap');
             callback(graph);
         } catch (e) {
