@@ -16,17 +16,6 @@ let parseArguments = function(options, args) {
 
     let isValue = false, lastOption = null;
     for (let i in args) {
-        if (lastOption) {
-            if (lastOption.allowMultiple) {
-                if (!result.options[lastOption.name])
-                    result.options[lastOption.name] = []
-                result.options[lastOption.name].push(args[i]);
-            } else
-                result.options[lastOption.name] = args[i];
-            lastOption = null;
-            continue;
-        }
-
         let match;
         //log("looking at : '" + args[i] + "'");
         if ((match = /^--([\w-]+)(=(.*))?$/.exec(args[i])) == null &&
@@ -34,8 +23,20 @@ let parseArguments = function(options, args) {
             if (args[i][0] == '-')
                 throw new Error('Unknown option ' + args[i]);
             result.arguments.push(args[i]);
+
+            if (lastOption) {
+                if (lastOption.allowMultiple) {
+                    if (!result.options[lastOption.name])
+                        result.options[lastOption.name] = []
+                    result.options[lastOption.name].push(args[i]);
+                } else {
+                    result.options[lastOption.name] = args[i];
+                    lastOption = null;
+                }
+            }
             continue;
         }
+
 
         let name = match[1];
         let value = match[3];
