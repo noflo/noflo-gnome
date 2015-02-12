@@ -60,7 +60,7 @@ let loadJavascript = function(vpath) {
     let path = Runtime.resolvePath(vpath);
     let file = Gio.File.new_for_uri(path + '.js');
 
-    let module = loadJavascript(file);
+    let module = loadJavascriptFile(file);
 
     return module;
 };
