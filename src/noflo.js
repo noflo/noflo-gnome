@@ -37,9 +37,9 @@ let require = function(arg) {
     }
 
     let getPaths = function() {
-        if (!window._requirePaths)
-            window._requirePaths = [];
-        return window._requirePaths;
+        if (!window.require._requirePaths)
+            window.require._requirePaths = [];
+        return window.require._requirePaths;
     };
 
     let pushPath = function(path) {
@@ -59,22 +59,26 @@ let require = function(arg) {
     };
 
     let path = getGlobalPath() + arg;
-    let parentPath = GLib.path_get_dirname(arg);
-    if (parentPath == '' || parentPath == '.')
-        parentPath = null;
-    if (parentPath) pushPath(parentPath);
-    let module;
-    try {
-        module = loadFile(path);
-    } catch (e) {
-        throw e;
-    } finally {
-        if (parentPath) popPath();
+    let module = window.require._cache[path];
+    if (!module) {
+        let parentPath = GLib.path_get_dirname(arg);
+        if (parentPath == '' || parentPath == '.')
+            parentPath = null;
+        if (parentPath) pushPath(parentPath);
+        try {
+            module = loadFile(path);
+            window.require._cache[path] = module;
+        } catch (e) {
+            throw e;
+        } finally {
+            if (parentPath) popPath();
+        }
     }
 
     return module;
 };
 window.require = require;
+window.require._cache = {};
 
 /* NoFlo Runtime */
 
