@@ -13,7 +13,6 @@ let NoFloContext = null;
 /* Require() "emulation" */
 
 let loadFile = function(vpath) {
-    //log('load file ' + vpath);
     if (Utils.isPathRegular(Runtime.resolvePath(vpath + '.js')))
         return CodeLoader.loadJavascript(vpath);
     if (Utils.isPathRegular(Runtime.resolvePath(vpath + '.coffee')))
