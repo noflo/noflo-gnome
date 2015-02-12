@@ -22,6 +22,14 @@ const CmdOptions = [
         help: 'Add a DBus interface description file to the manifest'
     },
     {
+        name: 'graph',
+        shortName: 'g',
+        requireArgument: true,
+        defaultValue: [],
+        allowMultiple: true,
+        help: 'Add a graph to the manifest'
+    },
+    {
         name: 'ui',
         shortName: 'u',
         requireArgument: true,
@@ -69,6 +77,15 @@ let exec = function(args) {
             manifest.noflo.components = {};
         let path = options.options.component[i];
         manifest.noflo.components[Utils.getFileName(path)] =
+            normalizePath(appDirectory, path);
+    }
+
+    // Add graphs
+    for (let i in options.options.graph) {
+        if (!manifest.noflo.graphs)
+            manifest.noflo.graphs = {};
+        let path = options.options.graph[i];
+        manifest.noflo.graphs[Utils.getFileName(path)] =
             normalizePath(appDirectory, path);
     }
 
