@@ -20,12 +20,13 @@ PKG_PROG_PKG_CONFIG([0.22])
 GIO_MIN_VERSION=2.38.0
 GJS_MIN_VERSION=1.38.0
 GOBJECT_INTROSPECTION_MIN_VERSION=0.10.1
+LIBSOUP_MIN_VERSION=2.49.91.1
 
 PKG_CHECK_MODULES(NOFLO_GNOME, [
     gio-2.0                      >= $GIO_MIN_VERSION
     gjs-1.0                      >= $GJS_MIN_VERSION
     gobject-introspection-1.0    >= $GOBJECT_INTROSPECTION_MIN_VERSION
-    libsoup-2.4
+    libsoup-2.4                  >= $LIBSOUP_MIN_VERSION
 ])
 
 GLIB_GSETTINGS

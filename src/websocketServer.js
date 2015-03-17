@@ -83,7 +83,7 @@ const WebProtoServer = new Lang.Class({
         this.connection = connection;
 
         this.signals.push(this.connection.connect('message', Lang.bind(this, this.clientMessage)));
-        this.signals.push(this.connection.connect('close', Lang.bind(this, this.clientDisconnected)));
+        this.signals.push(this.connection.connect('closed', Lang.bind(this, this.clientDisconnected)));
     },
 
     clientMessage: function(conn, opcode, message) {
@@ -117,7 +117,7 @@ const WebProtoServer = new Lang.Class({
         //log('sending message: ' + message);
         if (!this.connection)
             return;
-        this.connection.send(Soup.WebsocketDataType.TEXT, message);
+        this.connection.send_text(message);
     },
 
     /**/
