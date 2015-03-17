@@ -33,6 +33,7 @@ noflo-gnome install noflo/noflo-core noflo/noflo-flow noflo/noflo-math noflo/nof
 
 ## How to create a new application repository :
 
+You want to create a new application? Here is what you should do :
 ```
 mkdir ~/myapp
 cd ~/myapp
@@ -91,3 +92,8 @@ containing all your assets, code, ui files, etc...)
 ```
 noflo-gnome bundle
 ```
+
+## Any example?
+
+Sure, have a look at the examples directory! And feel free to submit
+PRs if you have something cool :)
